@@ -63,22 +63,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-if DEBUG:
-    # Development - SQLite
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL and DATABASE_URL.startswith('postgres'):
+    # Production avec PostgreSQL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Development ou PythonAnywhere avec SQLite
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
-    }
-else:
-    # Production - PostgreSQL via Railway
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.environ.get('DATABASE_URL'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
     }
 
 # Password validation
