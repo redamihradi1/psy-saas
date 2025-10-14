@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow p-8 text-center">
+        <i class="fas fa-exclamation-triangle text-red-500 text-6xl mb-4"></i>
+        <h1 class="text-2xl font-bold mb-4">Supprimer la consultation ?</h1>
+        <form method="POST" class="flex gap-4 justify-center">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded">Supprimer</button>
+            <a href="{% url 'cabinet:consultations_list' %}" class="bg-gray-200 px-6 py-2 rounded">Annuler</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Consultations - PsySaaS{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="bg-white rounded-xl shadow p-6 mb-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Consultations</h1>
+            <p class="text-gray-500 mt-1">Gestion des consultations</p>
+        </div>
+        <a href="{% url 'cabinet:consultation_create' %}" 
+           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2">
+            <i class="fas fa-calendar-plus"></i>
+            Nouvelle Consultation
+        </a>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="bg-white rounded-xl shadow p-6 mb-6">
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <select name="lieu" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                <option value="">Tous les lieux</option>
+                <option value="visio" {% if lieu_filter == 'visio' %}selected{% endif %}>Visioconférence</option>
+                <option value="bouskoura" {% if lieu_filter == 'bouskoura' %}selected{% endif %}>Cabinet Bouskoura</option>
+                <option value="mind_office" {% if lieu_filter == 'mind_office' %}selected{% endif %}>Mind Office</option>
+            </select>
+        </div>
+        <div>
+            <select name="statut" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                <option value="">Tous les statuts</option>
+                <option value="paye" {% if statut_filter == 'paye' %}selected{% endif %}>Payé</option>
+                <option value="attente" {% if statut_filter == 'attente' %}selected{% endif %}>En attente</option>
+                <option value="annule" {% if statut_filter == 'annule' %}selected{% endif %}>Annulé</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition">
+                <i class="fas fa-filter mr-2"></i>Filtrer
+            </button>
+        </div>
+        <div>
+            <a href="{% url 'cabinet:consultations_list' %}" 
+               class="w-full block text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-redo mr-2"></i>Réinitialiser
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Liste consultations -->
+{% if page_obj.object_list %}
+<div class="bg-white rounded-xl shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lieu</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarif</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paiement</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for consultation in page_obj.object_list %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <a href="{% url 'cabinet:patient_detail' consultation.patient.id %}" 
+                       class="font-medium text-gray-900 hover:text-primary">
+                        {{ consultation.patient.nom_complet }}
+                    </a>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    {{ consultation.date_seance|date:"d/m/Y H:i" }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs rounded-full 
+                        {% if consultation.lieu_consultation == 'visio' %}bg-blue-100 text-blue-800
+                        {% elif consultation.lieu_consultation == 'bouskoura' %}bg-green-100 text-green-800
+                        {% else %}bg-purple-100 text-purple-800{% endif %}">
+                        {{ consultation.get_lieu_consultation_display }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap font-medium">
+                    {{ consultation.tarif }} DHS
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {% if consultation.statut_paiement == 'paye' %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Payé</span>
+                    {% elif consultation.statut_paiement == 'attente' %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">En attente</span>
+                    {% else %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Annulé</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex gap-2">
+                        <a href="{% url 'cabinet:consultation_detail' consultation.id %}" 
+                           class="text-primary hover:text-primary-dark">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'cabinet:consultation_edit' consultation.id %}" 
+                           class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'cabinet:consultation_delete' consultation.id %}" 
+                           class="text-red-600 hover:text-red-800"
+                           onclick="return confirm('Supprimer cette consultation ?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="bg-gray-50 px-4 py-3 flex items-center justify-between border-t">
+        <div class="text-sm text-gray-700">
+            {{ page_obj.start_index }} - {{ page_obj.end_index }} sur {{ page_obj.paginator.count }}
+        </div>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" 
+                   class="px-3 py-1 bg-white border rounded hover:bg-gray-50">Précédent</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" 
+                   class="px-3 py-1 bg-white border rounded hover:bg-gray-50">Suivant</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow p-12 text-center">
+    <i class="fas fa-calendar-times text-gray-400 text-6xl mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucune consultation</h3>
+    <a href="{% url 'cabinet:consultation_create' %}" 
+       class="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg transition mt-4">
+        <i class="fas fa-calendar-plus mr-2"></i>Créer une consultation
+    </a>
+</div>
+{% endif %}
+{% endblock %}

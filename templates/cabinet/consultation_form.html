@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - PsySaaS{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">{{ title }}</h1>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Patient *</label>
+                    {{ form.patient }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date et heure *</label>
+                    {{ form.date_seance }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lieu *</label>
+                    {{ form.lieu_consultation }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Durée (min) *</label>
+                    {{ form.duree_minutes }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+                    {{ form.type_consultation }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tarif (DHS) *</label>
+                    {{ form.tarif }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Statut paiement *</label>
+                    {{ form.statut_paiement }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pack Mind Office</label>
+                    {{ form.pack_mind_office_utilise }}
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Notes cliniques</label>
+                {{ form.notes_cliniques }}
+            </div>
+
+            <div class="mt-8 flex gap-4">
+                <button type="submit" class="flex-1 bg-primary hover:bg-primary-dark text-white py-3 rounded-lg transition">
+                    <i class="fas fa-save mr-2"></i>Enregistrer
+                </button>
+                <a href="{% url 'cabinet:consultations_list' %}" 
+                   class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg transition">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

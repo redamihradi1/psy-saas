@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl shadow p-8">
+        <h1 class="text-2xl font-bold mb-6">{{ pack.nom_pack }}</h1>
+        <div class="grid grid-cols-2 gap-6">
+            <div><strong>Total séances:</strong> {{ pack.nombre_seances_total }}</div>
+            <div><strong>Utilisées:</strong> {{ pack.nombre_seances_utilisees }}</div>
+            <div><strong>Restantes:</strong> {{ pack.seances_restantes }}</div>
+            <div><strong>Prix:</strong> {{ pack.prix_pack }} DHS</div>
+            <div><strong>Prix/séance:</strong> {{ pack.prix_par_seance }} DHS</div>
+            <div><strong>Statut:</strong> {{ pack.get_statut_display }}</div>
+        </div>
+        <a href="{% url 'cabinet:packs_list' %}" class="mt-6 inline-block bg-gray-200 px-4 py-2 rounded">Retour</a>
+    </div>
+</div>
+{% endblock %}
+
+<!-- templates/cabinet/pack_form.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-xl shadow p-6">
+        <h1 class="text-2xl font-bold mb-6">{{ title }}</h1>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div><label class="block mb-2">Nom du pack</label>{{ form.nom_pack }}</div>
+                <div><label class="block mb-2">Nombre de séances</label>{{ form.nombre_seances_total }}</div>
+                <div><label class="block mb-2">Prix du pack (DHS)</label>{{ form.prix_pack }}</div>
+                <div><label class="block mb-2">Date d'achat</label>{{ form.date_achat }}</div>
+                <div><label class="block mb-2">Statut</label>{{ form.statut }}</div>
+            </div>
+            <div class="mt-6 flex gap-4">
+                <button type="submit" class="flex-1 bg-primary text-white py-3 rounded-lg">Enregistrer</button>
+                <a href="{% url 'cabinet:packs_list' %}" class="flex-1 text-center bg-gray-200 py-3 rounded-lg">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

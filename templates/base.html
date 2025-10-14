@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PsySaaS{% endblock %}</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#e879f9',
+                        'primary-light': '#fdf4ff',
+                        'primary-dark': '#c026d3',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Sidebar -->
+    <nav class="fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 z-50">
+        <div class="p-6 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fas fa-brain text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-semibold text-gray-800">PsySaaS</h1>
+                    <p class="text-xs text-gray-500">{{ user.organization.name }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <ul class="py-4">
+            <li>
+                <a href="{% url 'dashboard' %}" 
+                   class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+                    <i class="fas fa-home w-5"></i>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'cabinet:patients_list' %}" 
+                   class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+                    <i class="fas fa-users w-5"></i>
+                    <span class="ml-3">Patients</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'cabinet:consultations_list' %}" 
+                   class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+                    <i class="fas fa-calendar-check w-5"></i>
+                    <span class="ml-3">Consultations</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'cabinet:packs_list' %}" 
+                   class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+                    <i class="fas fa-box w-5"></i>
+                    <span class="ml-3">Packs</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="ml-64 min-h-screen p-8">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-lg border-l-4 {% if message.tags == 'error' %}bg-red-50 border-red-500 text-red-700{% elif message.tags == 'success' %}bg-green-50 border-green-500 text-green-700{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-500 text-yellow-700{% else %}bg-blue-50 border-blue-500 text-blue-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

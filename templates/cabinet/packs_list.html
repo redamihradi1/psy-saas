@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="bg-white rounded-xl shadow p-6 mb-6">
+    <div class="flex justify-between">
+        <h1 class="text-3xl font-bold">Packs Mind Office</h1>
+        <a href="{% url 'cabinet:pack_create' %}" class="bg-primary text-white px-6 py-3 rounded-lg">
+            <i class="fas fa-plus mr-2"></i>Nouveau Pack
+        </a>
+    </div>
+</div>
+
+{% if page_obj.object_list %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {% for pack in page_obj.object_list %}
+    <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="font-bold text-lg mb-2">{{ pack.nom_pack }}</h3>
+        <div class="text-sm text-gray-600 mb-4">
+            <div>Séances: {{ pack.nombre_seances_utilisees }}/{{ pack.nombre_seances_total }}</div>
+            <div>Prix: {{ pack.prix_pack }} DHS</div>
+            <div>Statut: {{ pack.get_statut_display }}</div>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+            <div class="bg-primary h-2 rounded-full" style="width: {{ pack.pourcentage_utilise }}%"></div>
+        </div>
+        <a href="{% url 'cabinet:pack_detail' pack.id %}" class="text-primary hover:underline">Voir détails →</a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow p-12 text-center">
+    <i class="fas fa-box text-gray-400 text-6xl mb-4"></i>
+    <h3 class="text-xl font-semibold mb-4">Aucun pack</h3>
+    <a href="{% url 'cabinet:pack_create' %}" class="bg-primary text-white px-6 py-3 rounded-lg">Créer un pack</a>
+</div>
+{% endif %}
+{% endblock %}

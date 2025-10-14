@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - PsySaaS{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">{{ title }}</h1>
+                <p class="text-gray-500 mt-1">Remplissez les informations du patient</p>
+            </div>
+            <a href="{% url 'cabinet:patients_list' %}" class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-arrow-left mr-2"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <!-- Nom -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nom <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.nom }}
+                    {% if form.nom.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.nom.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Prénom -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Prénom <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.prenom }}
+                    {% if form.prenom.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.prenom.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Date de naissance -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Date de naissance <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.date_naissance }}
+                    {% if form.date_naissance.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.date_naissance.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Catégorie -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Catégorie <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.categorie_age }}
+                    {% if form.categorie_age.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.categorie_age.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Téléphone -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Téléphone
+                    </label>
+                    {{ form.telephone }}
+                    {% if form.telephone.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.telephone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Boutons -->
+            <div class="mt-8 flex gap-4">
+                <button type="submit" class="flex-1 bg-primary hover:bg-primary-dark text-white py-3 rounded-lg font-medium transition">
+                    <i class="fas fa-save mr-2"></i>Enregistrer
+                </button>
+                <a href="{% url 'cabinet:patients_list' %}" class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-medium transition">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

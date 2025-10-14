@@ -1,0 +1,6 @@
+python-3.11.0
+```
+
+**Crée `Procfile` à la racine (sans extension) :**
+```
+web: gunicorn config.wsgi --log-file -

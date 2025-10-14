@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ patient.nom_complet }} - PsySaaS{% endblock %}
+
+{% block content %}
+<!-- Header Patient -->
+<div class="bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl shadow-lg p-8 mb-6 text-white">
+    <div class="flex justify-between items-start">
+        <div class="flex items-center">
+            <a href="{% url 'cabinet:patients_list' %}" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-2 mr-4 transition">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-3xl font-bold mr-4">
+                {{ patient.prenom.0 }}{{ patient.nom.0 }}
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold">{{ patient.nom_complet }}</h1>
+                <div class="flex items-center gap-4 mt-2">
+                    <span><i class="fas fa-birthday-cake mr-1"></i>{{ patient.age }} ans</span>
+                    <span class="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">
+                        {% if patient.categorie_age == 'enfant' %}
+                            <i class="fas fa-child mr-1"></i>Enfant
+                        {% else %}
+                            <i class="fas fa-user mr-1"></i>Adulte
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'cabinet:consultation_create' %}?patient_id={{ patient.id }}" 
+               class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-calendar-plus mr-2"></i>Nouvelle Consultation
+            </a>
+            <a href="{% url 'cabinet:patient_edit' patient.id %}" 
+               class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-edit mr-2"></i>Modifier
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow p-6">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold text-gray-800">{{ total_consultations }}</div>
+                <div class="text-sm text-gray-500">Consultations</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow p-6">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                <i class="fas fa-coins text-blue-600 text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold text-gray-800">{{ total_paye }} DHS</div>
+                <div class="text-sm text-gray-500">Total payé</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Info personnelles -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-user text-primary mr-2"></i>Informations personnelles
+        </h3>
+        <div class="space-y-3">
+            <div class="flex justify-between py-2 border-b border-gray-100">
+                <span class="text-gray-600">Nom complet</span>
+                <span class="font-medium">{{ patient.nom_complet }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-100">
+                <span class="text-gray-600">Date de naissance</span>
+                <span class="font-medium">{{ patient.date_naissance|date:"d/m/Y" }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-100">
+                <span class="text-gray-600">Âge</span>
+                <span class="font-medium">{{ patient.age }} ans</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-address-book text-primary mr-2"></i>Contact
+        </h3>
+        <div class="space-y-3">
+            <div class="flex justify-between py-2 border-b border-gray-100">
+                <span class="text-gray-600">Téléphone</span>
+                <span class="font-medium">{{ patient.telephone|default:"Non renseigné" }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-gray-100">
+                <span class="text-gray-600">Email</span>
+                <span class="font-medium">{{ patient.email|default:"Non renseigné" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Consultations récentes -->
+{% if consultations %}
+<div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="p-6 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">
+            <i class="fas fa-calendar-check text-primary mr-2"></i>Consultations récentes
+        </h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lieu</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarif</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for consultation in consultations %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        {{ consultation.date_seance|date:"d/m/Y H:i" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs rounded-full 
+                            {% if consultation.lieu_consultation == 'visio' %}bg-blue-100 text-blue-800
+                            {% elif consultation.lieu_consultation == 'bouskoura' %}bg-green-100 text-green-800
+                            {% else %}bg-purple-100 text-purple-800{% endif %}">
+                            {{ consultation.get_lieu_consultation_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        {{ consultation.tarif }} DHS
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if consultation.statut_paiement == 'paye' %}
+                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Payé</span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">En attente</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <a href="{% url 'cabinet:consultation_detail' consultation.id %}" 
+                           class="text-primary hover:text-primary-dark">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow p-12 text-center">
+    <i class="fas fa-calendar-times text-gray-400 text-6xl mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucune consultation</h3>
+    <p class="text-gray-500 mb-6">Ce patient n'a pas encore de consultations</p>
+    <a href="{% url 'cabinet:consultation_create' %}?patient_id={{ patient.id }}" 
+       class="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg transition">
+        <i class="fas fa-calendar-plus mr-2"></i>Première consultation
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}
