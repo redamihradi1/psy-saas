@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">
+                    {% if pack %}Modifier Pack{% else %}Nouveau Pack Mind Office{% endif %}
+                </h1>
+                <p class="text-gray-500 mt-1">
+                    {% if pack %}Modification du pack {{ pack.nom_pack }}{% else %}Achetez un pack de séances pour le cabinet Mind Office{% endif %}
+                </p>
+            </div>
+            <a href="{% if pack %}{% url 'cabinet:pack_detail' pack_id=pack.id %}{% else %}{% url 'cabinet:packs_list' %}{% endif %}" 
+            class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-arrow-left mr-2"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-8">
+        <form method="POST">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-6">
+                <p class="text-red-800">{{ form.non_field_errors }}</p>
+            </div>
+            {% endif %}
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.nom_pack.label }}
+                    {% if form.nom_pack.field.required %}<span class="text-red-500">*</span>{% endif %}
+                </label>
+                {{ form.nom_pack }}
+                {% if form.nom_pack.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.nom_pack.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.nombre_seances_total.label }}
+                        {% if form.nombre_seances_total.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.nombre_seances_total }}
+                    <p class="text-xs text-gray-500 mt-1">Nombre de séances au Mind Office</p>
+                    {% if form.nombre_seances_total.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.nombre_seances_total.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.prix_pack.label }}
+                        {% if form.prix_pack.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.prix_pack }}
+                    {% if form.prix_pack.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.prix_pack.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-500 mt-1" id="prix-par-seance"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.date_achat.label }}
+                        {% if form.date_achat.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ form.date_achat }}
+                    {% if form.date_achat.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.date_achat.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.date_expiration.label }}
+                    </label>
+                    {{ form.date_expiration }}
+                    <p class="text-xs text-gray-500 mt-1">Laisser vide si pas de date limite</p>
+                    {% if form.date_expiration.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.date_expiration.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.statut.label }}
+                </label>
+                {{ form.statut }}
+                {% if form.statut.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.statut.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.notes.label }}
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.notes.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <h4 class="font-semibold text-blue-900 mb-1">À propos des packs</h4>
+                        <p class="text-sm text-blue-800">
+                            Les packs Mind Office permettent de pré-acheter des séances au cabinet à tarif réduit. 
+                            À chaque consultation au Mind Office, une séance sera automatiquement déduite du pack.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 bg-primary text-white py-3 rounded-lg hover:bg-primary-dark transition font-medium">
+                    <i class="fas fa-save mr-2"></i>
+                    {% if pack %}Sauvegarder les modifications{% else %}Créer le pack{% endif %}
+                </button>
+                <a href="{% if pack %}{% url 'cabinet:pack_detail' pack_id=pack.id %}{% else %}{% url 'cabinet:packs_list' %}{% endif %}" 
+                class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nombreSeances = document.querySelector('input[name="nombre_seances_total"]');
+    const prixPack = document.querySelector('input[name="prix_pack"]');
+    const prixParSeanceDiv = document.getElementById('prix-par-seance');
+    
+    function calculerPrixParSeance() {
+        const nb = parseFloat(nombreSeances.value) || 0;
+        const prix = parseFloat(prixPack.value) || 0;
+        
+        if (nb > 0 && prix > 0) {
+            const prixParSeance = (prix / nb).toFixed(2);
+            prixParSeanceDiv.textContent = `Prix par séance: ${prixParSeance} DHS`;
+            prixParSeanceDiv.classList.remove('text-gray-500');
+            prixParSeanceDiv.classList.add('text-green-600', 'font-medium');
+        } else {
+            prixParSeanceDiv.textContent = '';
+        }
+    }
+    
+    nombreSeances.addEventListener('input', calculerPrixParSeance);
+    prixPack.addEventListener('input', calculerPrixParSeance);
+    
+    calculerPrixParSeance();
+});
+</script>
+{% endblock %}

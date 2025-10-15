@@ -1,41 +1,285 @@
 {% extends 'base.html' %}
-{% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-xl shadow p-8">
-        <h1 class="text-2xl font-bold mb-6">{{ pack.nom_pack }}</h1>
-        <div class="grid grid-cols-2 gap-6">
-            <div><strong>Total séances:</strong> {{ pack.nombre_seances_total }}</div>
-            <div><strong>Utilisées:</strong> {{ pack.nombre_seances_utilisees }}</div>
-            <div><strong>Restantes:</strong> {{ pack.seances_restantes }}</div>
-            <div><strong>Prix:</strong> {{ pack.prix_pack }} DHS</div>
-            <div><strong>Prix/séance:</strong> {{ pack.prix_par_seance }} DHS</div>
-            <div><strong>Statut:</strong> {{ pack.get_statut_display }}</div>
-        </div>
-        <a href="{% url 'cabinet:packs_list' %}" class="mt-6 inline-block bg-gray-200 px-4 py-2 rounded">Retour</a>
-    </div>
-</div>
-{% endblock %}
 
-<!-- templates/cabinet/pack_form.html -->
-{% extends 'base.html' %}
+{% block title %}{{ pack.nom_pack }}{% endblock %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto">
-    <div class="bg-white rounded-xl shadow p-6">
-        <h1 class="text-2xl font-bold mb-6">{{ title }}</h1>
-        <form method="POST">
-            {% csrf_token %}
-            <div class="space-y-4">
-                <div><label class="block mb-2">Nom du pack</label>{{ form.nom_pack }}</div>
-                <div><label class="block mb-2">Nombre de séances</label>{{ form.nombre_seances_total }}</div>
-                <div><label class="block mb-2">Prix du pack (DHS)</label>{{ form.prix_pack }}</div>
-                <div><label class="block mb-2">Date d'achat</label>{{ form.date_achat }}</div>
-                <div><label class="block mb-2">Statut</label>{{ form.statut }}</div>
+<!-- Header -->
+<div class="bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl shadow-lg p-8 mb-6 text-white">
+    <div class="flex justify-between items-start">
+        <div class="flex items-center">
+            <a href="{% url 'cabinet:packs_list' %}" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-2 mr-4 transition">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center text-3xl mr-4">
+                <i class="fas fa-box"></i>
             </div>
-            <div class="mt-6 flex gap-4">
-                <button type="submit" class="flex-1 bg-primary text-white py-3 rounded-lg">Enregistrer</button>
-                <a href="{% url 'cabinet:packs_list' %}" class="flex-1 text-center bg-gray-200 py-3 rounded-lg">Annuler</a>
+            <div>
+                <h1 class="text-3xl font-bold">{{ pack.nom_pack }}</h1>
+                <div class="flex items-center gap-4 mt-2 text-sm">
+                    <span><i class="fas fa-calendar mr-1"></i>Acheté le {{ pack.date_achat|date:"d/m/Y" }}</span>
+                    <span class="px-3 py-1 bg-white bg-opacity-20 rounded-full">
+                        {% if pack.statut == 'actif' %}
+                            <i class="fas fa-check-circle mr-1"></i>Actif
+                        {% elif pack.statut == 'expire' %}
+                            <i class="fas fa-times-circle mr-1"></i>Expiré
+                        {% else %}
+                            <i class="fas fa-pause-circle mr-1"></i>Suspendu
+                        {% endif %}
+                    </span>
+                    <span><i class="fas fa-coins mr-1"></i>{{ pack.prix_pack }} DHS</span>
+                </div>
             </div>
-        </form>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'cabinet:pack_edit' pack_id=pack.id %}" 
+               class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-edit mr-2"></i>Modifier
+            </a>
+        </div>
     </div>
 </div>
+
+<!-- Statistiques -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                <i class="fas fa-box-open text-blue-600 text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold text-gray-800">{{ pack.nombre_seances_total }}</div>
+                <div class="text-sm text-gray-500">Séances totales</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold text-gray-800">{{ pack.nombre_seances_utilisees }}</div>
+                <div class="text-sm text-gray-500">Séances utilisées</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                <i class="fas fa-hourglass-half text-orange-600 text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold text-gray-800">{{ pack.seances_restantes }}</div>
+                <div class="text-sm text-gray-500">Séances restantes</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                <i class="fas fa-calculator text-purple-600 text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold text-gray-800">{{ pack.prix_par_seance }} DHS</div>
+                <div class="text-sm text-gray-500">Prix par séance</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenu principal -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Progression et historique -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Progression -->
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-line text-primary mr-2"></i>
+                Progression du pack
+            </h3>
+            
+            <div class="mb-6">
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-gray-600">Utilisation</span>
+                    <span class="font-medium">{{ pack.nombre_seances_utilisees }}/{{ pack.nombre_seances_total }} séances</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div class="h-4 rounded-full transition-all {% if pack.pourcentage_utilise >= 90 %}bg-red-500{% elif pack.pourcentage_utilise >= 70 %}bg-yellow-500{% else %}bg-green-500{% endif %}" 
+                         style="width: {{ pack.pourcentage_utilise }}%"></div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">{{ pack.pourcentage_utilise }}% utilisé</div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-sm text-gray-600 mb-1">Coût total</div>
+                    <div class="text-xl font-bold text-gray-900">{{ pack.prix_pack }} DHS</div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-sm text-gray-600 mb-1">Économie réalisée</div>
+                    <div class="text-xl font-bold text-green-600">
+                        {% widthratio pack.nombre_seances_utilisees 1 100 as cout_standard %}
+                        {% widthratio pack.nombre_seances_utilisees pack.prix_par_seance 1 as cout_reel %}
+                        + {{ cout_standard|floatformat:0 }} DHS
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Historique -->
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">
+                    <i class="fas fa-history text-primary mr-2"></i>
+                    Historique des utilisations
+                </h3>
+                {% if consultations_pack %}
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    {{ consultations_pack|length }} utilisation{{ consultations_pack|length|pluralize }}
+                </span>
+                {% endif %}
+            </div>
+            
+            {% if consultations_pack %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durée</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for consultation in consultations_pack %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="font-medium text-gray-900">{{ consultation.date_seance|date:"d/m/Y" }}</div>
+                                <div class="text-sm text-gray-500">{{ consultation.date_seance|date:"H:i" }}</div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs mr-2">
+                                        {{ consultation.patient.prenom.0 }}{{ consultation.patient.nom.0 }}
+                                    </div>
+                                    <span class="text-sm">{{ consultation.patient.nom_complet }}</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                {{ consultation.get_type_consultation_display }}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                {{ consultation.duree_minutes }} min
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <i class="fas fa-calendar-times text-gray-300 text-5xl mb-3"></i>
+                <h4 class="text-gray-600 font-medium mb-1">Aucune utilisation</h4>
+                <p class="text-sm text-gray-500">
+                    Ce pack n'a encore été utilisé pour aucune consultation au Mind Office.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Informations du pack -->
+    <div class="space-y-6">
+        <!-- Détails -->
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-info-circle text-primary mr-2"></i>
+                Informations
+            </h3>
+            
+            <div class="space-y-3">
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-sm text-gray-600">Nom</span>
+                    <span class="font-medium text-gray-900">{{ pack.nom_pack }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-sm text-gray-600">Date d'achat</span>
+                    <span class="text-gray-900">{{ pack.date_achat|date:"d/m/Y" }}</span>
+                </div>
+                {% if pack.date_expiration %}
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-sm text-gray-600">Expiration</span>
+                    <span class="text-gray-900">{{ pack.date_expiration|date:"d/m/Y" }}</span>
+                </div>
+                {% endif %}
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-sm text-gray-600">Statut</span>
+                    <span>
+                        {% if pack.statut == 'actif' %}
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Actif</span>
+                        {% elif pack.statut == 'expire' %}
+                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Expiré</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Suspendu</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span class="text-sm text-gray-600">Créé le</span>
+                    <span class="text-gray-900">{{ pack.date_creation|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notes -->
+        {% if pack.notes %}
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-sticky-note text-yellow-500 mr-2"></i>
+                Notes
+            </h3>
+            <p class="text-gray-600 whitespace-pre-line">{{ pack.notes }}</p>
+        </div>
+        {% endif %}
+        
+        <!-- Actions -->
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-cog text-gray-500 mr-2"></i>
+                Actions
+            </h3>
+            <div class="space-y-2">
+                <a href="{% url 'cabinet:pack_edit' pack_id=pack.id %}" 
+                   class="block w-full text-center bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-edit mr-2"></i>Modifier le pack
+                </a>
+                <button onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce pack ?')) window.location.href='{% url 'cabinet:pack_delete' pack_id=pack.id %}'" 
+                        class="block w-full text-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-trash mr-2"></i>Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.bg-white');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+
 {% endblock %}

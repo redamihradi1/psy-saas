@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+
+{% block title %}Agenda - Consultations{% endblock %}
+
+{% block extra_css %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+<style>
+    .fc {
+        max-width: 100%;
+        font-family: inherit;
+    }
+    .fc-event {
+        cursor: pointer;
+        border-radius: 4px;
+        padding: 2px 4px;
+    }
+    .fc-event-title {
+        font-weight: 500;
+    }
+    .consultation-prevue { background-color: #3b82f6; border-color: #2563eb; }
+    .consultation-confirmee { background-color: #10b981; border-color: #059669; }
+    .consultation-annulee { background-color: #ef4444; border-color: #dc2626; }
+    .consultation-reportee { background-color: #f59e0b; border-color: #d97706; }
+    .consultation-terminee { background-color: #6b7280; border-color: #4b5563; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">
+                    <i class="fas fa-calendar-alt text-primary mr-3"></i>Agenda des Consultations
+                </h1>
+                <p class="text-gray-500 mt-1">Gérez vos rendez-vous</p>
+            </div>
+            <button onclick="openCreateModal()" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                Nouvelle consultation
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <div class="flex gap-4 items-center flex-wrap">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Filtrer par patient</label>
+                <select id="filterPatient" onchange="filterByPatient()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    <option value="">Tous les patients</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.nom_complet }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="flex gap-2">
+                <button onclick="calendar.changeView('dayGridMonth')" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fas fa-calendar"></i> Mois
+                </button>
+                <button onclick="calendar.changeView('timeGridWeek')" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fas fa-calendar-week"></i> Semaine
+                </button>
+                <button onclick="calendar.changeView('timeGridDay')" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fas fa-calendar-day"></i> Jour
+                </button>
+            </div>
+
+            <button onclick="calendar.today()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition">
+                <i class="fas fa-calendar-check"></i> Aujourd'hui
+            </button>
+        </div>
+    </div>
+
+    <!-- Légende -->
+    <div class="bg-white rounded-xl shadow p-4 mb-6">
+        <div class="flex gap-6 flex-wrap">
+            <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded consultation-prevue"></span>
+                <span class="text-sm">Prévue</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded consultation-confirmee"></span>
+                <span class="text-sm">Confirmée</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded consultation-terminee"></span>
+                <span class="text-sm">Terminée</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded consultation-reportee"></span>
+                <span class="text-sm">Reportée</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-4 h-4 rounded consultation-annulee"></span>
+                <span class="text-sm">Annulée</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendrier -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<!-- Modal Création/Modification -->
+<div id="consultationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">Nouvelle consultation</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="consultationForm" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="consultationId" name="id">
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Patient *</label>
+                        <select name="patient" id="modalPatient" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="">Sélectionner un patient</option>
+                            {% for patient in patients %}
+                            <option value="{{ patient.id }}">{{ patient.nom_complet }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                            <input type="date" name="date" id="modalDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Heure *</label>
+                            <input type="time" name="heure" id="modalHeure" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Durée (minutes) *</label>
+                        <input type="number" name="duree" id="modalDuree" value="60" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+                        <select name="type_consultation" id="modalType" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="bilan">Bilan</option>
+                            <option value="suivi">Suivi</option>
+                            <option value="evaluation">Évaluation</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                        <select name="statut" id="modalStatut" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="prevue">Prévue</option>
+                            <option value="confirmee">Confirmée</option>
+                            <option value="terminee">Terminée</option>
+                            <option value="annulee">Annulée</option>
+                            <option value="reportee">Reportée</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea name="notes" id="modalNotes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="flex-1 bg-primary text-white py-3 rounded-lg hover:bg-primary-dark transition font-medium">
+                        <i class="fas fa-save mr-2"></i>Enregistrer
+                    </button>
+                    <button type="button" onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                        Annuler
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+<script>
+    let calendar;
+    let allEvents = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            headerToolbar: {
+                left: 'prev,next',
+                center: 'title',
+                right: ''
+            },
+            buttonText: {
+                today: "Aujourd'hui",
+                month: 'Mois',
+                week: 'Semaine',
+                day: 'Jour'
+            },
+            height: 'auto',
+            events: '/cabinet/consultations/api/',
+            eventClick: function(info) {
+                openEditModal(info.event);
+            },
+            dateClick: function(info) {
+                openCreateModal(info.dateStr);
+            },
+            eventClassNames: function(arg) {
+                return ['consultation-' + arg.event.extendedProps.statut];
+            }
+        });
+        
+        calendar.render();
+        loadEvents();
+    });
+
+    function loadEvents() {
+        fetch('/cabinet/consultations/api/')
+            .then(response => response.json())
+            .then(data => {
+                allEvents = data;
+                calendar.removeAllEvents();
+                calendar.addEventSource(allEvents);
+            });
+    }
+
+    function filterByPatient() {
+        const patientId = document.getElementById('filterPatient').value;
+        calendar.removeAllEvents();
+        
+        if (patientId) {
+            const filtered = allEvents.filter(e => e.extendedProps.patient_id == patientId);
+            calendar.addEventSource(filtered);
+        } else {
+            calendar.addEventSource(allEvents);
+        }
+    }
+
+    function openCreateModal(date = null) {
+        document.getElementById('modalTitle').textContent = 'Nouvelle consultation';
+        document.getElementById('consultationForm').reset();
+        document.getElementById('consultationId').value = '';
+        
+        if (date) {
+            document.getElementById('modalDate').value = date;
+        }
+        
+        document.getElementById('consultationModal').classList.remove('hidden');
+    }
+
+    function openEditModal(event) {
+        document.getElementById('modalTitle').textContent = 'Modifier la consultation';
+        document.getElementById('consultationId').value = event.id;
+        document.getElementById('modalPatient').value = event.extendedProps.patient_id;
+        document.getElementById('modalDate').value = event.startStr.split('T')[0];
+        document.getElementById('modalHeure').value = event.startStr.split('T')[1].substring(0, 5);
+        document.getElementById('modalDuree').value = event.extendedProps.duree || 60;
+        document.getElementById('modalType').value = event.extendedProps.type || 'suivi';
+        document.getElementById('modalStatut').value = event.extendedProps.statut;
+        document.getElementById('modalNotes').value = event.extendedProps.notes || '';
+        
+        document.getElementById('consultationModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('consultationModal').classList.add('hidden');
+    }
+
+    document.getElementById('consultationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const consultationId = document.getElementById('consultationId').value;
+        const url = consultationId ? 
+            `/cabinet/consultations/${consultationId}/edit/` : 
+            '/cabinet/consultations/create/';
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeModal();
+                loadEvents();
+                alert('Consultation enregistrée avec succès !');
+            } else {
+                alert('Erreur : ' + (data.error || 'Une erreur est survenue'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors de l\'enregistrement');
+        });
+    });
+</script>
+{% endblock %}

@@ -5,8 +5,12 @@ from django.db.models import Q, Sum, Count
 from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import timedelta
-
-from .models import Patient, Consultation, PackMindOffice
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import json
+from django.utils import timezone
+from django.db.models import Sum
+from .models import Patient, Consultation, PackMindOffice, Anamnese
 from .forms import PatientForm, ConsultationForm, PackMindOfficeForm
 
 
@@ -71,27 +75,37 @@ def patient_create(request):
 
 @login_required
 def patient_detail(request, patient_id):
-    """Détails d'un patient"""
-    
     if request.user.is_superadmin():
         patient = get_object_or_404(Patient.all_objects, id=patient_id)
     else:
         patient = get_object_or_404(Patient, id=patient_id)
     
-    # Consultations récentes
+    try:
+        anamnese = patient.anamnese
+    except Anamnese.DoesNotExist:
+        anamnese = None
+    
     consultations = patient.consultation_set.order_by('-date_seance')[:10]
     
-    # Stats
+    packs_utilises = Pack.objects.filter(patient=patient) if hasattr(patient, 'pack_set') else []
+    
     total_consultations = patient.consultation_set.count()
-    total_paye = patient.consultation_set.filter(
-        statut_paiement='paye'
-    ).aggregate(total=Sum('tarif'))['total'] or 0
+    total_paye = patient.consultation_set.aggregate(total=Sum('tarif'))['total'] or 0
+    
+    derniere_consultation = patient.consultation_set.order_by('-date_seance').first()
+    prochaine_consultation = patient.consultation_set.filter(
+        date_seance__gte=timezone.now().date()
+    ).order_by('date_seance').first()
     
     context = {
         'patient': patient,
+        'anamnese': anamnese,
         'consultations': consultations,
+        'packs_utilises': packs_utilises,
         'total_consultations': total_consultations,
         'total_paye': total_paye,
+        'derniere_consultation': derniere_consultation,
+        'prochaine_consultation': prochaine_consultation,
     }
     
     return render(request, 'cabinet/patient_detail.html', context)
@@ -144,6 +158,56 @@ def patient_delete(request, patient_id):
 
 
 @login_required
+def anamnese_create(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id, organization=request.user.organization)
+    
+    if request.method == 'POST':
+        anamnese = Anamnese.objects.create(
+            patient=patient,
+            motif_consultation=request.POST.get('motif_consultation'),
+            antecedents_medicaux=request.POST.get('antecedents_medicaux', ''),
+            situation_professionnelle=request.POST.get('situation_professionnelle', ''),
+            objectifs_therapie=request.POST.get('objectifs_therapie', ''),
+            niveau_stress=request.POST.get('niveau_stress', 5),
+            deja_consulte_psy=request.POST.get('deja_consulte_psy') == 'on'
+        )
+        messages.success(request, 'Anamnèse créée avec succès')
+        return redirect('cabinet:patient_detail', patient_id=patient.id)
+    
+    return render(request, 'cabinet/anamnese_create.html', {'patient': patient})
+
+@login_required
+def anamnese_edit(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id, organization=request.user.organization)
+    anamnese = get_object_or_404(Anamnese, patient=patient)
+    
+    if request.method == 'POST':
+        anamnese.motif_consultation = request.POST.get('motif_consultation')
+        anamnese.antecedents_medicaux = request.POST.get('antecedents_medicaux', '')
+        anamnese.antecedents_familiaux = request.POST.get('antecedents_familiaux', '')
+        anamnese.medicaments_actuels = request.POST.get('medicaments_actuels', '')
+        anamnese.consommation_substances = request.POST.get('consommation_substances', '')
+        anamnese.situation_professionnelle = request.POST.get('situation_professionnelle', '')
+        anamnese.situation_familiale = request.POST.get('situation_familiale', '')
+        anamnese.troubles_sommeil = request.POST.get('troubles_sommeil', '')
+        anamnese.troubles_alimentaires = request.POST.get('troubles_alimentaires', '')
+        anamnese.activite_physique = request.POST.get('activite_physique', '')
+        anamnese.hobbies_bien_etre = request.POST.get('hobbies_bien_etre', '')
+        anamnese.objectifs_therapie = request.POST.get('objectifs_therapie', '')
+        anamnese.attentes_patient = request.POST.get('attentes_patient', '')
+        anamnese.changements_souhaites = request.POST.get('changements_souhaites', '')
+        anamnese.contraintes_horaires = request.POST.get('contraintes_horaires', '')
+        anamnese.niveau_stress = request.POST.get('niveau_stress', 5)
+        anamnese.deja_consulte_psy = request.POST.get('deja_consulte_psy') == 'on'
+        anamnese.save()
+        
+        messages.success(request, 'Anamnèse modifiée avec succès')
+        return redirect('cabinet:patient_detail', patient_id=patient.id)
+    
+    return render(request, 'cabinet/anamnese_edit.html', {'patient': patient, 'anamnese': anamnese})
+
+
+@login_required
 def consultations_list(request):
     """Liste des consultations"""
     
@@ -185,7 +249,16 @@ def consultation_create(request):
             if not request.user.is_superadmin():
                 consultation.organization = request.user.organization
             consultation.save()
-            messages.success(request, "Consultation créée!")
+            
+            # IMPORTANT : Déduire une séance du pack si utilisé
+            if consultation.pack_mind_office_utilise:
+                pack = consultation.pack_mind_office_utilise
+                pack.nombre_seances_utilisees += 1
+                pack.save()
+                messages.success(request, f"Consultation créée ! Une séance a été déduite du pack {pack.nom_pack}. ({pack.seances_restantes} séances restantes)")
+            else:
+                messages.success(request, "Consultation créée!")
+            
             return redirect('cabinet:consultation_detail', consultation_id=consultation.id)
     else:
         form = ConsultationForm(request=request)
@@ -264,17 +337,37 @@ def consultation_delete(request, consultation_id):
 
 @login_required
 def packs_list(request):
-    """Liste des packs"""
+    organization = request.user.organization
     
-    if request.user.is_superadmin():
-        packs = PackMindOffice.all_objects.all()
-    else:
-        packs = PackMindOffice.objects.all()
+    # Récupérer tous les packs
+    packs = PackMindOffice.objects.filter(organization=organization).order_by('-date_achat')
     
-    paginator = Paginator(packs.order_by('-date_achat'), 15)
-    page_obj = paginator.get_page(request.GET.get('page'))
+    # Filtres
+    search_query = request.GET.get('search', '')
+    statut_filter = request.GET.get('statut', '')
     
-    context = {'page_obj': page_obj}
+    if search_query:
+        packs = packs.filter(nom_pack__icontains=search_query)
+    
+    if statut_filter:
+        packs = packs.filter(statut=statut_filter)
+    
+    # Statistiques
+    total_packs = packs.count()
+    packs_actifs = packs.filter(statut='actif').count()
+    seances_totales_restantes = sum([p.seances_restantes for p in packs])
+    chiffre_affaires_packs = packs.aggregate(total=Sum('prix_pack'))['total'] or 0
+    
+    context = {
+        'packs': packs,
+        'search_query': search_query,
+        'statut_filter': statut_filter,
+        'total_packs': total_packs,
+        'packs_actifs': packs_actifs,
+        'seances_totales_restantes': seances_totales_restantes,
+        'chiffre_affaires_packs': chiffre_affaires_packs,
+    }
+    
     return render(request, 'cabinet/packs_list.html', context)
 
 
@@ -313,3 +406,157 @@ def pack_detail(request, pack_id):
     
     context = {'pack': pack}
     return render(request, 'cabinet/pack_detail.html', context)
+
+
+@login_required
+def pack_edit(request, pack_id):
+    pack = get_object_or_404(PackMindOffice, id=pack_id, organization=request.user.organization)
+    
+    if request.method == 'POST':
+        form = PackMindOfficeForm(request.POST, instance=pack)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pack modifié avec succès!")
+            return redirect('cabinet:pack_detail', pack_id=pack.id)
+    else:
+        form = PackMindOfficeForm(instance=pack)
+    
+    context = {
+        'form': form,
+        'pack': pack,
+        'title': 'Modifier Pack',
+    }
+    
+    return render(request, 'cabinet/pack_form.html', context)
+
+@login_required
+def pack_delete(request, pack_id):
+    pack = get_object_or_404(PackMindOffice, id=pack_id, organization=request.user.organization)
+    pack.delete()
+    messages.success(request, "Pack supprimé avec succès!")
+    return redirect('cabinet:packs_list')
+
+
+@login_required
+def anamnese_create(request, patient_id):
+    """Créer une anamnèse"""
+    if request.user.is_superadmin():
+        patient = get_object_or_404(Patient.all_objects, id=patient_id)
+    else:
+        patient = get_object_or_404(Patient, id=patient_id)
+    
+    # Vérifier si anamnèse existe déjà
+    if hasattr(patient, 'anamnese'):
+        messages.warning(request, "Une anamnèse existe déjà pour ce patient.")
+        return redirect('cabinet:patient_detail', patient_id=patient.id)
+    
+    if request.method == 'POST':
+        # Créer l'anamnèse directement depuis POST
+        from cabinet.models import Anamnese
+        anamnese = Anamnese(
+            patient=patient,
+            motif_consultation=request.POST.get('motif_consultation', ''),
+            antecedents_medicaux=request.POST.get('antecedents_medicaux', ''),
+            antecedents_familiaux=request.POST.get('antecedents_familiaux', ''),
+            medicaments_actuels=request.POST.get('medicaments_actuels', ''),
+            situation_professionnelle=request.POST.get('situation_professionnelle', ''),
+            situation_familiale=request.POST.get('situation_familiale', ''),
+            troubles_sommeil=request.POST.get('troubles_sommeil', ''),
+            troubles_alimentaires=request.POST.get('troubles_alimentaires', ''),
+            activite_physique=request.POST.get('activite_physique', ''),
+            hobbies_bien_etre=request.POST.get('hobbies_bien_etre', ''),
+            changements_souhaites=request.POST.get('changements_souhaites', ''),
+            consommation_substances=request.POST.get('consommation_substances', ''),
+            niveau_stress=int(request.POST.get('niveau_stress', 5)),
+            objectifs_therapie=request.POST.get('objectifs_therapie', ''),
+            attentes_patient=request.POST.get('attentes_patient', ''),
+            contraintes_horaires=request.POST.get('contraintes_horaires', ''),
+            deja_consulte_psy=request.POST.get('deja_consulte_psy') == 'true',
+        )
+        if not request.user.is_superadmin():
+            anamnese.organization = request.user.organization
+        anamnese.save()
+        messages.success(request, "Anamnèse créée avec succès!")
+        return redirect('cabinet:patient_detail', patient_id=patient.id)
+    
+    return render(request, 'cabinet/anamnese_create.html', {'patient': patient, 'form': {}})
+
+# Vue agenda
+def agenda(request):
+    """Vue calendrier des consultations"""
+    # Récupère l'organisation du user
+    organization = request.user.organization
+    patients = Patient.objects.filter(organization=organization)
+    return render(request, 'cabinet/agenda.html', {
+        'patients': patients
+    })
+
+# API pour récupérer les consultations (format FullCalendar)
+def consultations_api(request):
+    """API JSON pour FullCalendar"""
+    organization = request.user.organization
+    consultations = Consultation.objects.filter(
+        patient__organization=organization
+    ).select_related('patient')
+    
+    events = []
+    for consultation in consultations:
+        events.append({
+            'id': consultation.id,
+            'title': f"{consultation.patient.prenom} {consultation.patient.nom}",
+            'start': f"{consultation.date}T{consultation.heure}",
+            'end': f"{consultation.date}T{consultation.heure}",
+            'extendedProps': {
+                'patient_id': consultation.patient.id,
+                'type': consultation.type_consultation,
+                'statut': consultation.statut,
+                'duree': consultation.duree if hasattr(consultation, 'duree') else 60,
+                'notes': consultation.notes or ''
+            }
+        })
+    
+    return JsonResponse(events, safe=False)
+
+# Créer consultation (AJAX)
+@require_http_methods(["POST"])
+def consultation_create_ajax(request):
+    """Création de consultation via AJAX"""
+    try:
+        organization = request.user.organization
+        patient_id = request.POST.get('patient')
+        patient = Patient.objects.get(id=patient_id, organization=organization)
+        
+        consultation = Consultation.objects.create(
+            patient=patient,
+            date=request.POST.get('date'),
+            heure=request.POST.get('heure'),
+            type_consultation=request.POST.get('type_consultation', 'suivi'),
+            statut=request.POST.get('statut', 'prevue'),
+            notes=request.POST.get('notes', '')
+        )
+        
+        return JsonResponse({'success': True, 'id': consultation.id})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+# Modifier consultation (AJAX)
+@require_http_methods(["POST"])
+def consultation_edit_ajax(request, pk):
+    """Modification de consultation via AJAX"""
+    try:
+        organization = request.user.organization
+        consultation = Consultation.objects.get(
+            pk=pk, 
+            patient__organization=organization
+        )
+        
+        consultation.date = request.POST.get('date')
+        consultation.heure = request.POST.get('heure')
+        consultation.type_consultation = request.POST.get('type_consultation')
+        consultation.statut = request.POST.get('statut')
+        consultation.notes = request.POST.get('notes', '')
+        consultation.save()
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

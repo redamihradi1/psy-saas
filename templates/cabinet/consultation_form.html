@@ -5,63 +5,302 @@
 {% block content %}
 <div class="max-w-4xl mx-auto">
     <div class="bg-white rounded-xl shadow p-6 mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">{{ title }}</h1>
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">{{ title }}</h1>
+                <p class="text-gray-500 mt-1">Enregistrer une nouvelle séance</p>
+            </div>
+            <a href="{% url 'cabinet:consultations_list' %}" class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-arrow-left mr-2"></i>Retour
+            </a>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow p-6">
-        <form method="POST">
+        <form method="POST" id="consultationForm">
             {% csrf_token %}
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Patient *</label>
-                    {{ form.patient }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date et heure *</label>
-                    {{ form.date_seance }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Lieu *</label>
-                    {{ form.lieu_consultation }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Durée (min) *</label>
-                    {{ form.duree_minutes }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Type *</label>
-                    {{ form.type_consultation }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tarif (DHS) *</label>
-                    {{ form.tarif }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Statut paiement *</label>
-                    {{ form.statut_paiement }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pack Mind Office</label>
-                    {{ form.pack_mind_office_utilise }}
+            <!-- Informations principales -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-info-circle text-primary mr-2"></i>
+                    Informations de la consultation
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Patient <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.patient }}
+                        {% if form.patient.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.patient.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Date et heure <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.date_seance }}
+                        {% if form.date_seance.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.date_seance.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Lieu <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.lieu_consultation }}
+                        {% if form.lieu_consultation.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.lieu_consultation.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-1" id="lieu-info"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Durée (minutes) <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.duree_minutes }}
+                        {% if form.duree_minutes.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.duree_minutes.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Type <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.type_consultation }}
+                        {% if form.type_consultation.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.type_consultation.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Tarif (DHS) <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.tarif }}
+                        {% if form.tarif.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.tarif.errors.0 }}</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
-            <div class="mt-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Notes cliniques</label>
-                {{ form.notes_cliniques }}
+            <!-- Pack Mind Office (affiché seulement si lieu = mind_office) -->
+            <div id="packSection" class="mb-8 hidden">
+                <div class="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-purple-900 mb-4">
+                        <i class="fas fa-box text-purple-600 mr-2"></i>
+                        Pack Mind Office
+                    </h3>
+                    
+                    <div class="mb-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="usePackCheckbox" class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                            <span class="ml-2 text-gray-700 font-medium">Utiliser un pack pour cette séance</span>
+                        </label>
+                        <p class="text-sm text-gray-600 mt-2 ml-7">
+                            Cochez cette case pour déduire une séance d'un de vos packs actifs
+                        </p>
+                    </div>
+                    
+                    <div id="packSelectContainer" class="hidden mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Sélectionner un pack
+                        </label>
+                        {{ form.pack_mind_office_utilise }}
+                        {% if form.pack_mind_office_utilise.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.pack_mind_office_utilise.errors.0 }}</p>
+                        {% endif %}
+                        
+                        <div id="packInfo" class="mt-4 bg-white rounded-lg p-4 border border-purple-200 hidden">
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span class="text-gray-600">Séances restantes:</span>
+                                    <span class="font-bold text-purple-600" id="packSeances">-</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Prix par séance:</span>
+                                    <span class="font-bold text-green-600" id="packPrix">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-sm text-gray-600 flex items-start gap-2">
+                        <i class="fas fa-info-circle text-purple-500 mt-0.5"></i>
+                        <span>Si vous utilisez un pack, une séance sera automatiquement déduite du pack sélectionné.</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="mt-8 flex gap-4">
-                <button type="submit" class="flex-1 bg-primary hover:bg-primary-dark text-white py-3 rounded-lg transition">
-                    <i class="fas fa-save mr-2"></i>Enregistrer
+            <!-- Paiement -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-money-bill text-green-600 mr-2"></i>
+                    Paiement
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Statut paiement <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.statut_paiement }}
+                        {% if form.statut_paiement.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.statut_paiement.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Date de paiement
+                        </label>
+                        {{ form.date_paiement }}
+                        {% if form.date_paiement.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.date_paiement.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes cliniques -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-notes-medical text-blue-600 mr-2"></i>
+                    Notes et suivi
+                </h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Notes cliniques
+                        </label>
+                        {{ form.notes_cliniques }}
+                        {% if form.notes_cliniques.errors %}
+                        <p class="text-xs text-red-500 mt-1">{{ form.notes_cliniques.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if form.objectifs_seance %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Objectifs de la séance
+                        </label>
+                        {{ form.objectifs_seance }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if form.exercices_prevus %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Exercices prévus
+                        </label>
+                        {{ form.exercices_prevus }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if form.suivi_progression %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Suivi de la progression
+                        </label>
+                        {{ form.suivi_progression }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-primary hover:bg-primary-dark text-white py-3 rounded-lg transition font-medium">
+                    <i class="fas fa-save mr-2"></i>Enregistrer la consultation
                 </button>
                 <a href="{% url 'cabinet:consultations_list' %}" 
-                   class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg transition">
-                    Annuler
+                   class="flex-1 text-center bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-lg transition font-medium">
+                    <i class="fas fa-times mr-2"></i>Annuler
                 </a>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lieuSelect = document.querySelector('select[name="lieu_consultation"]');
+    const packSection = document.getElementById('packSection');
+    const usePackCheckbox = document.getElementById('usePackCheckbox');
+    const packSelectContainer = document.getElementById('packSelectContainer');
+    const packSelect = document.querySelector('select[name="pack_mind_office_utilise"]');
+    const packInfo = document.getElementById('packInfo');
+    const lieuInfo = document.getElementById('lieu-info');
+    
+    // Données des packs (pour afficher les infos)
+    const packsData = {};
+    {% for pack in form.pack_mind_office_utilise.field.queryset %}
+    packsData[{{ pack.id }}] = {
+        seances: {{ pack.seances_restantes }},
+        prix: '{{ pack.prix_par_seance }}'
+    };
+    {% endfor %}
+    
+    
+    // Gérer l'affichage de la section pack selon le lieu
+    function handleLieuChange() {
+        const lieu = lieuSelect.value;
+        
+        if (lieu === 'mind_office') {
+            packSection.classList.remove('hidden');
+            lieuInfo.textContent = '💡 Vous pouvez utiliser un pack pour cette consultation';
+            lieuInfo.classList.add('text-purple-600');
+        } else {
+            packSection.classList.add('hidden');
+            usePackCheckbox.checked = false;
+            packSelectContainer.classList.add('hidden');
+            packSelect.value = '';
+            lieuInfo.textContent = '';
+        }
+    }
+    
+    // Gérer la checkbox "Utiliser un pack"
+    usePackCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            packSelectContainer.classList.remove('hidden');
+        } else {
+            packSelectContainer.classList.add('hidden');
+            packSelect.value = '';
+            packInfo.classList.add('hidden');
+        }
+    });
+    
+    // Afficher les infos du pack sélectionné
+    packSelect.addEventListener('change', function() {
+        const packId = this.value;
+        
+        if (packId && packsData[packId]) {
+            const pack = packsData[packId];
+            document.getElementById('packSeances').textContent = pack.seances;
+            document.getElementById('packPrix').textContent = pack.prix + ' DHS';
+            packInfo.classList.remove('hidden');
+        } else {
+            packInfo.classList.add('hidden');
+        }
+    });
+    
+    // Vider le pack si checkbox non cochée lors de la soumission
+    document.getElementById('consultationForm').addEventListener('submit', function(e) {
+        if (!usePackCheckbox.checked) {
+            packSelect.value = '';
+        }
+    });
+    
+    // Initialisation
+    lieuSelect.addEventListener('change', handleLieuChange);
+    handleLieuChange();
+});
+</script>
+
 {% endblock %}

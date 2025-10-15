@@ -166,11 +166,11 @@ class PackMindOfficeForm(forms.ModelForm):
             'date_achat': forms.DateInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
                 'type': 'date'
-            }),
+            }, format='%Y-%m-%d'),
             'date_expiration': forms.DateInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
                 'type': 'date'
-            }),
+            }, format='%Y-%m-%d'),
             'prix_pack': forms.NumberInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
                 'step': 0.01
@@ -183,3 +183,8 @@ class PackMindOfficeForm(forms.ModelForm):
                 'rows': 3
             }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['date_achat'].input_formats = ['%Y-%m-%d']
+        self.fields['date_expiration'].input_formats = ['%Y-%m-%d']

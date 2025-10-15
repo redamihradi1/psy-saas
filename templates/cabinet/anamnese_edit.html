@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifier l'anamnèse - {{ patient.nom_complet }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Modifier l'anamnèse</h1>
+                <p class="text-gray-500 mt-1">{{ patient.nom_complet }}</p>
+            </div>
+            <a href="{% url 'cabinet:patient_detail' patient.id %}" class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-arrow-left mr-2"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-8">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-comment-medical text-primary mr-2"></i>Motif de consultation
+                </h3>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Motif principal *
+                </label>
+                <textarea name="motif_consultation" rows="4" required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Décrivez le motif principal de consultation...">{{ anamnese.motif_consultation }}</textarea>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-notes-medical text-primary mr-2"></i>Antécédents
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Antécédents médicaux
+                        </label>
+                        <textarea name="antecedents_medicaux" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Maladies, opérations...">{{ anamnese.antecedents_medicaux }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Antécédents familiaux
+                        </label>
+                        <textarea name="antecedents_familiaux" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Antécédents dans la famille...">{{ anamnese.antecedents_familiaux }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Médicaments actuels
+                        </label>
+                        <textarea name="medicaments_actuels" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Traitements en cours...">{{ anamnese.medicaments_actuels }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Consommation de substances
+                        </label>
+                        <textarea name="consommation_substances" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Alcool, tabac, drogues...">{{ anamnese.consommation_substances }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-user-friends text-primary mr-2"></i>Situation personnelle
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Situation professionnelle
+                        </label>
+                        <textarea name="situation_professionnelle" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Emploi, études...">{{ anamnese.situation_professionnelle }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Situation familiale
+                        </label>
+                        <textarea name="situation_familiale" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Célibataire, marié(e), enfants...">{{ anamnese.situation_familiale }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-heart text-primary mr-2"></i>Santé & Bien-être
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Troubles du sommeil
+                        </label>
+                        <textarea name="troubles_sommeil" rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Difficultés d'endormissement, insomnies...">{{ anamnese.troubles_sommeil }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Troubles alimentaires
+                        </label>
+                        <textarea name="troubles_alimentaires" rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Perte/prise d'appétit, TCA...">{{ anamnese.troubles_alimentaires }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Activité physique
+                        </label>
+                        <textarea name="activite_physique" rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Type d'activité, fréquence...">{{ anamnese.activite_physique }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Hobbies et bien-être
+                        </label>
+                        <textarea name="hobbies_bien_etre" rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Loisirs, passions, activités relaxantes...">{{ anamnese.hobbies_bien_etre }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-bullseye text-primary mr-2"></i>Objectifs & Attentes
+                </h3>
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Objectifs de la thérapie
+                        </label>
+                        <textarea name="objectifs_therapie" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Ce que le patient souhaite accomplir...">{{ anamnese.objectifs_therapie }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Attentes du patient
+                        </label>
+                        <textarea name="attentes_patient" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Ce qu'il/elle attend de vous...">{{ anamnese.attentes_patient }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Changements souhaités
+                        </label>
+                        <textarea name="changements_souhaites" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Ce qu'il/elle veut changer dans sa vie...">{{ anamnese.changements_souhaites }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-info-circle text-primary mr-2"></i>Informations complémentaires
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Niveau de stress (1-10)
+                        </label>
+                        <input type="number" name="niveau_stress" min="1" max="10" value="{{ anamnese.niveau_stress }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Contraintes horaires
+                        </label>
+                        <textarea name="contraintes_horaires" rows="2"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Disponibilités, préférences horaires...">{{ anamnese.contraintes_horaires }}</textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="deja_consulte_psy" {% if anamnese.deja_consulte_psy %}checked{% endif %}
+                                class="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary">
+                            <span class="ml-2 text-gray-700">A déjà consulté un psychologue</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+                <button type="submit" class="flex-1 bg-primary text-white py-3 rounded-lg hover:bg-primary-dark transition font-medium">
+                    <i class="fas fa-save mr-2"></i>Enregistrer les modifications
+                </button>
+                <a href="{% url 'cabinet:patient_detail' patient.id %}" 
+                   class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
