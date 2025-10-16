@@ -70,6 +70,22 @@
             <span class="ml-3">Agenda</span>
           </a>
         </li>
+        
+        <!-- NOUVEAU : Menu Tests Psychométriques -->
+        <li class="mt-4 px-6">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tests</p>
+        </li>
+        <li>
+          <a href="{% url 'tests_psy:d2r_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-chart-line w-5"></i>
+            <span class="ml-3">Test D2R</span>
+          </a>
+        </li>
+        
+        <!-- Séparateur -->
+        <li class="mt-4 px-6">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Gestion</p>
+        </li>
         <li>
           <a href="{% url 'cabinet:packs_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-box w-5"></i>
@@ -130,6 +146,10 @@
       {% block content %}{% endblock %}
     </main>
 
+    <!-- Chart.js pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+    
     {% block extra_js %}{% endblock %}
   </body>
 </html>
