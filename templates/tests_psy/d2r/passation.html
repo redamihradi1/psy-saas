@@ -1,0 +1,344 @@
+{% extends 'tests_psy/base_test.html' %}
+
+{% block test_title %}
+<i class="fas fa-brain text-primary mr-2"></i>Test D2R - Passation
+{% endblock %}
+
+{% block test_content %}
+<div class="mx-auto p-6 space-y-6">
+  <!-- Instructions Banner -->
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">Test d'attention D2R</h2>
+
+      <!-- Global Timer -->
+      <div class="flex items-center space-x-4 bg-white rounded-lg shadow-sm px-4 py-2">
+        <div class="text-2xl font-bold text-blue-600" id="global-timer">20</div>
+        <div class="flex space-x-4 items-center">
+          <!-- Line Selection -->
+          <div class="flex items-center space-x-2">
+            <label class="text-sm text-gray-600">Ligne:</label>
+            <select id="line-selector" onchange="changeLine(this.value)" class="border rounded px-2 py-1">
+              {% for line_number in symbols_by_line.keys %}
+              <option value="{{ line_number }}">{{ line_number }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Timer Controls -->
+          <div class="flex space-x-2">
+            <!-- Play Button -->
+            <button type="button" onclick="startGlobalTimer()" id="start-button"
+              class="p-1.5 rounded-full hover:bg-green-50 transition-colors duration-200">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+            <!-- Pause Button -->
+            <button type="button" onclick="pauseTimer()" id="pause-button"
+              class="p-1.5 rounded-full hover:bg-yellow-50 transition-colors duration-200">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+            <!-- Reset Button -->
+            <button type="button" onclick="resetCurrentLine()" id="reset-button"
+              class="p-1.5 rounded-full hover:bg-red-50 transition-colors duration-200">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex space-x-4 items-center text-gray-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+      <span>Barrez chaque "d" accompagné de DEUX traits</span>
+    </div>
+  </div>
+
+  <form method="POST" action="{% url 'tests_psy:d2r_submit' test.id %}" id="test-form">
+    {% csrf_token %}
+
+    <!-- Test Lines -->
+    <div id="test-lines" class="space-y-4 w-full">
+      {% for line_number, symbols in symbols_by_line.items %}
+      <div class="flex items-center w-full gap-2 justify-center {% if not forloop.first %}opacity-50{% endif %}"
+        data-line="{{ line_number }}">
+        <!-- Numéro de ligne -->
+        <span class="w-6 flex-shrink-0 text-xl font-bold text-gray-500">{{ line_number }}</span>
+
+        <!-- Symbols Container -->
+        <div class="bg-white rounded-lg shadow-sm">
+          <div class="w-full p-4 overflow-x-auto">
+            <div class="flex items-center gap-2 min-w-max">
+              {% for symbol in symbols %}
+              <label class="relative select-none group" data-line-active="false">
+                <input type="checkbox" name="symbol_{{ line_number }}_{{ forloop.counter }}" value="{{ symbol.id }}"
+                  class="hidden symbol-checkbox" disabled onchange="handleSymbolSelection(this)" />
+
+                <span class="text-xl">{{ symbol.lettre }}</span>
+
+                <!-- Top strokes -->
+                {% if symbol.traits_haut > 0 %}
+                <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 flex gap-0.5">
+                  {% for _ in "x"|ljust:symbol.traits_haut %}
+                  <div class="w-0.5 h-2 bg-black"></div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Bottom strokes -->
+                {% if symbol.traits_bas > 0 %}
+                <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 flex gap-0.5">
+                  {% for _ in "x"|ljust:symbol.traits_bas %}
+                  <div class="w-0.5 h-2 bg-black"></div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Cross when selected -->
+                <div
+                  class="absolute inset-0 hidden group-[.selected]:flex items-center justify-center pointer-events-none">
+                  <div class="text-red-500 text-3xl font-bold transform -translate-y-0.5">×</div>
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Submit Button -->
+    <div class="mt-6 text-center">
+      <button type="submit" id="submit-button" disabled
+        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow transition-colors duration-200 flex items-center mx-auto space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+        </svg>
+        <span>Terminer le test</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  let currentLine = 2;
+  let totalLines = {{ symbols_by_line|length }};
+  let timeLeft = 20;
+  let timerInterval = null;
+  let isRunning = false;
+  let hasStarted = false;
+  const DEFAULT_TIME = 20;
+  let selectedSymbols = new Set();
+  let totalTime = 0;
+
+  function startGlobalTimer() {
+    if (isRunning) return;
+    isRunning = true;
+    hasStarted = true;
+    document.getElementById('start-button').disabled = true;
+    document.getElementById('pause-button').disabled = false;
+    document.getElementById('line-selector').disabled = true;
+
+    activateLine(currentLine, true);
+
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      totalTime++;
+      updateTimerDisplay();
+
+      if (timeLeft === 0) {
+        clearInterval(timerInterval);
+        isRunning = false;
+
+        const currentLineElement = document.querySelector(`[data-line="${currentLine}"]`);
+        if (currentLineElement) {
+          currentLineElement.classList.add('opacity-50');
+          currentLineElement.querySelectorAll('label').forEach(label => {
+            label.classList.remove('cursor-pointer');
+            label.dataset.lineActive = 'false';
+          });
+          currentLineElement.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.disabled = true;
+          });
+        }
+
+        if (currentLine < totalLines) {
+          currentLine++;
+          document.getElementById('line-selector').value = currentLine;
+          timeLeft = DEFAULT_TIME;
+          updateTimerDisplay();
+
+          const nextLineElement = document.querySelector(`[data-line="${currentLine}"]`);
+          if (nextLineElement) {
+            nextLineElement.classList.remove('opacity-50');
+            nextLineElement.querySelectorAll('label').forEach(label => {
+              label.classList.remove('cursor-pointer');
+              label.dataset.lineActive = 'false';
+            });
+            nextLineElement.querySelectorAll('input[type="checkbox"]').forEach(input => {
+              input.disabled = true;
+            });
+          }
+
+          document.getElementById('start-button').disabled = false;
+          document.getElementById('pause-button').disabled = true;
+          document.getElementById('line-selector').disabled = false;
+        } else {
+          endTest();
+        }
+      }
+    }, 1000);
+  }
+
+  function endTest() {
+    clearInterval(timerInterval);
+    isRunning = false;
+    document.getElementById('start-button').disabled = true;
+    document.getElementById('pause-button').disabled = true;
+    document.getElementById('line-selector').disabled = true;
+    document.getElementById('submit-button').disabled = false;
+
+    const lastLine = document.querySelector(`[data-line="${totalLines}"]`);
+    if (lastLine) {
+      lastLine.classList.add('opacity-50');
+      lastLine.querySelectorAll('label').forEach(label => {
+        label.classList.remove('cursor-pointer');
+        label.dataset.lineActive = 'false';
+      });
+      lastLine.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.disabled = true;
+      });
+    }
+  }
+
+  function activateLine(lineNumber, canInteract) {
+    document.querySelectorAll('[data-line]').forEach(line => {
+      const lineNum = parseInt(line.dataset.line);
+      if (lineNum < lineNumber) {
+        line.classList.add('opacity-50');
+      } else if (lineNum > lineNumber) {
+        line.classList.add('opacity-50');
+      }
+
+      line.querySelectorAll('label').forEach(label => {
+        label.classList.remove('cursor-pointer');
+        label.dataset.lineActive = 'false';
+      });
+      line.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.disabled = true;
+      });
+    });
+
+    const currentLineElement = document.querySelector(`[data-line="${lineNumber}"]`);
+    if (currentLineElement) {
+      currentLineElement.classList.remove('opacity-50');
+      if (canInteract) {
+        currentLineElement.querySelectorAll('label').forEach(label => {
+          label.classList.add('cursor-pointer');
+          label.dataset.lineActive = 'true';
+        });
+        currentLineElement.querySelectorAll('input[type="checkbox"]').forEach(input => {
+          input.disabled = false;
+        });
+      }
+    }
+  }
+
+  function pauseTimer() {
+    if (!isRunning) return;
+    clearInterval(timerInterval);
+    isRunning = false;
+    document.getElementById('start-button').disabled = false;
+    document.getElementById('pause-button').disabled = true;
+    document.getElementById('line-selector').disabled = false;
+
+    activateLine(currentLine, false);
+  }
+
+  function changeLine(lineNumber) {
+    if (isRunning) {
+      clearInterval(timerInterval);
+    }
+    currentLine = parseInt(lineNumber);
+    timeLeft = DEFAULT_TIME;
+    updateTimerDisplay();
+    isRunning = false;
+    hasStarted = false;
+    document.getElementById('start-button').disabled = false;
+    document.getElementById('pause-button').disabled = true;
+    document.getElementById('line-selector').disabled = false;
+
+    activateLine(currentLine, false);
+  }
+
+  function resetCurrentLine() {
+    if (isRunning) {
+      clearInterval(timerInterval);
+    }
+    timeLeft = DEFAULT_TIME;
+    updateTimerDisplay();
+    isRunning = false;
+    hasStarted = false;
+    document.getElementById('start-button').disabled = false;
+    document.getElementById('pause-button').disabled = true;
+    document.getElementById('line-selector').disabled = false;
+
+    const currentLineElement = document.querySelector(`[data-line="${currentLine}"]`);
+    if (currentLineElement) {
+      currentLineElement.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        const symbolId = checkbox.value;
+        checkbox.checked = false;
+        checkbox.parentElement.classList.remove('selected');
+        selectedSymbols.delete(symbolId);
+      });
+      activateLine(currentLine, false);
+    }
+  }
+
+  function handleSymbolSelection(checkbox) {
+    if (checkbox.closest('label').dataset.lineActive === 'true') {
+      checkbox.parentElement.classList.toggle('selected');
+      if (checkbox.checked) {
+        selectedSymbols.add(checkbox.value);
+      } else {
+        selectedSymbols.delete(checkbox.value);
+      }
+    }
+  }
+
+  function updateTimerDisplay() {
+    document.getElementById('global-timer').textContent = timeLeft;
+  }
+
+  document.getElementById('test-form').addEventListener('submit', function (e) {
+    const selectedSymbolsInput = document.createElement('input');
+    selectedSymbolsInput.type = 'hidden';
+    selectedSymbolsInput.name = 'selected_symbols';
+    selectedSymbolsInput.value = Array.from(selectedSymbols).join(',');
+    this.appendChild(selectedSymbolsInput);
+
+    const timeInput = document.createElement('input');
+    timeInput.type = 'hidden';
+    timeInput.name = 'temps_total';
+    timeInput.value = totalTime;
+    this.appendChild(timeInput);
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('pause-button').disabled = true;
+    document.getElementById('submit-button').disabled = true;
+    updateTimerDisplay();
+  });
+</script>
+{% endblock %}

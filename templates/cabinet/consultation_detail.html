@@ -20,6 +20,15 @@
                     <span class="px-3 py-1 bg-white bg-opacity-20 rounded-full">
                         {{ consultation.get_type_consultation_display }}
                     </span>
+                    {% if consultation.statut_consultation == 'annulee' %}
+                    <span class="px-3 py-1 bg-red-500 rounded-full">
+                        <i class="fas fa-times-circle mr-1"></i>Annulée
+                    </span>
+                    {% elif consultation.statut_consultation == 'reportee' %}
+                    <span class="px-3 py-1 bg-orange-500 rounded-full">
+                        <i class="fas fa-calendar-alt mr-1"></i>Reportée
+                    </span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -131,6 +140,33 @@
                 </div>
             </div>
             {% endif %}
+
+            <!-- Info report/annulation -->
+            {% if consultation.statut_consultation == 'reportee' and consultation.date_seance_originale %}
+            <div class="mt-6 bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4">
+                <h4 class="font-semibold text-orange-900 flex items-center">
+                    <i class="fas fa-calendar-alt text-orange-600 mr-2"></i>
+                    Consultation reportée
+                </h4>
+                <p class="text-sm text-orange-700 mt-1">
+                    Date originale : {{ consultation.date_seance_originale|date:"d/m/Y à H:i" }}
+                    <br>Nombre de reports : {{ consultation.nombre_reports }}
+                    {% if consultation.motif_report %}
+                    <br>Motif : {{ consultation.motif_report }}
+                    {% endif %}
+                </p>
+            </div>
+            {% elif consultation.statut_consultation == 'annulee' %}
+            <div class="mt-6 bg-red-50 border-l-4 border-red-500 rounded-lg p-4">
+                <h4 class="font-semibold text-red-900 flex items-center">
+                    <i class="fas fa-times-circle text-red-600 mr-2"></i>
+                    Consultation annulée
+                </h4>
+                {% if consultation.motif_report %}
+                <p class="text-sm text-red-700 mt-1">Motif : {{ consultation.motif_report }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         
         <!-- Notes cliniques -->
@@ -193,6 +229,18 @@
                    class="block w-full text-center bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition">
                     <i class="fas fa-edit mr-2"></i>Modifier
                 </a>
+                
+                {% if consultation.statut_consultation != 'annulee' %}
+                <a href="{% url 'cabinet:consultation_reporter' consultation_id=consultation.id %}" 
+                   class="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-calendar-alt mr-2"></i>Reporter
+                </a>
+                <a href="{% url 'cabinet:consultation_annuler' consultation_id=consultation.id %}" 
+                   class="block w-full text-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-times-circle mr-2"></i>Annuler
+                </a>
+                {% endif %}
+                
                 <a href="{% url 'cabinet:patient_detail' patient_id=consultation.patient.id %}" 
                    class="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition">
                     <i class="fas fa-user mr-2"></i>Voir le patient

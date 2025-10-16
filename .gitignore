@@ -8,3 +8,4 @@ staticfiles/
 media/
 .DS_Store
 .env
+d2r_config_data.json

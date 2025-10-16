@@ -1,0 +1,387 @@
+{% extends 'tests_psy/base_test.html' %}
+
+{% block test_title %}
+<i class="fas fa-chart-line text-primary mr-2"></i>Test D2R - Résultats
+{% endblock %}
+
+{% block test_actions %}
+<div class="flex gap-2">
+    <a href="{% url 'tests_psy:d2r_pdf' test.id %}" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
+        <i class="fas fa-file-pdf mr-2"></i>Export PDF
+    </a>
+    <a href="{% url 'tests_psy:d2r_nouveau_patient' patient.id %}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
+        <i class="fas fa-plus mr-2"></i>Nouveau test
+    </a>
+</div>
+{% endblock %}
+
+{% block test_content %}
+<!-- Informations du test -->
+<div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">
+        <i class="fas fa-info-circle text-primary mr-2"></i>Informations du test
+    </h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+            <p class="text-sm text-gray-600">Code</p>
+            <p class="font-semibold text-gray-900">{{ test.code }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Date</p>
+            <p class="font-semibold text-gray-900">{{ test.date|date:"d/m/Y" }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Âge</p>
+            <p class="font-semibold text-gray-900">{{ test.age }} ans</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Sexe</p>
+            <p class="font-semibold text-gray-900">{{ test.get_sexe_display }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Scores principaux -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check text-green-600 text-xl"></i>
+            </div>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ cct }}</div>
+        <div class="text-sm text-gray-600">CCT (Correctes)</div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-times text-red-600 text-xl"></i>
+            </div>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ ec }}</div>
+        <div class="text-sm text-gray-600">EC (Incorrectes)</div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-minus text-yellow-600 text-xl"></i>
+            </div>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ eo }}</div>
+        <div class="text-sm text-gray-600">EO (Omises)</div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-brain text-purple-600 text-xl"></i>
+            </div>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ cc }}</div>
+        <div class="text-sm text-gray-600">CC (Concentration)</div>
+    </div>
+</div>
+
+<!-- Normes standardisées -->
+<div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+    <h3 class="text-xl font-bold text-gray-900 mb-6">
+        <i class="fas fa-chart-bar text-primary mr-2"></i>Normes standards et percentiles
+    </h3>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mesure</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valeur brute</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note standard</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Percentile</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">Taux d'erreurs (E%)</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ e_percentage }}%</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold {% if note_standard_e %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ note_standard_e|default:"N/A" }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold {% if percentile_e %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ percentile_e|default:"N/A" }}
+                        </span>
+                    </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">Rythme traitement (CCT)</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ cct }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold {% if note_standard_cct %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ note_standard_cct|default:"N/A" }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold {% if percentile_cct %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ percentile_cct|default:"N/A" }}
+                        </span>
+                    </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">Capacité concentration (CC)</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ cc }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold {% if note_standard_cc %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ note_standard_cc|default:"N/A" }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold {% if percentile_cc %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ percentile_cc|default:"N/A" }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Graphique de performance -->
+<div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+    <h3 class="text-xl font-bold text-gray-900 mb-6">
+        <i class="fas fa-chart-area text-primary mr-2"></i>Graphique de performance
+    </h3>
+    
+    {% if note_standard_cct and note_standard_e and note_standard_cct >= 70 and note_standard_e >= 70 %}
+    <div class="bg-gray-50 rounded-lg p-4">
+        <canvas id="performanceGraph" height="400"></canvas>
+    </div>
+    {% else %}
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    {% if not note_standard_cct or not note_standard_e %}
+                    Les normes standards ne sont pas disponibles pour afficher le graphique.
+                    {% elif note_standard_cct < 70 and note_standard_e < 70 %}
+                    Les valeurs de Note Standard CCT et Note Standard E% sont inférieures à 70. Le graphique ne peut pas être affiché.
+                    {% elif note_standard_cct < 70 %}
+                    La valeur de Note Standard CCT est inférieure à 70. Le graphique ne peut pas être affiché.
+                    {% elif note_standard_e < 70 %}
+                    La valeur de Note Standard E% est inférieure à 70. Le graphique ne peut pas être affiché.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Statistiques supplémentaires -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white rounded-xl shadow p-6">
+        <h4 class="font-semibold text-gray-800 mb-4">
+            <i class="fas fa-percent text-blue-600 mr-2"></i>Précision
+        </h4>
+        <div class="text-2xl font-bold text-blue-600">{{ precision }}%</div>
+        <p class="text-sm text-gray-600 mt-2">Taux de réussite global</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6">
+        <h4 class="font-semibold text-gray-800 mb-4">
+            <i class="fas fa-clock text-orange-600 mr-2"></i>Temps total
+        </h4>
+        <div class="text-2xl font-bold text-orange-600">{{ test.temps_total }}s</div>
+        <p class="text-sm text-gray-600 mt-2">Durée totale du test</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6">
+        <h4 class="font-semibold text-gray-800 mb-4">
+            <i class="fas fa-tachometer-alt text-green-600 mr-2"></i>Moyenne par ligne
+        </h4>
+        <div class="text-2xl font-bold text-green-600">{{ temps_moyen_ligne }}s</div>
+        <p class="text-sm text-gray-600 mt-2">Temps moyen par ligne</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if note_standard_cct and note_standard_e and note_standard_cct >= 70 and note_standard_e >= 70 %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Plugin d'annotation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('performanceGraph').getContext('2d');
+    
+    const chart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Performance',
+                data: [{
+                    x: {{ note_standard_cct }},
+                    y: {{ note_standard_e }}
+                }],
+                backgroundColor: 'rgb(239, 68, 68)',
+                borderColor: 'rgb(220, 38, 38)',
+                borderWidth: 2,
+                pointRadius: 10,
+                pointHoverRadius: 12
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1.5,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `CCT: ${context.parsed.x}, E%: ${context.parsed.y}`;
+                        }
+                    }
+                },
+                annotation: {
+                    annotations: {
+                        // Ligne verticale à x=100
+                        verticalLine: {
+                            type: 'line',
+                            xMin: 100,
+                            xMax: 100,
+                            borderColor: 'rgba(0, 0, 0, 0.5)',
+                            borderWidth: 2
+                        },
+                        // Ligne horizontale à y=100
+                        horizontalLine: {
+                            type: 'line',
+                            yMin: 100,
+                            yMax: 100,
+                            borderColor: 'rgba(0, 0, 0, 0.5)',
+                            borderWidth: 2
+                        },
+                        // Label en haut à droite (Attentif, Concentré)
+                        topRight: {
+                            type: 'label',
+                            xValue: 126,
+                            yValue: 128,
+                            content: ['Attentif,', 'Concentré'],
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            color: 'rgba(0, 60, 120, 1)',
+                            padding: 4
+                        },
+                        // Label en haut à gauche (Réfléchi)
+                        topLeft: {
+                            type: 'label',
+                            xValue: 74,
+                            yValue: 128,
+                            content: 'Réfléchi',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            color: 'rgba(0, 90, 0, 1)',
+                            padding: 4
+                        },
+                        // Label en bas à gauche (Ni attentif, Ni concentré)
+                        bottomLeft: {
+                            type: 'label',
+                            xValue: 74,
+                            yValue: 72,
+                            content: ['Ni attentif,', 'Ni concentré'],
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            color: 'rgba(120, 60, 0, 1)',
+                            padding: 4
+                        },
+                        // Label en bas à droite (Impulsif)
+                        bottomRight: {
+                            type: 'label',
+                            xValue: 126,
+                            yValue: 72,
+                            content: 'Impulsif',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            color: 'rgba(120, 0, 0, 1)',
+                            padding: 4
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    min: 70,
+                    max: 130,
+                    grid: {
+                        color: function(context) {
+                            return context.tick.value === 100 ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
+                        },
+                        lineWidth: function(context) {
+                            return context.tick.value === 100 ? 2 : 1;
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Note standard CCT (Rythme de traitement)',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        stepSize: 10,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                y: {
+                    min: 70,
+                    max: 130,
+                    grid: {
+                        color: function(context) {
+                            return context.tick.value === 100 ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)';
+                        },
+                        lineWidth: function(context) {
+                            return context.tick.value === 100 ? 2 : 1;
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Note standard E% (Exactitude)',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        stepSize: 10,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

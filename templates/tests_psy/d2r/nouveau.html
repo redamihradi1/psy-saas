@@ -1,0 +1,149 @@
+{% extends 'tests_psy/base_test.html' %}
+
+{% block test_title %}
+<i class="fas fa-brain text-primary mr-2"></i>Nouveau Test D2R
+{% endblock %}
+
+{% block test_content %}
+<div class="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
+    <h2 class="text-xl font-bold text-gray-900 mb-6">
+        <i class="fas fa-clipboard-list text-primary mr-2"></i>
+        Informations du test
+    </h2>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="space-y-6">
+            <!-- Patient -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-user mr-1 text-primary"></i>Patient *
+                </label>
+                {{ form.patient }}
+                {% if form.patient.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.patient.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Code et Date -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-barcode mr-1 text-primary"></i>Code du test *
+                    </label>
+                    {{ form.code }}
+                    {% if form.code.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-calendar mr-1 text-primary"></i>Date *
+                    </label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Âge et Sexe -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-birthday-cake mr-1 text-primary"></i>Âge *
+                    </label>
+                    {{ form.age }}
+                    {% if form.age.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.age.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-venus-mars mr-1 text-primary"></i>Sexe *
+                    </label>
+                    {{ form.sexe }}
+                    {% if form.sexe.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.sexe.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Type école et Études -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-school mr-1 text-primary"></i>Type d'école / Classe
+                    </label>
+                    {{ form.type_ecole }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-graduation-cap mr-1 text-primary"></i>Études
+                    </label>
+                    {{ form.etudes }}
+                </div>
+            </div>
+
+            <!-- Profession -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-briefcase mr-1 text-primary"></i>Profession
+                </label>
+                {{ form.profession }}
+            </div>
+
+            <!-- Correction vue et Latéralité -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-glasses mr-1 text-primary"></i>Correction de la vue *
+                    </label>
+                    {{ form.correction_vue }}
+                    {% if form.correction_vue.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.correction_vue.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-hand-paper mr-1 text-primary"></i>Latéralité *
+                    </label>
+                    {{ form.lateralite }}
+                    {% if form.lateralite.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.lateralite.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons -->
+        <div class="flex gap-4 mt-8 pt-6 border-t border-gray-200">
+            <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 shadow-lg">
+                <i class="fas fa-arrow-right mr-2"></i>Commencer le test
+            </button>
+            <a href="{% if patient %}{% url 'cabinet:patient_detail' patient.id %}{% else %}{% url 'tests_psy:d2r_liste' %}{% endif %}" 
+               class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">
+                <i class="fas fa-times mr-2"></i>Annuler
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="mt-6 max-w-4xl mx-auto bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+    <div class="flex items-start">
+        <i class="fas fa-info-circle text-blue-500 text-xl mr-3 mt-0.5"></i>
+        <div>
+            <h3 class="font-semibold text-blue-900 mb-1">Informations sur le test D2R</h3>
+            <p class="text-sm text-blue-800">
+                Le test D2R est un test d'attention qui mesure la concentration, la vitesse de traitement et l'exactitude. 
+                Le patient devra barrer tous les "d" accompagnés de DEUX traits (en haut, en bas, ou un de chaque).
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

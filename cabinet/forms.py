@@ -56,6 +56,45 @@ class PatientForm(forms.ModelForm):
                 raise ValidationError("Le numéro de téléphone doit contenir au moins 10 chiffres.")
         return telephone
 
+class PatientFichierForm(forms.ModelForm):
+    class Meta:
+        model = PatientFichier
+        fields = ['fichier', 'nom_fichier', 'categorie', 'description']
+        widgets = {
+            'fichier': forms.FileInput(attrs={
+                'class': 'hidden',
+                'id': 'file-input',
+                'accept': '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.ppt,.pptx,.txt'
+            }),
+            'nom_fichier': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent',
+                'placeholder': 'Nom du fichier (optionnel)'
+            }),
+            'categorie': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent',
+                'rows': 3,
+                'placeholder': 'Description ou notes (optionnel)'
+            }),
+        }
+    
+    def clean_fichier(self):
+        fichier = self.cleaned_data.get('fichier')
+        if fichier:
+            # Vérifier la taille (max 10 MB)
+            if fichier.size > 10 * 1024 * 1024:
+                raise forms.ValidationError("Le fichier ne doit pas dépasser 10 MB")
+            
+            # Vérifier l'extension
+            import os
+            ext = os.path.splitext(fichier.name)[1].lower()
+            extensions_valides = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.gif', '.xls', '.xlsx', '.ppt', '.pptx', '.txt']
+            if ext not in extensions_valides:
+                raise forms.ValidationError(f"Extension non autorisée. Extensions valides : {', '.join(extensions_valides)}")
+        
+        return fichier
 
 class ConsultationForm(forms.ModelForm):
     date_seance = forms.DateTimeField(

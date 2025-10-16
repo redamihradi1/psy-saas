@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header commun à tous les tests -->
+    <div class="mb-6">
+        {% if patient %}
+        <a href="{% url 'cabinet:patient_detail' patient.id %}" class="text-primary hover:text-primary-dark mb-2 inline-block">
+            <i class="fas fa-arrow-left mr-2"></i>Retour au patient
+        </a>
+        {% else %}
+        <a href="{% url 'tests_psy:d2r_liste' %}" class="text-primary hover:text-primary-dark mb-2 inline-block">
+            <i class="fas fa-arrow-left mr-2"></i>Retour aux tests
+        </a>
+        {% endif %}
+        
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">
+                    {% block test_title %}Test Psychométrique{% endblock %}
+                </h1>
+                {% if patient %}
+                <p class="text-gray-600 mt-1">
+                    <i class="fas fa-user mr-1"></i>{{ patient.nom_complet }} - {{ patient.age }} ans
+                </p>
+                {% endif %}
+            </div>
+            
+            <div class="flex gap-2">
+                {% block test_actions %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu spécifique du test -->
+    {% block test_content %}{% endblock %}
+</div>
+{% endblock %}

@@ -1,51 +1,189 @@
 {% extends 'base.html' %}
 
-{% block title %}Accueil - PsySaaS{% endblock %}
+{% block title %}PsySaaS - Plateforme de gestion pour psychologues{% endblock %}
 
 {% block content %}
-<div class="text-center py-12">
-    <h1 class="text-5xl font-bold text-gray-900 mb-4">
-        Bienvenue sur <span class="text-primary">PsySaaS</span>
-    </h1>
-    <p class="text-xl text-gray-600 mb-8">
-        Plateforme de gestion pour psychologues
-    </p>
-    
-    {% if user.is_authenticated %}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-4xl mx-auto">
-        
-        <!-- Card Gestion Cabinet -->
-        <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
-            <div class="text-4xl mb-4">📋</div>
-            <h3 class="text-xl font-bold mb-2">Gestion Cabinet</h3>
-            <p class="text-gray-600 mb-4">Gérez vos patients et rendez-vous</p>
-            <a href="#" class="text-primary hover:underline">Accéder →</a>
+<!-- Hero Section -->
+<div class="bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white">
+    <div class="container mx-auto px-4 py-20">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
+                Gérez votre cabinet de psychologie en toute simplicité
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-white text-opacity-90">
+                PsySaaS centralise la gestion de vos patients, consultations, tests psychométriques et facturation dans une seule plateforme intuitive.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'accounts:login' %}" 
+                   class="bg-white text-purple-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
+                </a>
+                <a href="#fonctionnalites" 
+                   class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-purple-600 transition">
+                    <i class="fas fa-info-circle mr-2"></i>En savoir plus
+                </a>
+            </div>
         </div>
-        
-        <!-- Card Tests -->
-        <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
-            <div class="text-4xl mb-4">🧠</div>
-            <h3 class="text-xl font-bold mb-2">Tests Psychométriques</h3>
-            <p class="text-gray-600 mb-4">Vineland, PEP3, D2R</p>
-            <a href="#" class="text-primary hover:underline">Accéder →</a>
-        </div>
-        
-        <!-- Card Paramètres -->
-        <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition">
-            <div class="text-4xl mb-4">⚙️</div>
-            <h3 class="text-xl font-bold mb-2">Paramètres</h3>
-            <p class="text-gray-600 mb-4">Configuration du cabinet</p>
-            <a href="#" class="text-primary hover:underline">Accéder →</a>
-        </div>
-        
     </div>
-    {% else %}
-    <div class="mt-8">
-        <a href="{% url 'admin:index' %}" 
-           class="bg-primary text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-600 transition">
-            Se connecter
+</div>
+
+<!-- Fonctionnalités principales -->
+<div id="fonctionnalites" class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                Tout ce dont vous avez besoin
+            </h2>
+            <p class="text-xl text-gray-600">
+                Une solution complète pour les professionnels de la santé mentale
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <!-- Gestion des patients -->
+            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-users text-blue-600 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Gestion des patients</h3>
+                <p class="text-gray-600 mb-4">
+                    Dossiers patients complets avec anamnèse, historique des consultations et documents médicaux sécurisés.
+                </p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Fiches patients détaillées</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Anamnèse structurée</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Gestion des documents</li>
+                </ul>
+            </div>
+
+            <!-- Agenda et consultations -->
+            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-calendar-alt text-green-600 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Agenda intelligent</h3>
+                <p class="text-gray-600 mb-4">
+                    Planifiez vos consultations en cabinet, visio ou à domicile. Gérez les reports et absences facilement.
+                </p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Planning intuitif</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Consultations en visio</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Rappels automatiques</li>
+                </ul>
+            </div>
+
+            <!-- Tests psychométriques -->
+            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-brain text-purple-600 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Tests psychométriques</h3>
+                <p class="text-gray-600 mb-4">
+                    Administrez et analysez vos tests directement dans la plateforme (Vineland, PEP3, D2R).
+                </p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Tests intégrés</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Cotation automatique</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Rapports détaillés</li>
+                </ul>
+            </div>
+
+            <!-- Facturation -->
+            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-file-invoice-dollar text-orange-600 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Facturation simplifiée</h3>
+                <p class="text-gray-600 mb-4">
+                    Suivez vos paiements, créez des packs de séances et générez vos statistiques financières.
+                </p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Suivi des paiements</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Packs Mind Office</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Statistiques CA</li>
+                </ul>
+            </div>
+
+            <!-- Dashboard statistiques -->
+            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-chart-line text-pink-600 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Statistiques détaillées</h3>
+                <p class="text-gray-600 mb-4">
+                    Visualisez l'évolution de votre activité avec des tableaux de bord interactifs et des rapports.
+                </p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Dashboard en temps réel</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Graphiques personnalisés</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Export des données</li>
+                </ul>
+            </div>
+
+            <!-- Sécurité -->
+            <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-shield-alt text-red-600 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Sécurité & confidentialité</h3>
+                <p class="text-gray-600 mb-4">
+                    Vos données et celles de vos patients sont protégées selon les normes les plus strictes.
+                </p>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Conformité RGPD</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Données chiffrées</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Hébergement sécurisé</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section CTA -->
+<div class="bg-gradient-to-r from-purple-600 to-pink-500 py-16">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-4xl font-bold text-white mb-6">
+            Prêt à simplifier la gestion de votre cabinet ?
+        </h2>
+        <p class="text-xl text-white text-opacity-90 mb-8">
+            Rejoignez les psychologues qui ont déjà fait le choix de PsySaaS
+        </p>
+        <a href="{% url 'accounts:login' %}" 
+           class="bg-white text-purple-600 px-10 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition transform hover:scale-105 shadow-lg inline-block">
+            <i class="fas fa-rocket mr-2"></i>Commencer maintenant
         </a>
     </div>
-    {% endif %}
 </div>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-white py-8">
+    <div class="container mx-auto px-4 text-center">
+        <p class="text-gray-400">
+            © 2025 PsySaaS - Plateforme de gestion pour psychologues
+        </p>
+        <div class="mt-4 space-x-6">
+            <a href="#" class="text-gray-400 hover:text-white transition">Conditions d'utilisation</a>
+            <a href="#" class="text-gray-400 hover:text-white transition">Confidentialité</a>
+            <a href="#" class="text-gray-400 hover:text-white transition">Contact</a>
+        </div>
+    </div>
+</footer>
+
+<style>
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 1s ease-out;
+}
+</style>
+
 {% endblock %}

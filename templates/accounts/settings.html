@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Paramètres - PsySaaS{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            <i class="fas fa-cog text-primary mr-2"></i>
+            Paramètres
+        </h1>
+        <p class="text-gray-600">Modifiez vos informations et préférences</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Sidebar Navigation -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow p-4 space-y-2 sticky top-8">
+                <a href="#personal" class="flex items-center gap-3 px-4 py-3 text-primary bg-primary-light rounded-lg font-medium">
+                    <i class="fas fa-user w-5"></i>
+                    <span>Infos personnelles</span>
+                </a>
+                <a href="#security" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition">
+                    <i class="fas fa-lock w-5"></i>
+                    <span>Sécurité</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-3 space-y-6">
+            <!-- Informations personnelles -->
+            <div id="personal" class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-user text-primary mr-2"></i>
+                    Informations personnelles
+                </h2>
+
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="update_profile" value="1">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Prénom -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user mr-1 text-primary"></i>Prénom
+                            </label>
+                            <input type="text" name="first_name" value="{{ user.first_name }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                                   placeholder="Votre prénom">
+                        </div>
+
+                        <!-- Nom -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user mr-1 text-primary"></i>Nom
+                            </label>
+                            <input type="text" name="last_name" value="{{ user.last_name }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                                   placeholder="Votre nom">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-envelope mr-1 text-primary"></i>Email
+                        </label>
+                        <input type="email" name="email" value="{{ user.email }}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                               placeholder="votre.email@exemple.com">
+                    </div>
+
+                    <!-- Téléphone -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-phone mr-1 text-primary"></i>Téléphone
+                        </label>
+                        <input type="tel" name="phone" value="{{ user.phone }}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                               placeholder="06 12 34 56 78">
+                    </div>
+
+                    <!-- Numéro de licence -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-certificate mr-1 text-primary"></i>Numéro de licence professionnelle
+                        </label>
+                        <input type="text" name="license_number" value="{{ user.license_number }}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                               placeholder="Votre numéro de licence">
+                    </div>
+
+                    <!-- Username (lecture seule) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-id-badge mr-1 text-primary"></i>Nom d'utilisateur
+                        </label>
+                        <input type="text" value="{{ user.username }}" disabled
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                        <p class="text-xs text-gray-500 mt-1">Le nom d'utilisateur ne peut pas être modifié</p>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-4 pt-4">
+                        <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 shadow-lg">
+                            <i class="fas fa-save mr-2"></i>Enregistrer les modifications
+                        </button>
+                        <a href="{% url 'accounts:profile' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">
+                            <i class="fas fa-times mr-2"></i>Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Changer le mot de passe -->
+            <div id="security" class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-key text-primary mr-2"></i>
+                    Changer le mot de passe
+                </h2>
+
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="change_password" value="1">
+
+                    <!-- Ancien mot de passe -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Mot de passe actuel
+                        </label>
+                        <input type="password" name="old_password" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                               placeholder="Votre mot de passe actuel">
+                        {% if form.old_password.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.old_password.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Nouveau mot de passe -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Nouveau mot de passe
+                        </label>
+                        <input type="password" name="new_password1" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                               placeholder="Votre nouveau mot de passe">
+                        {% if form.new_password1.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.new_password1.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Minimum 8 caractères, incluant lettres et chiffres
+                        </p>
+                    </div>
+
+                    <!-- Confirmer le mot de passe -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Confirmer le nouveau mot de passe
+                        </label>
+                        <input type="password" name="new_password2" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                               placeholder="Confirmez votre nouveau mot de passe">
+                        {% if form.new_password2.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.new_password2.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-4 pt-4">
+                        <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 shadow-lg">
+                            <i class="fas fa-lock mr-2"></i>Changer le mot de passe
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Annuler la consultation{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Annuler la consultation</h1>
+                <p class="text-gray-500 mt-1">{{ consultation.patient.nom_complet }}</p>
+            </div>
+            <a href="{% url 'cabinet:consultation_detail' consultation_id=consultation.id %}" class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-arrow-left mr-2"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-8">
+        <!-- Informations consultation -->
+        <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-6">
+            <h3 class="font-semibold text-red-900 mb-2">
+                <i class="fas fa-exclamation-circle mr-2"></i>Consultation à annuler
+            </h3>
+            <div class="text-red-800">
+                <p><strong>Date :</strong> {{ consultation.date_seance|date:"d/m/Y à H:i" }}</p>
+                <p><strong>Patient :</strong> {{ consultation.patient.nom_complet }}</p>
+                <p><strong>Type :</strong> {{ consultation.get_type_consultation_display }}</p>
+                <p><strong>Tarif :</strong> {{ consultation.tarif }} DHS</p>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Motif de l'annulation <span class="text-red-500">*</span>
+                </label>
+                <textarea name="motif_annulation" rows="4" required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Ex: Annulation par le patient, urgence médicale..."></textarea>
+            </div>
+
+            {% if consultation.pack_mind_office_utilise %}
+            <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-box text-green-600 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <h4 class="font-semibold text-green-900 mb-1">Pack Mind Office</h4>
+                        <p class="text-sm text-green-800">
+                            Cette consultation utilisait le pack <strong>{{ consultation.pack_mind_office_utilise.nom_pack }}</strong>.
+                            <br>
+                            ✅ La séance sera <strong>automatiquement rendue au pack</strong> lors de l'annulation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4 mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <h4 class="font-semibold text-yellow-900 mb-1">Attention</h4>
+                        <p class="text-sm text-yellow-800">
+                            Cette action ne peut pas être annulée. Le statut de la consultation sera définitivement changé en "Annulée".
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg transition font-medium"
+                        onclick="return confirm('Êtes-vous sûr de vouloir annuler cette consultation ?')">
+                    <i class="fas fa-times-circle mr-2"></i>Annuler la consultation
+                </button>
+                <a href="{% url 'cabinet:consultation_detail' consultation_id=consultation.id %}" 
+                   class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    Retour
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

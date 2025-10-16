@@ -1,100 +1,135 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}PsySaaS{% endblock %}</title>
-    
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#e879f9',
-                        'primary-light': '#fdf4ff',
-                        'primary-dark': '#c026d3',
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#e879f9",
+              "primary-light": "#fdf4ff",
+              "primary-dark": "#c026d3",
+            },
+          },
+        },
+      };
     </script>
-    
+
     {% block extra_css %}{% endblock %}
-</head>
-<body class="bg-gray-50">
-    
+  </head>
+  <body class="bg-gray-50">
     <!-- Sidebar -->
-    <nav class="fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 z-50">
-        <div class="p-6 border-b border-gray-100">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white shadow-lg">
-                    <i class="fas fa-brain text-2xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-semibold text-gray-800">PsySaaS</h1>
-                    <p class="text-xs text-gray-500">{{ user.organization.name }}</p>
-                </div>
-            </div>
+    <nav class="fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 z-50 flex flex-col">
+      <div class="p-6 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white shadow-lg">
+            <i class="fas fa-brain text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-semibold text-gray-800">PsySaaS</h1>
+            <p class="text-xs text-gray-500">{{ user.organization.name }}</p>
+          </div>
         </div>
-        
-        <ul class="py-4">
-            <li>
-                <a href="{% url 'dashboard' %}" 
-                   class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-                    <i class="fas fa-home w-5"></i>
-                    <span class="ml-3">Dashboard</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'cabinet:patients_list' %}" 
-                   class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-                    <i class="fas fa-users w-5"></i>
-                    <span class="ml-3">Patients</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'cabinet:consultations_list' %}" 
-                   class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-                    <i class="fas fa-calendar-check w-5"></i>
-                    <span class="ml-3">Consultations</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'cabinet:agenda' %}" 
-                   class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-                    <i class="fas fa-calendar-alt w-5"></i>
-                    <span class="ml-3">Agenda</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'cabinet:packs_list' %}" 
-                   class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-                    <i class="fas fa-box w-5"></i>
-                    <span class="ml-3">Packs</span>
-                </a>
-            </li>
-        </ul>
+      </div>
+
+      <ul class="py-4 flex-1 overflow-y-auto">
+        <li>
+          <a href="{% url 'cabinet:dashboard' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-home w-5"></i>
+            <span class="ml-3">Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'cabinet:patients_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-users w-5"></i>
+            <span class="ml-3">Patients</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'cabinet:consultations_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-calendar-check w-5"></i>
+            <span class="ml-3">Consultations</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'cabinet:agenda' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-calendar-alt w-5"></i>
+            <span class="ml-3">Agenda</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'cabinet:packs_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-box w-5"></i>
+            <span class="ml-3">Packs</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- User Profile Section -->
+      {% if user.is_authenticated %}
+      <div class="border-t border-gray-200 bg-white">
+        <div class="relative group">
+          <div class="p-4 cursor-pointer hover:bg-gray-50 transition">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-semibold text-sm shadow">
+                {{ user.first_name.0|default:user.username.0|upper }}{{ user.last_name.0|default:""|upper }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-800 truncate">{{ user.get_full_name|default:user.username }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+              </div>
+              <i class="fas fa-chevron-up text-gray-400 text-xs group-hover:text-primary transition"></i>
+            </div>
+          </div>
+
+          <div class="absolute bottom-full left-0 w-full bg-white border border-gray-200 rounded-t-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-primary-light hover:text-primary transition">
+              <i class="fas fa-user-circle w-5"></i>
+              <span class="text-sm">Mon compte</span>
+            </a>
+            <a href="{% url 'accounts:settings' %}" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-primary-light hover:text-primary transition">
+              <i class="fas fa-cog w-5"></i>
+              <span class="text-sm">Paramètres</span>
+            </a>
+            <div class="border-t border-gray-200"></div>
+            <form method="post" action="{% url 'admin:logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition text-left">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span class="text-sm">Déconnexion</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endif %}
     </nav>
 
     <!-- Main Content -->
     <main class="ml-64 min-h-screen p-8">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="mb-6 p-4 rounded-lg border-l-4 {% if message.tags == 'error' %}bg-red-50 border-red-500 text-red-700{% elif message.tags == 'success' %}bg-green-50 border-green-500 text-green-700{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-500 text-yellow-700{% else %}bg-blue-50 border-blue-500 text-blue-700{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-        
-        {% block content %}{% endblock %}
+      {% if messages %} 
+      {% for message in messages %}
+      <div class="mb-6 p-4 rounded-lg border-l-4 {% if message.tags == 'error' %}bg-red-50 border-red-500 text-red-700{% elif message.tags == 'success' %}bg-green-50 border-green-500 text-green-700{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-500 text-yellow-700{% else %}bg-blue-50 border-blue-500 text-blue-700{% endif %}">
+        {{ message }}
+      </div>
+      {% endfor %} 
+      {% endif %} 
+      {% block content %}{% endblock %}
     </main>
 
     {% block extra_js %}{% endblock %}
-</body>
+  </body>
 </html>

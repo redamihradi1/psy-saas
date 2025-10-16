@@ -4,6 +4,9 @@ from . import views
 app_name = 'cabinet'
 
 urlpatterns = [
+    # Dashboard
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    
     # Patients
     path('patients/', views.patients_list, name='patients_list'),
     path('patients/create/', views.patient_create, name='patient_create'),
@@ -18,6 +21,14 @@ urlpatterns = [
     path('consultations/<int:consultation_id>/', views.consultation_detail, name='consultation_detail'),
     path('consultations/<int:consultation_id>/edit/', views.consultation_edit, name='consultation_edit'),
     path('consultations/<int:consultation_id>/delete/', views.consultation_delete, name='consultation_delete'),
+    path('consultations/<int:consultation_id>/reporter/', views.consultation_reporter, name='consultation_reporter'),
+    path('consultations/<int:consultation_id>/annuler/', views.consultation_annuler, name='consultation_annuler'),
+
+    # Gestion des fichiers patients
+    path('patients/<int:patient_id>/fichiers/upload/', views.fichier_upload, name='fichier_upload'),
+    path('patients/<int:patient_id>/fichiers/<int:fichier_id>/delete/', views.fichier_delete, name='fichier_delete'),
+    path('patients/<int:patient_id>/fichiers/<int:fichier_id>/download/', views.fichier_download, name='fichier_download'),
+    path('patients/<int:patient_id>/fichiers/<int:fichier_id>/preview/', views.fichier_preview, name='fichier_preview'),
 
     # Anamnese
     path('patients/<int:patient_id>/anamnese/create/', views.anamnese_create, name='anamnese_create'),

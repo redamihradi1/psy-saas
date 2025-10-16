@@ -635,13 +635,117 @@
 
         <!-- Onglet Fichiers -->
         <div id="content-fichiers" class="tab-content hidden">
+            {% if patient.fichiers.all %}
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">
+                    <i class="fas fa-paperclip text-primary mr-2"></i>
+                    Documents et fichiers ({{ patient.fichiers.count }})
+                </h3>
+                <a href="{% url 'cabinet:fichier_upload' patient.id %}" 
+                   class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-plus mr-2"></i>Ajouter un fichier
+                </a>
+            </div>
+
+            <!-- Filtres par catégorie -->
+            <div class="mb-6 flex flex-wrap gap-2">
+                <button onclick="filterFiles('all')" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium transition bg-primary text-white">
+                    <i class="fas fa-list mr-1"></i>Tous ({{ patient.fichiers.count }})
+                </button>
+                {% regroup patient.fichiers.all by categorie as fichiers_par_categorie %}
+                {% for categorie in fichiers_par_categorie %}
+                <button onclick="filterFiles('{{ categorie.grouper }}')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition bg-gray-200 text-gray-700 hover:bg-gray-300">
+                    {{ categorie.list.0.get_categorie_display }} ({{ categorie.list|length }})
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Liste des fichiers en grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for fichier in patient.fichiers.all %}
+                <div class="fichier-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition" data-categorie="{{ fichier.categorie }}">
+                    <!-- En-tête avec icône et actions -->
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-3 bg-gray-100">
+                                <i class="fas {{ fichier.icone }} text-2xl {{ fichier.couleur }}"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-gray-900 truncate text-sm">{{ fichier.nom_fichier }}</h4>
+                                <p class="text-xs text-gray-500">{{ fichier.taille_lisible }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Menu actions -->
+                        <div class="relative group">
+                            <button class="text-gray-400 hover:text-gray-600 p-1">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                                {% if fichier.est_image or fichier.est_pdf %}
+                                <a href="{% url 'cabinet:fichier_preview' patient.id fichier.id %}" target="_blank"
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                    <i class="fas fa-eye mr-2 text-blue-500"></i>Prévisualiser
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'cabinet:fichier_download' patient.id fichier.id %}"
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                    <i class="fas fa-download mr-2 text-green-500"></i>Télécharger
+                                </a>
+                                <a href="{% url 'cabinet:fichier_delete' patient.id fichier.id %}"
+                                   class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                    <i class="fas fa-trash mr-2"></i>Supprimer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Catégorie -->
+                    <div class="mb-2">
+                        <span class="inline-block px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+                            <i class="fas fa-tag mr-1"></i>{{ fichier.get_categorie_display }}
+                        </span>
+                    </div>
+
+                    <!-- Description (si existe) -->
+                    {% if fichier.description %}
+                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ fichier.description }}</p>
+                    {% endif %}
+
+                    <!-- Footer avec date -->
+                    <div class="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
+                        <span>
+                            <i class="fas fa-calendar mr-1"></i>{{ fichier.date_upload|date:"d/m/Y" }}
+                        </span>
+                        <span>{{ fichier.date_upload|date:"H:i" }}</span>
+                    </div>
+
+                    <!-- Preview pour images -->
+                    {% if fichier.est_image %}
+                    <div class="mt-3">
+                        <img src="{{ fichier.fichier.url }}" alt="{{ fichier.nom_fichier }}" 
+                             class="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition"
+                             onclick="openImageModal('{{ fichier.fichier.url }}', '{{ fichier.nom_fichier }}')">
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <!-- État vide -->
             <div class="text-center py-16">
-                <i class="fas fa-paperclip text-gray-300 text-6xl mb-4"></i>
+                <i class="fas fa-folder-open text-gray-300 text-6xl mb-4"></i>
                 <h3 class="text-2xl font-semibold text-gray-700 mb-2">Aucun fichier</h3>
                 <p class="text-gray-500 mb-6">
-                    Fonctionnalité à venir : upload de documents médicaux, ordonnances, etc.
+                    Commencez par ajouter des documents médicaux, ordonnances ou autres fichiers pour ce patient.
                 </p>
+                <a href="{% url 'cabinet:fichier_upload' patient.id %}" 
+                   class="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg transition">
+                    <i class="fas fa-plus mr-2"></i>Ajouter le premier fichier
+                </a>
             </div>
+            {% endif %}
         </div>
 
         <!-- Onglet Statistiques -->
@@ -835,6 +939,67 @@ document.addEventListener('keydown', function(e) {
         switchTab(tabs[parseInt(e.key) - 1]);
     }
 });
+</script>
+<style>
+.filter-btn.active {
+    background-color: #e879f9;
+    color: white;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
+
+<script>
+// Filtrer les fichiers par catégorie
+function filterFiles(categorie) {
+    const fichiers = document.querySelectorAll('.fichier-card');
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    // Mettre à jour les boutons actifs
+    buttons.forEach(btn => {
+        btn.classList.remove('active', 'bg-primary', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+    });
+    event.target.classList.add('active', 'bg-primary', 'text-white');
+    event.target.classList.remove('bg-gray-200', 'text-gray-700');
+    
+    // Filtrer les fichiers
+    fichiers.forEach(fichier => {
+        if (categorie === 'all' || fichier.dataset.categorie === categorie) {
+            fichier.style.display = 'block';
+        } else {
+            fichier.style.display = 'none';
+        }
+    });
+}
+
+// Modal pour prévisualiser les images
+function openImageModal(imageUrl, imageName) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+    modal.onclick = () => modal.remove();
+    
+    modal.innerHTML = `
+        <div class="max-w-4xl max-h-full">
+            <div class="bg-white rounded-lg p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-gray-900">${imageName}</h3>
+                    <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <img src="${imageUrl}" alt="${imageName}" class="max-w-full max-h-[70vh] mx-auto rounded">
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
 </script>
 
 {% endblock %}

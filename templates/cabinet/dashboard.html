@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - PsySaaS{% endblock %}
+
+{% block content %}
+<!-- Header avec bienvenue -->
+<div class="bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl shadow-lg p-8 mb-6 text-white">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">Bonjour, {{ user.get_full_name|default:user.username }} ! 👋</h1>
+            <p class="text-white text-opacity-90">{{ user.organization.name }}</p>
+            <p class="text-white text-opacity-75 text-sm mt-1">{{ today|date:"l d F Y" }}</p>
+        </div>
+        <div class="text-right">
+            <div class="text-4xl font-bold">{{ consultations_aujourdhui }}</div>
+            <div class="text-sm text-white text-opacity-90">Consultations aujourd'hui</div>
+        </div>
+    </div>
+</div>
+
+<!-- KPIs Principaux -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <!-- Total Patients -->
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-blue-600 text-xl"></i>
+            </div>
+            <span class="text-xs text-gray-500">{{ evolution_patients }}%</span>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ total_patients }}</div>
+        <div class="text-sm text-gray-600">Patients actifs</div>
+        <div class="text-xs text-gray-500 mt-2">
+            <i class="fas fa-plus mr-1"></i>{{ nouveaux_patients_mois }} ce mois
+        </div>
+    </div>
+
+    <!-- Consultations du mois -->
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+            </div>
+            <span class="text-xs text-gray-500">Ce mois</span>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ consultations_mois }}</div>
+        <div class="text-sm text-gray-600">Consultations</div>
+        <div class="text-xs text-gray-500 mt-2">
+            <i class="fas fa-clock mr-1"></i>{{ consultations_semaine }} cette semaine
+        </div>
+    </div>
+
+    <!-- Chiffre d'affaires -->
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-coins text-purple-600 text-xl"></i>
+            </div>
+            <span class="text-xs text-gray-500">Ce mois</span>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ ca_mois|floatformat:0 }} DHS</div>
+        <div class="text-sm text-gray-600">Chiffre d'affaires</div>
+        <div class="text-xs text-gray-500 mt-2">
+            <i class="fas fa-chart-line mr-1"></i>{{ ca_semaine|floatformat:0 }} DHS cette semaine
+        </div>
+    </div>
+
+    <!-- Packs actifs -->
+    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-box text-orange-600 text-xl"></i>
+            </div>
+            <span class="text-xs text-gray-500">Séances</span>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ packs_actifs }}</div>
+        <div class="text-sm text-gray-600">Packs actifs</div>
+        <div class="text-xs text-gray-500 mt-2">
+            <i class="fas fa-hourglass-half mr-1"></i>{{ seances_restantes }} séances restantes
+        </div>
+    </div>
+</div>
+
+<!-- Graphiques et prochains RDV -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Prochaines consultations -->
+    <div class="lg:col-span-2 bg-white rounded-xl shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-calendar-day text-primary mr-2"></i>
+                Prochaines consultations
+            </h3>
+            <a href="{% url 'cabinet:agenda' %}" class="text-primary hover:text-primary-dark text-sm">
+                Voir l'agenda →
+            </a>
+        </div>
+        
+        {% if prochaines_consultations %}
+        <div class="space-y-3">
+            {% for consultation in prochaines_consultations|slice:":5" %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white text-sm mr-3">
+                        {{ consultation.patient.prenom.0 }}{{ consultation.patient.nom.0 }}
+                    </div>
+                    <div>
+                        <div class="font-medium text-gray-900">{{ consultation.patient.nom_complet }}</div>
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-clock mr-1"></i>{{ consultation.date_seance|date:"d/m à H:i" }}
+                            <span class="ml-2 px-2 py-0.5 rounded text-xs
+                                {% if consultation.lieu_consultation == 'visio' %}bg-blue-100 text-blue-800
+                                {% elif consultation.lieu_consultation == 'bouskoura' %}bg-green-100 text-green-800
+                                {% else %}bg-purple-100 text-purple-800{% endif %}">
+                                {{ consultation.get_lieu_consultation_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'cabinet:consultation_detail' consultation_id=consultation.id %}" 
+                   class="text-primary hover:text-primary-dark">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-calendar-times text-4xl mb-2"></i>
+            <p>Aucune consultation prévue</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+            Actions rapides
+        </h3>
+        <div class="space-y-3">
+            <a href="{% url 'cabinet:consultation_create' %}" 
+               class="block w-full text-center bg-primary hover:bg-primary-dark text-white px-4 py-3 rounded-lg transition">
+                <i class="fas fa-calendar-plus mr-2"></i>Nouvelle consultation
+            </a>
+            <a href="{% url 'cabinet:patient_create' %}" 
+               class="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg transition">
+                <i class="fas fa-user-plus mr-2"></i>Nouveau patient
+            </a>
+            <a href="{% url 'cabinet:pack_create' %}" 
+               class="block w-full text-center bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-lg transition">
+                <i class="fas fa-box mr-2"></i>Nouveau pack
+            </a>
+            <a href="{% url 'cabinet:agenda' %}" 
+               class="block w-full text-center bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg transition">
+                <i class="fas fa-calendar-alt mr-2"></i>Voir l'agenda
+            </a>
+        </div>
+
+        <!-- Mini stats -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">Statistiques rapides</h4>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Taux de remplissage</span>
+                    <span class="font-medium">{{ taux_remplissage }}%</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Tarif moyen</span>
+                    <span class="font-medium">{{ tarif_moyen|floatformat:0 }} DHS</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Durée moyenne</span>
+                    <span class="font-medium">{{ duree_moyenne|floatformat:0 }} min</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Patients récents et Activité -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Patients récents -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-user-friends text-blue-600 mr-2"></i>
+                Patients récents
+            </h3>
+            <a href="{% url 'cabinet:patients_list' %}" class="text-primary hover:text-primary-dark text-sm">
+                Voir tous →
+            </a>
+        </div>
+        
+        {% if patients_recents %}
+        <div class="space-y-3">
+            {% for patient in patients_recents|slice:":5" %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-sm mr-3">
+                        {{ patient.prenom.0 }}{{ patient.nom.0 }}
+                    </div>
+                    <div>
+                        <div class="font-medium text-gray-900">{{ patient.nom_complet }}</div>
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-calendar mr-1"></i>Ajouté le {{ patient.date_creation|date:"d/m/Y" }}
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'cabinet:patient_detail' patient_id=patient.id %}" 
+                   class="text-primary hover:text-primary-dark">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-user-slash text-4xl mb-2"></i>
+            <p>Aucun patient</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Répartition des consultations -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-chart-pie text-green-600 mr-2"></i>
+            Répartition ce mois
+        </h3>
+        
+        <div class="space-y-4">
+            <!-- Par lieu -->
+            <div>
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Par lieu</h4>
+                {% for stat in stats_lieu %}
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center flex-1">
+                        <span class="text-sm text-gray-600 w-32">{{ stat.lieu_name }}</span>
+                        <div class="flex-1 mx-3 bg-gray-200 rounded-full h-2">
+                            <div class="bg-primary h-2 rounded-full" style="width: {{ stat.pourcentage }}%"></div>
+                        </div>
+                    </div>
+                    <span class="text-sm font-medium text-gray-900">{{ stat.count }}</span>
+                </div>
+                {% empty %}
+                <p class="text-sm text-gray-500">Aucune donnée</p>
+                {% endfor %}
+            </div>
+
+            <!-- Par type -->
+            <div class="pt-4 border-t">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Par type</h4>
+                {% for stat in stats_type %}
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center flex-1">
+                        <span class="text-sm text-gray-600 w-32">{{ stat.type_name }}</span>
+                        <div class="flex-1 mx-3 bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ stat.pourcentage }}%"></div>
+                        </div>
+                    </div>
+                    <span class="text-sm font-medium text-gray-900">{{ stat.count }}</span>
+                </div>
+                {% empty %}
+                <p class="text-sm text-gray-500">Aucune donnée</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.bg-white');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+});
+</script>
+
+{% endblock %}

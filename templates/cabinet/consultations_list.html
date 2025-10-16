@@ -61,6 +61,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lieu</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarif</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paiement</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
@@ -89,6 +90,29 @@
                     {{ consultation.tarif }} DHS
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
+                    {% if consultation.statut_consultation == 'annulee' %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                            <i class="fas fa-times-circle mr-1"></i>Annulée
+                        </span>
+                    {% elif consultation.statut_consultation == 'reportee' %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">
+                            <i class="fas fa-calendar-alt mr-1"></i>Reportée
+                        </span>
+                    {% elif consultation.statut_consultation == 'terminee' %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+                            <i class="fas fa-check mr-1"></i>Terminée
+                        </span>
+                    {% elif consultation.statut_consultation == 'confirmee' %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>Confirmée
+                        </span>
+                    {% else %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            <i class="fas fa-clock mr-1"></i>Prévue
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
                     {% if consultation.statut_paiement == 'paye' %}
                         <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Payé</span>
                     {% elif consultation.statut_paiement == 'attente' %}
@@ -100,18 +124,27 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <div class="flex gap-2">
                         <a href="{% url 'cabinet:consultation_detail' consultation.id %}" 
-                           class="text-primary hover:text-primary-dark">
+                           class="text-primary hover:text-primary-dark"
+                           title="Voir détails">
                             <i class="fas fa-eye"></i>
                         </a>
+                        {% if consultation.statut_consultation != 'annulee' %}
                         <a href="{% url 'cabinet:consultation_edit' consultation.id %}" 
-                           class="text-gray-600 hover:text-gray-800">
+                           class="text-gray-600 hover:text-gray-800"
+                           title="Modifier">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href="{% url 'cabinet:consultation_delete' consultation.id %}" 
-                           class="text-red-600 hover:text-red-800"
-                           onclick="return confirm('Supprimer cette consultation ?')">
-                            <i class="fas fa-trash"></i>
+                        <a href="{% url 'cabinet:consultation_reporter' consultation.id %}" 
+                           class="text-orange-600 hover:text-orange-800"
+                           title="Reporter">
+                            <i class="fas fa-calendar-alt"></i>
                         </a>
+                        <a href="{% url 'cabinet:consultation_annuler' consultation.id %}" 
+                           class="text-red-600 hover:text-red-800"
+                           title="Annuler">
+                            <i class="fas fa-times-circle"></i>
+                        </a>
+                        {% endif %}
                     </div>
                 </td>
             </tr>
