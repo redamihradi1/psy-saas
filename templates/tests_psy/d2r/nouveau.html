@@ -1,14 +1,12 @@
-{% extends 'tests_psy/base_test.html' %}
+{% extends 'base.html' %}
 
-{% block test_title %}
-<i class="fas fa-brain text-primary mr-2"></i>Nouveau Test D2R
-{% endblock %}
+{% block title %}Nouveau Test D2R{% endblock %}
 
-{% block test_content %}
+{% block content %}
 <div class="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
-    <h2 class="text-xl font-bold text-gray-900 mb-6">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">
         <i class="fas fa-clipboard-list text-primary mr-2"></i>
-        Informations du test
+        Nouveau Test D2R
     </h2>
 
     <form method="post">
@@ -124,7 +122,7 @@
         <!-- Boutons -->
         <div class="flex gap-4 mt-8 pt-6 border-t border-gray-200">
             <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 shadow-lg">
-                <i class="fas fa-arrow-right mr-2"></i>Commencer le test
+                <i class="fas fa-arrow-right mr-2"></i>Continuer vers les instructions
             </button>
             <a href="{% if patient %}{% url 'cabinet:patient_detail' patient.id %}{% else %}{% url 'tests_psy:d2r_liste' %}{% endif %}" 
                class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">

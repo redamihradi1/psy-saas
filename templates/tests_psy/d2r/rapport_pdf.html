@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Rapport Test d'attention - {{ test.code }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% comment %} <style>
+      /* Reset et styles de base */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        line-height: 1.6;
+        color: #2d3748;
+        background: white;
+      }
+
+      /* Conteneur principal */
+      .report-container {
+        max-width: 210mm; /* Largeur A4 */
+        margin: 0 auto;
+        padding: 30px;
+      }
+
+      /* En-tête du rapport */
+      .report-header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #4299e1;
+        margin-bottom: 30px;
+      }
+
+      .report-header h1 {
+        font-size: 24px;
+        color: #2b6cb0;
+        margin-bottom: 10px;
+      }
+
+      .report-header .test-info {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        color: #4a5568;
+      }
+
+      /* Section des informations du participant */
+      .participant-info {
+        background: #f7fafc;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      .info-item {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .info-item label {
+        font-size: 12px;
+        color: #718096;
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .info-item .value {
+        font-size: 16px;
+        color: #2d3748;
+        font-weight: 600;
+      }
+
+      /* Sections de résultats */
+      .results-section {
+        margin-bottom: 30px;
+      }
+
+      .results-section h2 {
+        color: #2b6cb0;
+        font-size: 18px;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+
+      .metric-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+      }
+
+      .metric-card h3 {
+        color: #4a5568;
+        font-size: 14px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+      }
+
+      .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2b6cb0;
+        margin-bottom: 5px;
+      }
+
+      .metric-label {
+        font-size: 12px;
+        color: #718096;
+      }
+
+      /* Graphique */
+      .graph-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .graph-container {
+        height: 500px;
+        margin: 20px 0;
+      }
+
+      /* Styles spécifiques pour l'impression */
+      @media print {
+        @page {
+          size: A4;
+          margin: 2cm;
+        }
+
+        body {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+
+        .report-container {
+          padding: 0;
+        }
+
+        .graph-section {
+          break-inside: avoid;
+        }
+
+        .metric-card {
+          break-inside: avoid;
+        }
+      }
+
+      /* Styles pour le pied de page */
+      .report-footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        color: #718096;
+        font-size: 12px;
+      }
+
+      @media print {
+        .report-footer {
+          position: fixed;
+          bottom: 0;
+          width: 100%;
+          padding: 10px 0;
+        }
+      }
+    </style> {% endcomment %}
+
+    <style>
+      /* Reset et styles de base */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+    
+      body {
+        font-family: "Arial", sans-serif;
+        line-height: 1.6;
+        color: #2d3748;
+        background: white;
+      }
+    
+      /* Conteneur principal */
+      .report-container {
+        max-width: 210mm; /* Largeur A4 */
+        margin: 0 auto;
+        padding: 30px;
+      }
+    
+      /* En-tête du rapport */
+      .report-header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #4299e1;
+        margin-bottom: 30px;
+      }
+    
+      .report-header h1 {
+        font-size: 24px;
+        color: #2b6cb0;
+        margin-bottom: 10px;
+      }
+    
+      .report-header .test-info {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        color: #4a5568;
+      }
+    
+      /* Section des informations du participant */
+      .participant-info {
+        background: #f7fafc;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+    
+      .participant-info h2 {
+        color: #2b6cb0;
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+    
+      /* Nouveau style pour les groupes d'information */
+      .info-grid {
+        display: grid;
+        gap: 20px;
+      }
+    
+      .info-group {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+    
+      .info-group h3 {
+        color: #4a5568;
+        font-size: 14px;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+    
+      .info-subgrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+      }
+    
+      .info-item {
+        background: #f8fafc;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+      }
+    
+      .info-item label {
+        font-size: 12px;
+        color: #718096;
+        display: block;
+        margin-bottom: 5px;
+      }
+    
+      .info-item .value {
+        font-size: 14px;
+        color: #2d3748;
+        font-weight: 600;
+      }
+    
+      /* Sections de résultats */
+      .results-section {
+        margin-bottom: 30px;
+      }
+    
+      .results-section h2 {
+        color: #2b6cb0;
+        font-size: 18px;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+    
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+    
+      .metric-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+      }
+    
+      .metric-card h3 {
+        color: #4a5568;
+        font-size: 14px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+      }
+    
+      .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2b6cb0;
+        margin-bottom: 5px;
+      }
+    
+      .metric-label {
+        font-size: 12px;
+        color: #718096;
+      }
+    
+      /* Graphique */
+      .graph-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+    
+      .graph-container {
+        height: 500px;
+        margin: 20px 0;
+      }
+    
+      /* Pied de page */
+      .report-footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+      }
+    
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        color: #718096;
+        font-size: 12px;
+      }
+    
+      /* Styles spécifiques pour l'impression */
+      @media print {
+        @page {
+          size: A4;
+          margin: 2cm;
+        }
+    
+        body {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+    
+        .report-container {
+          padding: 0;
+        }
+    
+        /* Éviter les sauts de page */
+        .info-group,
+        .graph-section,
+        .metric-card {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+    
+        /* Style spécifique pour les couleurs en impression */
+        .info-item {
+          border: 1px solid #e2e8f0;
+          background-color: #ffffff !important;
+        }
+    
+        .participant-info {
+          background-color: #ffffff !important;
+        }
+    
+        .report-footer {
+          position: fixed;
+          bottom: 0;
+          width: 100%;
+          padding: 10px 0;
+        }
+    
+        /* Assurer la visibilité des éléments en impression */
+        .metric-value {
+          color: #2b6cb0 !important;
+        }
+    
+        .info-item .value {
+          color: #2d3748 !important;
+        }
+      }
+    
+      /* Styles responsives pour l'écran */
+      @media screen and (max-width: 768px) {
+        .metrics-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+    
+        .info-subgrid {
+          grid-template-columns: 1fr;
+        }
+      }
+    
+      @media screen and (max-width: 480px) {
+        .metrics-grid {
+          grid-template-columns: 1fr;
+        }
+    
+        .report-header .test-info {
+          flex-direction: column;
+          gap: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body class="report-container">
+    <!-- En-tête -->
+    <header class="report-header">
+      <h1>Rapport d'évaluation Test d'attention</h1>
+      <div class="test-info">
+        <span>Code: {{ test.code }}</span>
+        <span>Date: {{ test.date }}</span>
+      </div>
+    </header>
+
+    <!-- Informations participant -->
+    {% comment %} <section class="participant-info">
+      <h2>Informations du participant</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Âge</label>
+          <div class="value">{{ test.age }} ans</div>
+        </div>
+        <div class="info-item">
+          <label>Sexe</label>
+          <div class="value">
+            {% if test.sexe == 'M' %}Masculin{% else %}Féminin{% endif %}
+          </div>
+        </div>
+        <div class="info-item">
+          <label>Vision</label>
+          <div class="value">
+            {% if test.correction_vue == 'OP' %}Correction portée 
+            {% elif test.correction_vue == 'ON' %}Correction non portée {% else %}Pas de
+            correction{% endif %}
+          </div>
+        </div>
+        <div class="info-item">
+          <label>Latéralité</label>
+          <div class="value">
+            {% if test.lateralite == 'D' %}Droitier{% else %}Gaucher{% endif %}
+          </div>
+        </div>
+      </div>
+    </section> {% endcomment %}
+    <section class="participant-info">
+      <h2>Informations du participant</h2>
+      <div class="info-grid">
+        <!-- Informations personnelles -->
+        <div class="info-group">
+          <h3>Informations personnelles</h3>
+          <div class="info-subgrid">
+            <div class="info-item">
+              <label>Âge</label>
+              <div class="value">{{ test.age }} ans</div>
+            </div>
+            <div class="info-item">
+              <label>Sexe</label>
+              <div class="value">
+                {% if test.sexe == 'M' %}Masculin{% else %}Féminin{% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+    
+        <!-- Informations médicales -->
+        <div class="info-group">
+          <h3>Informations médicales</h3>
+          <div class="info-subgrid">
+            <div class="info-item">
+              <label>Vision</label>
+              <div class="value">
+                {% if test.correction_vue == 'OP' %}Correction portée
+                {% elif test.correction_vue == 'ON' %}Correction non portée
+                {% else %}Pas de correction{% endif %}
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Latéralité</label>
+              <div class="value">
+                {% if test.lateralite == 'D' %}Droitier{% else %}Gaucher{% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+    
+        <!-- Informations académiques/professionnelles -->
+        <div class="info-group">
+          <h3>Parcours académique et professionnel</h3>
+          <div class="info-subgrid">
+            <div class="info-item">
+              <label>Type d'école/classe</label>
+              <div class="value">{{ test.type_ecole|default:"Non spécifié" }}</div>
+            </div>
+            <div class="info-item">
+              <label>Études</label>
+              <div class="value">{{ test.etudes|default:"Non spécifié" }}</div>
+            </div>
+            <div class="info-item">
+              <label>Profession</label>
+              <div class="value">{{ test.profession|default:"Non spécifié" }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Résultats standards -->
+    <section class="results-section">
+      <h2>Normes standards et percentiles</h2>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <h3>Taux d'erreurs</h3>
+          <div class="metric-value">{{ note_standard_e }}</div>
+          <div class="metric-label">Note standard</div>
+          <div class="metric-value">{{ percentile_e }}</div>
+          <div class="metric-label">Percentile N</div>
+        </div>
+        <div class="metric-card">
+          <h3>Caractère ciblé traité</h3>
+          <div class="metric-value">{{ note_standard_cct }}</div>
+          <div class="metric-label">Note standard</div>
+          <div class="metric-value">{{ percentile_cct }}</div>
+          <div class="metric-label">Percentile N</div>
+        </div>
+        <div class="metric-card">
+          <h3>Capacité de concentration</h3>
+          <div class="metric-value">{{ note_standard_cc }}</div>
+          <div class="metric-label">Note standard</div>
+          <div class="metric-value">{{ percentile_cc }}</div>
+          <div class="metric-label">Percentile N</div>
+        </div>
+      </div>
+    </section>
+
+    
+
+    <div class="mt-8">
+      <h3 class="text-base font-medium text-gray-800 mb-6">
+        Graphique de performance
+      </h3>
+      <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <canvas id="performanceGraph" width="800" height="600"></canvas>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.1.0/chartjs-plugin-annotation.min.js"></script>
+
+  </div>
+
+    <!-- Ajoutez juste après Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.1.0/chartjs-plugin-annotation.min.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const ctx = document.getElementById('performanceGraph').getContext('2d');
+          Chart.register('chartjs-plugin-annotation');
+
+          const chart = new Chart(ctx, {
+              type: 'scatter',
+              data: {
+                  datasets: [{
+                      label: 'Performance',
+                      data: [{
+                          x: {{ note_standard_cct|default:100 }},
+                          y: {{ note_standard_e|default:100 }}
+                      }],
+                      backgroundColor: '#000000',
+                      pointRadius: 6
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  animation: false,
+                  layout: {
+                      padding: {
+                          left: 20,
+                          right: 20,
+                          top: 20,
+                          bottom: 20
+                      }
+                  },
+                  scales: {
+                      x: {
+                          min: 70,
+                          max: 130,
+                          grid: {
+                              color: context => context.tick.value === 100 ? '#666666' : '#dddddd',
+                              lineWidth: context => context.tick.value === 100 ? 2 : 1
+                          },
+                          title: {
+                              display: true,
+                              text: 'Note standard CCT (Rythme)',
+                              font: { size: 12, weight: 'bold' }
+                          },
+                          ticks: { stepSize: 10, color: '#333333' }
+                      },
+                      y: {
+                          min: 70,
+                          max: 130,
+                          grid: {
+                              color: context => context.tick.value === 100 ? '#666666' : '#dddddd',
+                              lineWidth: context => context.tick.value === 100 ? 2 : 1
+                          },
+                          title: {
+                              display: true,
+                              text: 'Note standard E% (Exactitude)',
+                              font: { size: 12, weight: 'bold' }
+                          },
+                          ticks: { stepSize: 10, color: '#333333' }
+                      }
+                  },
+                  plugins: {
+                      legend: {
+                          display: true,
+                          position: 'top',
+                          labels: {
+                              boxWidth: 10,
+                              font: { size: 12 }
+                          }
+                      },
+                      annotation: {
+                          annotations: {
+                              // En haut à droite
+                              topRightBox: {
+                                  type: 'label',
+                                  backgroundColor: '#f8f9fa',
+                                  borderColor: '#dee2e6',
+                                  borderWidth: 1,
+                                  borderRadius: 4,
+                                  content: ['Attentif,', 'Concentré'],
+                                  xValue: 125,
+                                  yValue: 125,
+                                  padding: 8,
+                                  font: {
+                                      size: 11,
+                                      weight: 'bold'
+                                  }
+                              },
+                              // En haut à gauche
+                              topLeftBox: {
+                                  type: 'label',
+                                  backgroundColor: '#f8f9fa',
+                                  borderColor: '#dee2e6',
+                                  borderWidth: 1,
+                                  borderRadius: 4,
+                                  content: ['Réfléchi'],
+                                    xValue: 75,
+                                    yValue: 125,
+                                  padding: 8,
+                                  font: {
+                                      size: 11,
+                                      weight: 'bold'
+                                  }
+                              },
+                              // En bas à gauche
+                              bottomLeftBox: {
+                                  type: 'label',
+                                  backgroundColor: '#f8f9fa',
+                                  borderColor: '#dee2e6',
+                                  borderWidth: 1,
+                                  borderRadius: 4,
+                                  content: ['Ni attentif,', 'Ni concentré'],
+                                    xValue: 75,
+                                    yValue: 75,
+                                  padding: 8,
+                                  font: {
+                                      size: 11,
+                                      weight: 'bold'
+                                  }
+                              },
+                              // En bas à droite
+                              bottomRightBox: {
+                                  type: 'label',
+                                  backgroundColor: '#f8f9fa',
+                                  borderColor: '#dee2e6',
+                                  borderWidth: 1,
+                                  borderRadius: 4,
+                                  content: ['impulsif'],
+                                    xValue: 125,
+                                    yValue: 75,
+                                  padding: 8,
+                                  font: {
+                                      size: 11,
+                                      weight: 'bold'
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          });
+
+          // Attendre le rendu complet du graphique avant d'imprimer
+          chart.options.animation = false;
+          setTimeout(() => {
+            // console.log("Graphique prêt à être imprimé");
+            window.print();
+          }, 10000);
+          const canvas = document.getElementById('performanceGraph');
+          setTimeout(() => {
+            const imageData = canvas.toDataURL('image/png');
+            console.log("Image du graphique :", imageData);
+          }, 1500);
+      });
+    </script>
+  </body>
+  <!-- À ajouter juste avant la fermeture du body -->
+  <footer class="report-footer">
+    <div class="footer-content">
+      <div class="timestamp">Généré le : {{ test.date|date:"d/m/Y" }}</div>
+      <div class="page-number">Page 1/1</div>
+    </div>
+  </footer>
+</html>

@@ -196,6 +196,18 @@ def patients_list(request):
 def patient_create(request):
     """Créer un patient"""
     
+    # VÉRIFICATION : Limite de patients atteinte ?
+    if not request.user.is_superadmin():
+        license = request.user.organization.license
+        if not license.can_add_patient():
+            patients_restants = license.get_patients_remaining()
+            messages.error(
+                request, 
+                f"Limite de patients atteinte ! Votre licence autorise {license.max_patients} patients maximum. "
+                f"Vous avez actuellement {license.max_patients - patients_restants} patients."
+            )
+            return redirect('cabinet:patients_list')
+    
     if request.method == 'POST':
         form = PatientForm(request.POST)
         if form.is_valid():

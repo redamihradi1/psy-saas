@@ -79,8 +79,18 @@ class License(models.Model):
     plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default='trial')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     
-    # Limites patients
+    # Limites patients (configurable par le super admin)
     max_patients = models.IntegerField(default=10, verbose_name="Nombre max de patients")
+    
+    # Modules tests (configurables - par défaut tous à False)
+    has_d2r = models.BooleanField(default=False, verbose_name="Accès Test D2R")
+    max_tests_d2r = models.IntegerField(default=0, verbose_name="Nombre max de tests D2R (0 = illimité)")
+    
+    has_vineland = models.BooleanField(default=False, verbose_name="Accès Test Vineland")
+    max_tests_vineland = models.IntegerField(default=0, verbose_name="Nombre max de tests Vineland (0 = illimité)")
+    
+    has_pep3 = models.BooleanField(default=False, verbose_name="Accès Test PEP3")
+    max_tests_pep3 = models.IntegerField(default=0, verbose_name="Nombre max de tests PEP3 (0 = illimité)")
     
     # Dates
     start_date = models.DateTimeField(default=timezone.now)
@@ -94,16 +104,17 @@ class License(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.organization.name} - {self.get_plan_display()}"
+        tests = self.get_available_tests()
+        tests_str = ', '.join(tests) if tests else 'Aucun test'
+        return f"{self.organization.name} - {self.get_plan_display()} ({tests_str})"
 
     def save(self, *args, **kwargs):
-        # Définir les limites selon le plan
+        # Note: max_patients, max_tests_* sont maintenant configurables manuellement
+        # On définit juste les dates selon le plan
         if self.plan == 'trial':
-            self.max_patients = 10
             if not self.end_date:
                 self.end_date = timezone.now() + timedelta(days=30)
         elif self.plan == 'lifetime':
-            self.max_patients = 100
             self.end_date = None
         super().save(*args, **kwargs)
 
@@ -125,6 +136,120 @@ class License(models.Model):
             return (self.end_date - timezone.now()).days
         return 0
     
-    def has_patient_limit(self):
-        """Vérifie si cette licence a une limite de patients"""
-        return True  # Les deux plans ont une limite
+    def can_add_patient(self):
+        """Vérifie si l'organisation peut ajouter un nouveau patient"""
+        from cabinet.models import Patient
+        current_count = Patient.objects.filter(organization=self.organization).count()
+        return current_count < self.max_patients
+    
+    def get_patients_remaining(self):
+        """Retourne le nombre de patients restants"""
+        from cabinet.models import Patient
+        current_count = Patient.objects.filter(organization=self.organization).count()
+        return max(0, self.max_patients - current_count)
+    
+    def can_add_test(self, test_name):
+        """Vérifie si l'organisation peut créer un nouveau test
+        
+        Args:
+            test_name (str): Nom du test ('d2r', 'vineland', 'pep3')
+            
+        Returns:
+            bool: True si un nouveau test peut être créé
+        """
+        if not self.has_test_access(test_name):
+            return False
+        
+        # Si max = 0, c'est illimité
+        test_limits = {
+            'd2r': self.max_tests_d2r,
+            'vineland': self.max_tests_vineland,
+            'pep3': self.max_tests_pep3,
+        }
+        
+        max_tests = test_limits.get(test_name.lower(), 0)
+        if max_tests == 0:
+            return True  # Illimité
+        
+        # Compter les tests existants
+        from tests_psy.models import TestD2R
+        # TODO: Ajouter Vineland et PEP3 quand disponibles
+        
+        if test_name.lower() == 'd2r':
+            current_count = TestD2R.objects.filter(organization=self.organization).count()
+            return current_count < max_tests
+        
+        return True
+    
+    def get_tests_remaining(self, test_name):
+        """Retourne le nombre de tests restants pour un test donné
+        
+        Args:
+            test_name (str): Nom du test ('d2r', 'vineland', 'pep3')
+            
+        Returns:
+            int or str: Nombre restant ou 'Illimité'
+        """
+        test_limits = {
+            'd2r': self.max_tests_d2r,
+            'vineland': self.max_tests_vineland,
+            'pep3': self.max_tests_pep3,
+        }
+        
+        max_tests = test_limits.get(test_name.lower(), 0)
+        if max_tests == 0:
+            return 'Illimité'
+        
+        # Compter les tests existants
+        from tests_psy.models import TestD2R
+        
+        if test_name.lower() == 'd2r':
+            current_count = TestD2R.objects.filter(organization=self.organization).count()
+            return max(0, max_tests - current_count)
+        
+        return 'Illimité'
+    
+    def has_test_access(self, test_name):
+        """Vérifie si la licence donne accès à un test spécifique
+        
+        Args:
+            test_name (str): Nom du test ('d2r', 'vineland', 'pep3')
+            
+        Returns:
+            bool: True si l'accès est autorisé, False sinon
+        """
+        if not self.is_active():
+            return False
+        
+        test_mapping = {
+            'd2r': self.has_d2r,
+            'vineland': self.has_vineland,
+            'pep3': self.has_pep3,
+        }
+        
+        return test_mapping.get(test_name.lower(), False)
+    
+    def get_available_tests(self):
+        """Retourne la liste des tests disponibles pour cette licence
+        
+        Returns:
+            list: Liste des noms de tests disponibles
+        """
+        tests = []
+        if self.has_d2r:
+            tests.append('D2R')
+        if self.has_vineland:
+            tests.append('Vineland')
+        if self.has_pep3:
+            tests.append('PEP3')
+        return tests
+    
+    def get_missing_tests(self):
+        """Retourne la liste des tests NON disponibles
+        
+        Returns:
+            list: Liste des noms de tests non disponibles
+        """
+        all_tests = ['D2R', 'Vineland', 'PEP3']
+        available = self.get_available_tests()
+        return [test for test in all_tests if test not in available]

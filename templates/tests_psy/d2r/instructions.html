@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% load letter_tags %}
+
+{% block title %}Instructions Test D2R{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6 max-w-[95%] mx-auto">
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">
+    Test d'attention - Feuille d'Instructions
+  </h1>
+
+  <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+    <p class="text-sm text-blue-800">
+      <i class="fas fa-user mr-2"></i><strong>Patient :</strong> {{ patient.nom_complet }}
+    </p>
+  </div>
+
+  <!-- Instructions visuelles -->
+  <div class="mt-8 space-y-6">
+    <!-- À BARRER -->
+    <div class="border rounded-lg p-4 bg-gray-50">
+      <p class="text-sm font-bold mb-4 text-gray-800">
+        ✅ Barrer chaque "d" accompagné de DEUX traits :
+      </p>
+      <div class="grid grid-cols-3 gap-6">
+        <div class="bg-white py-4 px-3 rounded-lg text-center shadow-sm">
+          <div class="mb-2 flex justify-center">{% render_letter 'd' 2 0 %}</div>
+          <span class="text-xs text-gray-600">2 traits en haut</span>
+        </div>
+        <div class="bg-white py-4 px-3 rounded-lg text-center shadow-sm">
+          <div class="mb-2 flex justify-center">{% render_letter 'd' 0 2 %}</div>
+          <span class="text-xs text-gray-600">2 traits en bas</span>
+        </div>
+        <div class="bg-white py-4 px-3 rounded-lg text-center shadow-sm">
+          <div class="mb-2 flex justify-center">{% render_letter 'd' 1 1 %}</div>
+          <span class="text-xs text-gray-600">1 haut + 1 bas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- NE PAS BARRER -->
+    <div class="border rounded-lg p-4 bg-gray-50">
+      <p class="text-sm font-bold mb-4 text-gray-800">❌ Ne pas barrer :</p>
+      
+      <!-- d avec autre nombre de traits -->
+      <div class="mb-4">
+        <p class="text-xs font-medium mb-3 text-gray-700">
+          "d" avec moins ou plus de 2 traits :
+        </p>
+        <div class="grid grid-cols-5 gap-4 bg-white p-3 rounded-lg shadow-sm">
+          <div class="text-center">
+            <div class="mb-1 flex justify-center">{% render_letter 'd' 1 0 %}</div>
+            <span class="text-xs">1 haut</span>
+          </div>
+          <div class="text-center">
+            <div class="mb-1 flex justify-center">{% render_letter 'd' 0 1 %}</div>
+            <span class="text-xs">1 bas</span>
+          </div>
+          <div class="text-center">
+            <div class="mb-1 flex justify-center">{% render_letter 'd' 2 1 %}</div>
+            <span class="text-xs">3 traits</span>
+          </div>
+          <div class="text-center">
+            <div class="mb-1 flex justify-center">{% render_letter 'd' 1 2 %}</div>
+            <span class="text-xs">3 traits</span>
+          </div>
+          <div class="text-center">
+            <div class="mb-1 flex justify-center">{% render_letter 'd' 2 2 %}</div>
+            <span class="text-xs">4 traits</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- p avec n'importe quel nombre de traits -->
+      <div>
+        <p class="text-xs font-medium mb-3 text-gray-700">
+          "p" quel que soit le nombre de traits :
+        </p>
+        <div class="grid grid-cols-5 gap-4 bg-white p-3 rounded-lg shadow-sm">
+          <div class="text-center flex justify-center">{% render_letter 'p' 2 0 %}</div>
+          <div class="text-center flex justify-center">{% render_letter 'p' 0 1 %}</div>
+          <div class="text-center flex justify-center">{% render_letter 'p' 2 0 %}</div>
+          <div class="text-center flex justify-center">{% render_letter 'p' 1 0 %}</div>
+          <div class="text-center flex justify-center">{% render_letter 'p' 1 1 %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exercices -->
+  <div class="mt-8 space-y-8">
+    {% for exercise_num, symbols in exercises %}
+    <div class="border rounded-lg p-6 bg-white shadow-sm">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h3 class="text-lg font-bold text-gray-800">Exercice {{ exercise_num }}</h3>
+          <p class="text-sm text-gray-600">
+            {% if exercise_num == 1 %}Barrez chaque "d" avec 2 traits{% else %}Maintenant sans aide{% endif %}
+          </p>
+        </div>
+        <div class="flex space-x-3">
+          <button
+            type="button"
+            onclick="showAnswers('exercise{{ exercise_num }}')"
+            class="px-4 py-2 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600 transition shadow-sm"
+          >
+            <i class="fas fa-eye mr-1"></i>Réponses
+          </button>
+          <button
+            type="button"
+            onclick="checkAnswers('exercise{{ exercise_num }}')"
+            class="px-4 py-2 text-sm text-white bg-green-500 rounded-md hover:bg-green-600 transition shadow-sm"
+          >
+            <i class="fas fa-check mr-1"></i>Vérifier
+          </button>
+          <button
+            type="button"
+            onclick="resetExercise('exercise{{ exercise_num }}')"
+            class="px-4 py-2 text-sm text-white bg-red-500 rounded-md hover:bg-red-600 transition shadow-sm"
+          >
+            <i class="fas fa-redo mr-1"></i>Reset
+          </button>
+        </div>
+      </div>
+
+      <div id="exercise{{ exercise_num }}" class="space-y-4">
+        <!-- Ligne 1 (symboles 0-7) -->
+        <div class="border rounded-lg p-4 bg-gray-50">
+          <div class="flex justify-around items-center gap-6">
+            {% for symbol in symbols|slice:":8" %}
+              {% render_letter symbol.letter symbol.top_strokes symbol.bottom_strokes symbol.is_target %}
+            {% endfor %}
+          </div>
+        </div>
+        
+        <!-- Ligne 2 (symboles 8-15) -->
+        <div class="border rounded-lg p-4 bg-gray-50">
+          <div class="flex justify-around items-center gap-6">
+            {% for symbol in symbols|slice:"8:16" %}
+              {% render_letter symbol.letter symbol.top_strokes symbol.bottom_strokes symbol.is_target %}
+            {% endfor %}
+          </div>
+        </div>
+        
+        <!-- Ligne 3 (symboles 16-23) -->
+        <div class="border rounded-lg p-4 bg-gray-50">
+          <div class="flex justify-around items-center gap-6">
+            {% for symbol in symbols|slice:"16:24" %}
+              {% render_letter symbol.letter symbol.top_strokes symbol.bottom_strokes symbol.is_target %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Consignes finales -->
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm p-6 mt-8">
+    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+      <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+      Résumé des consignes
+    </h3>
+
+    <div class="space-y-3">
+      <div class="flex items-start">
+        <i class="fas fa-clock text-blue-500 text-xl mr-3"></i>
+        <p class="text-gray-700">
+          Travaillez de gauche à droite. Vous avez
+          <span class="font-bold text-blue-600">20 secondes</span> par ligne.
+        </p>
+      </div>
+
+      <div class="flex items-start">
+        <i class="fas fa-arrow-right text-blue-500 text-xl mr-3"></i>
+        <p class="text-gray-700">
+          À chaque <span class="font-semibold">"Stop! Ligne suivante!"</span>,
+          commencez la ligne suivante immédiatement.
+        </p>
+      </div>
+
+      <div class="flex items-start">
+        <i class="fas fa-bolt text-blue-500 text-xl mr-3"></i>
+        <p class="text-gray-700 italic">
+          Travaillez <strong>vite</strong> et si possible <strong>sans fautes</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bouton commencer -->
+  <a href="{% url 'tests_psy:d2r_passation' test.id %}"
+     class="block w-full mt-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transform hover:scale-[1.02] transition-all duration-200 font-bold shadow-lg text-center text-lg">
+    <i class="fas fa-play-circle mr-2"></i>Commencer le test
+  </a>
+</div>
+
+<style>
+  .symbol-container {
+    position: relative;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .symbol-container.selected .cross-marker {
+    display: flex !important;
+  }
+
+  .symbol-container.correct {
+    background-color: #def7ec;
+    border: 2px solid #059669;
+    transform: scale(1.05);
+  }
+
+  .symbol-container.incorrect {
+    background-color: #fde2e2;
+    border: 2px solid #dc2626;
+    transform: scale(1.05);
+  }
+
+  .symbol-container.correct::after {
+    content: "✓";
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #059669;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    animation: popIn 0.3s ease;
+  }
+
+  .symbol-container.incorrect::after {
+    content: "×";
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #dc2626;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    animation: popIn 0.3s ease;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+</style>
+
+<script>
+  function handleSymbolClick(checkbox) {
+    checkbox.closest("label").classList.toggle("selected", checkbox.checked);
+  }
+
+  function showAnswers(exerciseId) {
+    const exercise = document.getElementById(exerciseId);
+    exercise.querySelectorAll(".symbol-container").forEach((c) => {
+      c.classList.remove("selected", "correct", "incorrect");
+      if (c.dataset.isTarget === "true") c.classList.add("correct");
+    });
+    showNotification("Réponses affichées", "info");
+  }
+
+  function checkAnswers(exerciseId) {
+    const exercise = document.getElementById(exerciseId);
+    let correct = 0, total = 0;
+
+    exercise.querySelectorAll(".symbol-container").forEach((c) => {
+      const isTarget = c.dataset.isTarget === "true";
+      const isChecked = c.querySelector("input").checked;
+
+      if (isTarget) total++;
+      if (isTarget && isChecked) correct++;
+
+      c.classList.remove("correct", "incorrect");
+      if (isChecked) {
+        c.classList.add(isTarget ? "correct" : "incorrect");
+      } else if (isTarget) {
+        c.classList.add("incorrect");
+      }
+    });
+
+    const pct = Math.round((correct / total) * 100);
+    showNotification(
+      `Score: ${correct}/${total} (${pct}%)`,
+      pct >= 80 ? "success" : pct >= 50 ? "warning" : "error"
+    );
+  }
+
+  function resetExercise(exerciseId) {
+    const exercise = document.getElementById(exerciseId);
+    exercise.querySelectorAll(".symbol-container").forEach((c) => {
+      c.classList.remove("selected", "correct", "incorrect");
+      c.querySelector("input").checked = false;
+    });
+    showNotification("Réinitialisé", "info");
+  }
+
+  function showNotification(message, type = "info") {
+    const colors = {
+      success: "bg-green-500",
+      error: "bg-red-500",
+      warning: "bg-yellow-500",
+      info: "bg-blue-500"
+    };
+    
+    const notif = document.createElement("div");
+    notif.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white ${colors[type]} transform transition-all duration-300`;
+    notif.style.transform = "translateY(100%)";
+    notif.textContent = message;
+
+    document.body.appendChild(notif);
+    setTimeout(() => notif.style.transform = "translateY(0)", 100);
+    setTimeout(() => {
+      notif.style.transform = "translateY(100%)";
+      setTimeout(() => document.body.removeChild(notif), 300);
+    }, 3000);
+  }
+</script>
+{% endblock %}
