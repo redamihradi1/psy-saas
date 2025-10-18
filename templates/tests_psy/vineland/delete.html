@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer Test Vineland{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
+    <div class="text-center mb-6">
+        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">
+            Confirmer la suppression
+        </h2>
+        <p class="text-gray-600">
+            Cette action est irréversible
+        </p>
+    </div>
+
+    <div class="bg-gray-50 rounded-lg p-6 mb-6">
+        <h3 class="font-semibold text-gray-900 mb-3">Détails du test</h3>
+        <dl class="space-y-2">
+            <div class="flex justify-between">
+                <dt class="text-gray-600">Patient :</dt>
+                <dd class="font-medium text-gray-900">{{ patient.nom_complet }}</dd>
+            </div>
+            <div class="flex justify-between">
+                <dt class="text-gray-600">Date de naissance :</dt>
+                <dd class="font-medium text-gray-900">{{ patient.date_naissance|date:"d/m/Y" }}</dd>
+            </div>
+            <div class="flex justify-between">
+                <dt class="text-gray-600">Date de passation :</dt>
+                <dd class="font-medium text-gray-900">{{ test.date_passation|date:"d/m/Y à H:i" }}</dd>
+            </div>
+            <div class="flex justify-between">
+                <dt class="text-gray-600">Psychologue :</dt>
+                <dd class="font-medium text-gray-900">{{ test.psychologue.get_full_name|default:test.psychologue.username }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="flex gap-4">
+            <button type="submit" 
+                    class="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                <i class="fas fa-trash mr-2"></i>Oui, supprimer définitivement
+            </button>
+            <a href="{% url 'tests_psy:vineland_liste' %}" 
+               class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition text-center">
+                <i class="fas fa-times mr-2"></i>Annuler
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

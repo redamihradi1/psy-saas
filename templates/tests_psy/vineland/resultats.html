@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+
+{% block title %}Résultats Complets - Vineland{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-8">
+    <!-- En-tête -->
+    <div class="mb-6 pb-6 border-b border-gray-200">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-chart-line text-primary mr-2"></i>
+                    Résultats Complets - Vineland-II
+                </h2>
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    <div>
+                        <i class="fas fa-user mr-1"></i>
+                        <strong>Patient :</strong> {{ patient.nom_complet }}
+                    </div>
+                    <div>
+                        <i class="fas fa-birthday-cake mr-1"></i>
+                        <strong>Né(e) le :</strong> {{ patient.date_naissance|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar mr-1"></i>
+                        <strong>Date du test :</strong> {{ test.date_passation|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-hourglass-half mr-1"></i>
+                        <strong>Âge au test :</strong> {{ age.years }} ans, {{ age.months }} mois, {{ age.days }} jours
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions rapides -->
+            <div class="flex gap-2">
+                <a href="{% url 'tests_psy:vineland_pdf' test.id %}?niveau_confiance={{ niveau_confiance }}" 
+                class="text-purple-600 hover:text-purple-800 transition"
+                title="Télécharger PDF">
+                    <i class="fas fa-file-pdf text-2xl"></i>
+                </a>
+                <button onclick="window.print()" 
+                        class="text-gray-600 hover:text-gray-800 transition"
+                        title="Imprimer">
+                    <i class="fas fa-print text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🆕 SÉLECTEUR DE NIVEAU DE CONFIANCE -->
+    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+        <form method="get" class="flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-sliders-h text-primary"></i>
+                <label class="font-medium text-gray-700">Niveau de confiance :</label>
+            </div>
+            <select name="niveau_confiance" 
+                    onchange="this.form.submit()"
+                    class="border-2 border-primary rounded-lg px-4 py-2 font-medium focus:ring-2 focus:ring-primary focus:outline-none transition">
+                <option value="95" {% if niveau_confiance == 95 %}selected{% endif %}>95%</option>
+                <option value="90" {% if niveau_confiance == 90 %}selected{% endif %}>90% (recommandé)</option>
+                <option value="85" {% if niveau_confiance == 85 %}selected{% endif %}>85%</option>
+            </select>
+            <div class="text-sm text-gray-600 italic">
+                <i class="fas fa-info-circle mr-1"></i>
+                Change le niveau pour recalculer les intervalles de confiance
+            </div>
+        </form>
+    </div>
+
+    <!-- Navigation rapide -->
+    <div class="mb-6 flex flex-wrap gap-2">
+        {% for domain in complete_scores %}
+        <a href="#{{ domain.name_slug }}" 
+           class="px-4 py-2 bg-gray-100 hover:bg-primary hover:text-white rounded-lg text-sm font-medium transition">
+            {{ domain.name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Résultats par domaine -->
+    {% for domain in complete_scores %}
+    <div id="{{ domain.name_slug }}" class="mb-10 scroll-mt-20">
+        <!-- En-tête du domaine -->
+        <div class="domain-header mb-6 py-4 px-6 bg-gradient-to-r from-primary to-primary-dark rounded-lg shadow-lg">
+            <h2 class="text-2xl font-bold text-white flex items-center">
+                <i class="fas fa-folder-open mr-3"></i>
+                {{ domain.name }}
+            </h2>
+        </div>
+
+        <!-- Scores du domaine (si disponibles) -->
+        {% if domain.domain_score %}
+        <div class="mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200 shadow-md">
+            <h3 class="font-bold text-gray-900 mb-4 text-lg flex items-center">
+                <i class="fas fa-chart-bar text-primary mr-2"></i>
+                Scores du domaine
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Somme des notes-V -->
+                <div class="bg-white p-4 rounded-lg border border-blue-200">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">Somme notes-V</div>
+                    <div class="text-3xl font-bold text-primary">
+                        {{ domain.domain_score.somme_notes_v }}
+                    </div>
+                </div>
+
+                <!-- Note standard -->
+                <div class="bg-white p-4 rounded-lg border border-blue-200">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">Note standard</div>
+                    <div class="text-3xl font-bold text-primary">
+                        {{ domain.domain_score.note_standard }}
+                    </div>
+                </div>
+
+                <!-- Rang percentile -->
+                <div class="bg-white p-4 rounded-lg border border-blue-200">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">Rang percentile</div>
+                    <div class="text-3xl font-bold text-primary">
+                        {{ domain.domain_score.rang_percentile }}
+                    </div>
+                </div>
+
+                <!-- Niveau adaptatif -->
+                {% if domain.domain_score.niveau_adaptatif %}
+                <div class="bg-white p-4 rounded-lg border border-blue-200">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">Niveau adaptatif</div>
+                    <div class="text-lg font-bold text-primary mt-2">
+                        {{ domain.domain_score.niveau_adaptatif }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Intervalle de confiance du domaine -->
+            {% if domain.domain_score.intervalle %}
+            <div class="mt-4 bg-white p-4 rounded-lg border border-blue-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-sm font-medium text-gray-700">
+                            <i class="fas fa-chart-area mr-1 text-primary"></i>
+                            Intervalle de confiance ({{ domain.niveau_confiance }}%) :
+                        </span>
+                        <span class="text-lg font-bold text-gray-900 ml-2">
+                            ± {{ domain.domain_score.intervalle }}
+                        </span>
+                    </div>
+                    {% if domain.domain_score.note_composite %}
+                    <div class="text-sm text-gray-600">
+                        Note composite : <span class="font-bold">{{ domain.domain_score.note_composite }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Jauge visuelle de la note standard -->
+            <div class="mt-4">
+                <div class="flex justify-between text-xs text-gray-600 mb-2">
+                    <span>Très faible</span>
+                    <span>Faible</span>
+                    <span>Moyen inférieur</span>
+                    <span>Moyen</span>
+                    <span>Moyen supérieur</span>
+                    <span>Élevé</span>
+                </div>
+                <div class="relative w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <!-- Zones colorées -->
+                    <div class="absolute inset-0 flex">
+                        <div class="flex-1 bg-red-400"></div>
+                        <div class="flex-1 bg-orange-400"></div>
+                        <div class="flex-1 bg-yellow-400"></div>
+                        <div class="flex-1 bg-green-300"></div>
+                        <div class="flex-1 bg-green-400"></div>
+                        <div class="flex-1 bg-green-500"></div>
+                    </div>
+                    <!-- Indicateur de position -->
+                    <div class="absolute top-0 bottom-0 w-1 bg-black shadow-lg transition-all duration-500" 
+                         style="left: {% widthratio domain.domain_score.note_standard 160 100 %}%">
+                    </div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>20</span>
+                    <span>40</span>
+                    <span>60</span>
+                    <span>80</span>
+                    <span>100</span>
+                    <span>120</span>
+                    <span>140</span>
+                    <span>160</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Sous-domaines -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for sous_domain in domain.sous_domaines %}
+            <div class="border-2 border-gray-200 rounded-lg p-5 hover:border-primary hover:shadow-lg transition">
+                <!-- Nom du sous-domaine -->
+                <h3 class="font-bold text-gray-900 mb-4 text-lg border-b-2 border-primary pb-2 flex items-center">
+                    <i class="fas fa-puzzle-piece text-primary mr-2"></i>
+                    {{ sous_domain.name }}
+                </h3>
+                
+                <div class="space-y-3">
+                    <!-- Note brute -->
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded">
+                        <span class="text-sm text-gray-600">Note brute :</span>
+                        <span class="text-xl font-bold text-gray-900">
+                            {{ sous_domain.note_brute }}
+                        </span>
+                    </div>
+
+                    <!-- Note échelle-V -->
+                    <div class="flex justify-between items-center bg-primary bg-opacity-10 p-2 rounded">
+                        <span class="text-sm text-gray-700 font-medium">Note échelle-V :</span>
+                        <span class="text-2xl font-bold text-primary">
+                            {{ sous_domain.note_echelle_v }}
+                        </span>
+                    </div>
+
+                    <!-- Intervalle de confiance -->
+                    {% if sous_domain.intervalle %}
+                    <div class="flex justify-between items-center bg-blue-50 p-2 rounded border border-blue-200">
+                        <span class="text-sm text-blue-700">Intervalle ({{ domain.niveau_confiance }}%) :</span>
+                        <span class="text-lg font-bold text-blue-900">
+                            ± {{ sous_domain.intervalle }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Niveau adaptatif -->
+                    {% if sous_domain.niveau_adaptatif %}
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
+                        <div class="text-xs text-green-700 font-medium mb-1">Niveau adaptatif</div>
+                        <div class="text-sm font-bold text-green-900">
+                            {{ sous_domain.niveau_adaptatif }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Âge équivalent -->
+                    {% if sous_domain.age_equivalent %}
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-3 rounded-lg border border-purple-200">
+                        <div class="text-xs text-purple-700 font-medium mb-1 flex items-center">
+                            <i class="fas fa-birthday-cake mr-1"></i>
+                            Âge équivalent
+                        </div>
+                        <div class="text-sm font-bold text-purple-900">
+                            {{ sous_domain.age_equivalent }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Mini-jauge pour note échelle-V -->
+                <div class="mt-3">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-gradient-to-r from-primary to-primary-dark h-2 rounded-full transition-all duration-500"
+                             style="width: {% widthratio sous_domain.note_echelle_v 24 100 %}%">
+                        </div>
+                    </div>
+                    <div class="text-xs text-center text-gray-500 mt-1">
+                        Note sur 24
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Boutons de navigation -->
+    <div class="flex flex-wrap gap-4 mt-8 pt-6 border-t-2 border-gray-200">
+        <a href="{% url 'tests_psy:vineland_echelle_v' test.id %}" 
+        class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>Notes échelle-V
+        </a>
+
+        <!-- 🆕 BOUTON COMPARAISONS -->
+        <a href="{% url 'tests_psy:vineland_comparaisons' test.id %}?niveau_significativite=.05" 
+        class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg">
+            <i class="fas fa-exchange-alt mr-2"></i>Voir les comparaisons par paires
+        </a>
+
+        <a href="{% url 'tests_psy:vineland_pdf' test.id %}?niveau_confiance={{ niveau_confiance }}"
+        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg">
+            <i class="fas fa-file-pdf mr-2"></i>Télécharger le rapport PDF
+        </a>
+
+        <a href="{% url 'tests_psy:vineland_liste' %}" 
+        class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg">
+            <i class="fas fa-list mr-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+
+<!-- Légende d'interprétation -->
+<div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
+    <h3 class="font-bold text-blue-900 mb-3 flex items-center">
+        <i class="fas fa-book-open mr-2"></i>
+        Guide d'interprétation
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+        <div>
+            <h4 class="font-semibold mb-2">Notes standard :</h4>
+            <ul class="space-y-1 ml-4">
+                <li>• <strong>≥ 130 :</strong> Très élevé</li>
+                <li>• <strong>120-129 :</strong> Élevé</li>
+                <li>• <strong>110-119 :</strong> Moyen supérieur</li>
+                <li>• <strong>90-109 :</strong> Moyen</li>
+                <li>• <strong>80-89 :</strong> Moyen inférieur</li>
+                <li>• <strong>70-79 :</strong> Faible</li>
+                <li>• <strong>&lt; 70 :</strong> Très faible</li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="font-semibold mb-2">Rangs percentiles :</h4>
+            <ul class="space-y-1 ml-4">
+                <li>• <strong>98-99 :</strong> Exceptionnel</li>
+                <li>• <strong>91-97 :</strong> Supérieur</li>
+                <li>• <strong>75-90 :</strong> Bon</li>
+                <li>• <strong>25-74 :</strong> Moyen</li>
+                <li>• <strong>9-24 :</strong> Inférieur</li>
+                <li>• <strong>2-8 :</strong> Faible</li>
+                <li>• <strong>&lt; 2 :</strong> Très faible</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Animation pour le scroll */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Style pour l'impression */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .page-break {
+        page-break-before: always;
+    }
+}
+
+/* Animation des jauges */
+@keyframes slideIn {
+    from {
+        width: 0;
+    }
+}
+
+.transition-all {
+    animation: slideIn 1s ease-out;
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Questionnaire Vineland{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-8">
+    <!-- En-tête -->
+    <div class="mb-6 pb-6 border-b border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">
+            <i class="fas fa-clipboard-list text-primary mr-2"></i>
+            {% if is_edit %}
+                Modifier le questionnaire Vineland-II
+            {% else %}
+                Questionnaire Vineland-II
+            {% endif %}
+        </h2>
+        <div class="flex items-center gap-4 text-sm text-gray-600">
+            <div>
+                <i class="fas fa-user mr-1"></i>
+                <strong>Patient :</strong> {{ patient.nom_complet }}
+            </div>
+            <div>
+                <i class="fas fa-birthday-cake mr-1"></i>
+                <strong>Né(e) le :</strong> {{ patient.date_naissance|date:"d/m/Y" }}
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" id="vinelandForm">
+        {% csrf_token %}
+        
+        <!-- Pagination info -->
+        <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <span class="text-sm font-medium text-blue-800">
+                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                    </span>
+                </div>
+                <div class="text-sm text-blue-700">
+                    {{ page_obj.paginator.count }} questions au total
+                </div>
+            </div>
+        </div>
+
+        <!-- Légende des réponses -->
+        <div class="mb-6 bg-gray-50 rounded-lg p-4">
+            <h3 class="font-semibold text-gray-900 mb-3">Légende des réponses :</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div class="flex items-center">
+                    <span class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">2</span>
+                    <span class="text-gray-700">Oui, habituellement</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">1</span>
+                    <span class="text-gray-700">Quelquefois/Partiellement</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">0</span>
+                    <span class="text-gray-700">Non, jamais</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="w-14 h-10 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">NSP</span>
+                    <span class="text-gray-700">Ne sait pas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions groupées par domaine et sous-domaine -->
+        {% regroup page_obj.object_list by sous_domaine.domain as domain_list %}
+        
+        {% for domain in domain_list %}
+            <div class="domain-section mb-8">
+                <!-- Nom du domaine -->
+                <div class="domain-header mb-4 py-3 px-4 bg-gradient-to-r from-primary to-primary-dark rounded-lg">
+                    <h2 class="text-xl font-bold text-white">
+                        {{ domain.grouper.name }}
+                    </h2>
+                </div>
+            
+                {% regroup domain.list by sous_domaine as sousdomain_list %}
+            
+                {% for sousdomain in sousdomain_list %}
+                    <!-- Nom du sous-domaine -->
+                    <div class="sousdomain-header mb-4 py-2 px-4 bg-gray-100 rounded-lg border-l-4 border-primary">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            {{ sousdomain.grouper.name }}
+                        </h3>
+                    </div>
+                
+                    <!-- Questions -->
+                    {% for question in sousdomain.list %}
+                        <div class="question-block flex flex-col lg:flex-row lg:items-start lg:justify-between border-b border-gray-200 pb-6 mb-6 hover:bg-gray-50 transition p-4 rounded-lg">
+                            <div class="lg:w-2/3 mb-4 lg:mb-0">
+                                <!-- Plage d'âge -->
+                                {% with current_plage=question.plage_age %}
+                                {% if current_plage and question.numero_item == current_plage.item_debut %}
+                                    <div class="bg-indigo-100 text-indigo-800 border-l-4 border-indigo-500 px-4 py-2 mb-3 inline-flex items-center rounded">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span class="font-medium text-sm">
+                                            {% if current_plage.age_fin %}
+                                                {{ current_plage.age_debut }}-{{ current_plage.age_fin }} ans
+                                            {% else %}
+                                                {{ current_plage.age_debut }}+ ans
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                {% endwith %}
+
+                                <!-- Question et numéro -->
+                                <div class="text-sm text-gray-900 mb-2">
+                                    <span class="inline-block bg-primary text-white font-bold rounded-full w-8 h-8 text-center leading-8 mr-2">
+                                        {{ question.numero_item }}
+                                    </span>
+                                    <span class="font-medium">{{ question.texte }}</span>
+                                </div>
+
+                                <!-- Notes si présentes -->
+                                {% if question.note %}
+                                    <div class="mt-3 lg:w-3/4">
+                                        <div class="bg-blue-50 p-3 border-l-4 border-blue-400 rounded">
+                                            <div class="text-xs text-blue-900 font-semibold mb-1 uppercase">
+                                                <i class="fas fa-sticky-note mr-1"></i>Note :
+                                            </div>
+                                            <div class="text-sm text-blue-800">
+                                                {% for note_line in question.note|split_notes %}
+                                                    <div class="ml-3 mb-1">• {{ note_line }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Choix de réponses -->
+                            <div class="response-group flex gap-2 lg:gap-3 justify-end" 
+                                id="group_{{ question.sous_domaine.id }}_{{ question.numero_item }}">
+                                <!-- Boutons 0, 1, 2 -->
+                                {% for value in "012"|make_list %}
+                                    {% with question_key='question_'|add:question.sous_domaine.id|stringformat:"s"|add:'_'|add:question.numero_item|stringformat:"s" %}
+                                    {% with check_key=question_key|add:':'|add:value %}
+                                    <label class="w-12 h-12 flex items-center justify-center border-2 cursor-pointer hover:bg-gray-50 hover:border-primary transition rounded-lg radio-label
+                                                {% if initial_data|is_checked:check_key %}bg-primary border-primary text-white{% else %}border-gray-300{% endif %}"
+                                            data-value="{{ value }}"
+                                            data-question="{{ question.sous_domaine.id }}_{{ question.numero_item }}">
+                                        <input type="radio" 
+                                            name="question_{{ question.sous_domaine.id }}_{{ question.numero_item }}"
+                                            value="{{ value }}"
+                                            class="hidden"
+                                            {% if initial_data|is_checked:check_key %}checked{% endif %}>
+                                        <span class="text-lg font-bold">{{ value }}</span>
+                                    </label>
+                                    {% endwith %}
+                                    {% endwith %}
+                                {% endfor %}
+                                
+                                <!-- NSP -->
+                                {% with question_key='question_'|add:question.sous_domaine.id|stringformat:"s"|add:'_'|add:question.numero_item|stringformat:"s" %}
+                                {% with check_key=question_key|add:':NSP' %}
+                                <label class="w-16 h-12 flex items-center justify-center border-2 cursor-pointer hover:bg-gray-50 hover:border-primary transition rounded-lg radio-label
+                                            {% if initial_data|is_checked:check_key %}bg-primary border-primary text-white{% else %}border-gray-300{% endif %}"
+                                        data-value="NSP"
+                                        data-question="{{ question.sous_domaine.id }}_{{ question.numero_item }}">
+                                    <input type="radio" 
+                                        name="question_{{ question.sous_domaine.id }}_{{ question.numero_item }}"
+                                        value="NSP"
+                                        class="hidden"
+                                        {% if initial_data|is_checked:check_key %}checked{% endif %}>
+                                    <span class="text-sm font-bold">NSP</span>
+                                </label>
+                                {% endwith %}
+                                {% endwith %}
+                                
+                                <!-- N/A si permis -->
+                                {% if question.permet_na %}
+                                    {% with question_key='question_'|add:question.sous_domaine.id|stringformat:"s"|add:'_'|add:question.numero_item|stringformat:"s" %}
+                                    {% with check_key=question_key|add:':NA' %}
+                                    <label class="w-16 h-12 flex items-center justify-center border-2 cursor-pointer hover:bg-gray-50 hover:border-primary transition rounded-lg radio-label
+                                                {% if initial_data|is_checked:check_key %}bg-primary border-primary text-white{% else %}border-gray-300{% endif %}"
+                                            data-value="NA"
+                                            data-question="{{ question.sous_domaine.id }}_{{ question.numero_item }}">
+                                        <input type="radio" 
+                                            name="question_{{ question.sous_domaine.id }}_{{ question.numero_item }}"
+                                            value="NA"
+                                            class="hidden"
+                                            {% if initial_data|is_checked:check_key %}checked{% endif %}>
+                                        <span class="text-sm font-bold">N/A</span>
+                                    </label>
+                                    {% endwith %}
+                                    {% endwith %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+        
+        <!-- Pagination -->
+        <div class="flex justify-between items-center mt-8 pt-6 border-t-2 border-gray-200">
+            <button type="submit" 
+                    name="action" 
+                    value="previous" 
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    {% if not page_obj.has_previous %}disabled{% endif %}>
+                <i class="fas fa-arrow-left mr-2"></i>Précédent
+            </button>
+        
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-600">
+                    Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+                <!-- Indicateur de progression -->
+                <div class="w-48 bg-gray-200 rounded-full h-2 ml-4">
+                    <div class="bg-primary h-2 rounded-full transition-all duration-300" 
+                         style="width: {% widthratio page_obj.number page_obj.paginator.num_pages 100 %}%">
+                    </div>
+                </div>
+            </div>
+        
+            <button type="submit" 
+                    name="action" 
+                    value="{% if page_obj.has_next %}next{% else %}submit{% endif %}" 
+                    class="{% if page_obj.has_next %}bg-primary hover:bg-primary-dark{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg transform hover:scale-105">
+                {% if page_obj.has_next %}
+                    Suivant<i class="fas fa-arrow-right ml-2"></i>
+                {% else %}
+                    <i class="fas fa-check mr-2"></i>Terminer
+                {% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Messages d'alerte pour questions non répondues -->
+{% if messages %}
+<div class="fixed bottom-4 right-4 z-50 space-y-2">
+    {% for message in messages %}
+    <div class="bg-{% if message.tags == 'error' %}red{% elif message.tags == 'warning' %}yellow{% elif message.tags == 'info' %}blue{% else %}green{% endif %}-100 border-l-4 border-{% if message.tags == 'error' %}red{% elif message.tags == 'warning' %}yellow{% elif message.tags == 'info' %}blue{% else %}green{% endif %}-500 text-{% if message.tags == 'error' %}red{% elif message.tags == 'warning' %}yellow{% elif message.tags == 'info' %}blue{% else %}green{% endif %}-900 p-4 rounded shadow-lg max-w-md">
+        <div class="flex items-start">
+            <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% elif message.tags == 'info' %}info-circle{% else %}check-circle{% endif %} mr-2 mt-1"></i>
+            <p class="text-sm">{{ message }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gérer les clics sur les labels
+    document.querySelectorAll('.radio-label').forEach(label => {
+        label.addEventListener('click', function() {
+            const questionId = this.dataset.question;
+            const value = this.dataset.value;
+            
+            // Mettre à jour le style visuel
+            document.querySelectorAll(`#group_${questionId} .radio-label`).forEach(l => {
+                l.classList.remove('bg-primary', 'border-primary', 'text-white');
+                l.classList.add('border-gray-300');
+            });
+            this.classList.remove('border-gray-300');
+            this.classList.add('bg-primary', 'border-primary', 'text-white');
+        });
+    });
+
+    // Gérer la soumission du formulaire
+    const form = document.getElementById('vinelandForm');
+    form.addEventListener('submit', function(e) {
+        const action = e.submitter.value;
+        
+        // Confirmation si on termine le test
+        if (action === 'submit') {
+            if (!confirm('Êtes-vous sûr de vouloir terminer le questionnaire ?')) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+</script>
+
+<style>
+/* Animation pour les boutons radio */
+.radio-label {
+    transition: all 0.2s ease-in-out;
+}
+
+.radio-label:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Améliorer la lisibilité des questions */
+.question-block:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+</style>
+{% endblock %}

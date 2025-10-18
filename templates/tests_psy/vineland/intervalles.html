@@ -1,0 +1,409 @@
+{% extends 'base.html' %}
+
+{% block title %}Intervalles de Confiance - Vineland{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-8">
+    <!-- En-tête -->
+    <div class="mb-6 pb-6 border-b border-gray-200">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-chart-area text-primary mr-2"></i>
+                    Intervalles de Confiance - Vineland-II
+                </h2>
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    <div>
+                        <i class="fas fa-user mr-1"></i>
+                        <strong>Patient :</strong> {{ patient.nom_complet }}
+                    </div>
+                    <div>
+                        <i class="fas fa-birthday-cake mr-1"></i>
+                        <strong>Né(e) le :</strong> {{ patient.date_naissance|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar mr-1"></i>
+                        <strong>Date du test :</strong> {{ test.date_passation|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-hourglass-half mr-1"></i>
+                        <strong>Âge au test :</strong> {{ age.years }} ans, {{ age.months }} mois, {{ age.days }} jours
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+        <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-500 text-xl mr-3 mt-0.5"></i>
+            <div>
+                <h3 class="font-semibold text-blue-900 mb-1">À propos des intervalles de confiance</h3>
+                <p class="text-sm text-blue-800">
+                    L'intervalle de confiance indique la marge d'erreur autour du score obtenu. 
+                    Par exemple, avec un niveau de confiance de 90%, il y a 90% de chances que le "vrai" score 
+                    se situe dans l'intervalle calculé.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résultats par domaine -->
+    {% for domain in complete_scores %}
+    <div class="mb-10">
+        <!-- Formulaire de sélection du niveau de confiance -->
+        <form method="get" class="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-6 border-2 border-gray-200" id="form_{{ domain.name_slug }}">
+            <!-- Préserver les autres niveaux de confiance lors de la soumission -->
+            {% for other_domain in complete_scores %}
+                {% if other_domain.name != domain.name %}
+                    <input type="hidden" name="niveau_confiance_{{ other_domain.name_slug }}" 
+                           value="{{ other_domain.niveau_confiance }}">
+                {% endif %}
+            {% endfor %}
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <!-- En-tête du domaine -->
+                <h2 class="text-2xl font-bold text-gray-900 mb-4 md:mb-0 flex items-center">
+                    <i class="fas fa-folder-open text-primary mr-2"></i>
+                    {{ domain.name }}
+                </h2>
+
+                <!-- Sélecteur de niveau de confiance -->
+                <div class="flex items-center gap-4">
+                    <label class="text-sm font-semibold text-gray-700 flex items-center">
+                        <i class="fas fa-sliders-h text-primary mr-2"></i>
+                        Niveau de confiance :
+                    </label>
+                    <div class="flex gap-2">
+                        {% for niveau in "85,90,95"|split:"," %}
+                        <label class="relative">
+                            <input type="radio" 
+                                   name="niveau_confiance_{{ domain.name_slug }}" 
+                                   value="{{ niveau }}"
+                                   {% if domain.niveau_confiance|stringformat:"s" == niveau %}checked{% endif %}
+                                   onchange="document.getElementById('form_{{ domain.name_slug }}').submit()"
+                                   class="peer sr-only">
+                            <div class="px-4 py-2 border-2 border-gray-300 rounded-lg cursor-pointer 
+                                        peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white
+                                        hover:border-primary transition font-semibold">
+                                {{ niveau }}%
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Scores du domaine (si disponibles) -->
+        {% if domain.domain_score %}
+        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-6 mb-6 border-2 border-indigo-200 shadow-md">
+            <h3 class="font-bold text-gray-900 mb-4 text-lg flex items-center">
+                <i class="fas fa-trophy text-primary mr-2"></i>
+                Scores du domaine
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Somme des notes-V -->
+                <div class="bg-white p-4 rounded-lg border border-indigo-200 hover:shadow-lg transition">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">
+                        <i class="fas fa-plus-circle mr-1"></i>Somme notes-V
+                    </div>
+                    <div class="text-3xl font-bold text-primary">
+                        {{ domain.domain_score.somme_notes_v }}
+                    </div>
+                </div>
+
+                <!-- Note standard -->
+                <div class="bg-white p-4 rounded-lg border border-indigo-200 hover:shadow-lg transition">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">
+                        <i class="fas fa-chart-line mr-1"></i>Note standard
+                    </div>
+                    <div class="text-3xl font-bold text-primary">
+                        {{ domain.domain_score.note_standard }}
+                    </div>
+                </div>
+
+                <!-- Rang percentile -->
+                <div class="bg-white p-4 rounded-lg border border-indigo-200 hover:shadow-lg transition">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">
+                        <i class="fas fa-percentage mr-1"></i>Rang percentile
+                    </div>
+                    <div class="text-3xl font-bold text-primary">
+                        {{ domain.domain_score.rang_percentile }}
+                    </div>
+                </div>
+
+                <!-- Intervalle de confiance -->
+                {% if domain.domain_score.intervalle %}
+                <div class="bg-gradient-to-br from-primary to-primary-dark p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+                    <div class="text-xs text-white mb-1 uppercase font-medium opacity-90">
+                        <i class="fas fa-chart-area mr-1"></i>Intervalle ({{ domain.niveau_confiance }}%)
+                    </div>
+                    <div class="text-3xl font-bold text-white">
+                        ± {{ domain.domain_score.intervalle }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="bg-gray-100 p-4 rounded-lg border border-gray-300">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">
+                        Intervalle
+                    </div>
+                    <div class="text-sm text-gray-500 italic">
+                        Non disponible
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Intervalle calculé -->
+            {% if domain.domain_score.intervalle %}
+            <div class="mt-4 bg-white p-5 rounded-lg border-2 border-primary shadow-md">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div class="flex-1">
+                        <div class="text-sm text-gray-600 mb-2 font-medium">
+                            L'intervalle de confiance à {{ domain.niveau_confiance }}% pour ce domaine est :
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl font-bold text-gray-700">
+                                {{ domain.domain_score.note_standard|add:domain.domain_score.intervalle|multiply:-1 }}
+                            </div>
+                            <i class="fas fa-arrows-alt-h text-primary text-2xl"></i>
+                            <div class="text-4xl font-bold text-primary">
+                                {{ domain.domain_score.note_standard }}
+                            </div>
+                            <i class="fas fa-arrows-alt-h text-primary text-2xl"></i>
+                            <div class="text-2xl font-bold text-gray-700">
+                                {{ domain.domain_score.note_standard|add:domain.domain_score.intervalle }}
+                            </div>
+                        </div>
+                    </div>
+                    {% if domain.domain_score.note_composite %}
+                    <div class="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                        <div class="text-xs text-purple-700 font-medium mb-1">Note composite</div>
+                        <div class="text-2xl font-bold text-purple-900">
+                            {{ domain.domain_score.note_composite }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Représentation visuelle de l'intervalle -->
+                <div class="mt-4">
+                    <div class="relative w-full bg-gray-200 rounded-full h-3">
+                        <!-- Barre complète -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            {% with min_val=domain.domain_score.note_standard|add:domain.domain_score.intervalle|multiply:-1 %}
+                            {% with max_val=domain.domain_score.note_standard|add:domain.domain_score.intervalle %}
+                            {% with range=max_val|subtract:min_val %}
+                            <div class="absolute bg-primary bg-opacity-30 h-3 rounded-full"
+                                 style="left: {% widthratio min_val 160 100 %}%; 
+                                        width: {% widthratio range 160 100 %}%;">
+                            </div>
+                            <!-- Point central (note standard) -->
+                            <div class="absolute w-2 h-6 bg-primary rounded-full shadow-lg"
+                                 style="left: {% widthratio domain.domain_score.note_standard 160 100 %}%;">
+                            </div>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>40</span>
+                        <span>70</span>
+                        <span>100</span>
+                        <span>130</span>
+                        <span>160</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Sous-domaines -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for sous_domain in domain.sous_domaines %}
+            <div class="border-2 border-gray-200 rounded-lg p-5 hover:border-primary hover:shadow-lg transition">
+                <!-- Nom du sous-domaine -->
+                <h3 class="font-bold text-gray-900 mb-4 text-lg border-b-2 border-primary pb-2 flex items-center">
+                    <i class="fas fa-puzzle-piece text-primary mr-2"></i>
+                    {{ sous_domain.name }}
+                </h3>
+                
+                <div class="space-y-3">
+                    <!-- Note brute -->
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded">
+                        <span class="text-sm text-gray-600 font-medium">Note brute :</span>
+                        <span class="text-xl font-bold text-gray-900">
+                            {{ sous_domain.note_brute }}
+                        </span>
+                    </div>
+
+                    <!-- Note échelle-V -->
+                    <div class="flex justify-between items-center bg-primary bg-opacity-10 p-3 rounded">
+                        <span class="text-sm text-gray-700 font-medium">Note échelle-V :</span>
+                        <span class="text-2xl font-bold text-primary">
+                            {{ sous_domain.note_echelle_v }}
+                        </span>
+                    </div>
+
+                    <!-- Intervalle de confiance du sous-domaine -->
+                    {% if sous_domain.intervalle %}
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border-2 border-blue-200">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-blue-700 font-semibold flex items-center">
+                                <i class="fas fa-chart-area mr-1"></i>
+                                Intervalle ({{ domain.niveau_confiance }}%) :
+                            </span>
+                            <span class="text-2xl font-bold text-blue-900">
+                                ± {{ sous_domain.intervalle }}
+                            </span>
+                        </div>
+                        
+                        <!-- Plage calculée -->
+                        <div class="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-blue-200">
+                            <span class="text-sm font-bold text-blue-800">
+                                {{ sous_domain.note_echelle_v|add:sous_domain.intervalle|multiply:-1 }}
+                            </span>
+                            <i class="fas fa-arrows-alt-h text-blue-600"></i>
+                            <span class="text-lg font-bold text-blue-900">
+                                {{ sous_domain.note_echelle_v }}
+                            </span>
+                            <i class="fas fa-arrows-alt-h text-blue-600"></i>
+                            <span class="text-sm font-bold text-blue-800">
+                                {{ sous_domain.note_echelle_v|add:sous_domain.intervalle }}
+                            </span>
+                        </div>
+
+                        <!-- Mini barre de progression -->
+                        <div class="mt-3">
+                            <div class="relative w-full bg-blue-200 rounded-full h-2">
+                                {% with min_val=sous_domain.note_echelle_v|add:sous_domain.intervalle|multiply:-1 %}
+                                {% with max_val=sous_domain.note_echelle_v|add:sous_domain.intervalle %}
+                                <div class="absolute inset-0 flex items-center">
+                                    <div class="absolute bg-blue-500 h-2 rounded-full"
+                                         style="left: {% widthratio min_val 24 100 %}%; 
+                                                width: {% widthratio max_val|subtract:min_val 24 100 %}%;">
+                                    </div>
+                                    <div class="absolute w-1 h-4 bg-blue-900 rounded-full"
+                                         style="left: {% widthratio sous_domain.note_echelle_v 24 100 %}%;">
+                                    </div>
+                                </div>
+                                {% endwith %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200">
+                        <div class="text-sm text-gray-500 italic text-center">
+                            Intervalle non disponible
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Boutons de navigation -->
+    <div class="flex flex-wrap gap-4 mt-8 pt-6 border-t-2 border-gray-200">
+        <a href="{% url 'tests_psy:vineland_resultats' test.id %}" 
+           class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>Retour aux résultats
+        </a>
+
+        <a href="{% url 'tests_psy:vineland_pdf' test.id %}?niveau_confiance=90" 
+           class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg">
+            <i class="fas fa-file-pdf mr-2"></i>Télécharger le rapport PDF
+        </a>
+
+        <a href="{% url 'tests_psy:vineland_liste' %}" 
+           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg">
+            <i class="fas fa-list mr-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+
+<!-- Explication des niveaux de confiance -->
+<div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+        <i class="fas fa-graduation-cap text-primary mr-2"></i>
+        Comprendre les niveaux de confiance
+    </h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+            <div class="font-bold text-green-900 mb-2 flex items-center">
+                <span class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2 text-sm">85</span>
+                85% de confiance
+            </div>
+            <p class="text-sm text-green-800">
+                Intervalle plus étroit, mais moins certain. 
+                Utile pour une évaluation rapide.
+            </p>
+        </div>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <div class="font-bold text-blue-900 mb-2 flex items-center">
+                <span class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2 text-sm">90</span>
+                90% de confiance
+            </div>
+            <p class="text-sm text-blue-800">
+                <strong>Recommandé.</strong> Bon équilibre entre précision et certitude. 
+                Niveau standard pour l'interprétation clinique.
+            </p>
+        </div>
+
+        <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
+            <div class="font-bold text-purple-900 mb-2 flex items-center">
+                <span class="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2 text-sm">95</span>
+                95% de confiance
+            </div>
+            <p class="text-sm text-purple-800">
+                Intervalle plus large, mais plus certain. 
+                Pour des décisions importantes.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom filters nécessaires */
+@register.filter
+def subtract(value, arg):
+    try:
+        return int(value) - int(arg)
+    except:
+        return 0
+
+@register.filter
+def multiply(value, arg):
+    try:
+        return int(value) * int(arg)
+    except:
+        return 0
+
+/* Animation pour les barres */
+@keyframes expand {
+    from {
+        width: 0;
+    }
+}
+
+.absolute.bg-primary,
+.absolute.bg-blue-500 {
+    animation: expand 1s ease-out;
+}
+
+/* Style pour les radio buttons */
+input[type="radio"]:checked + div {
+    transform: scale(1.05);
+}
+</style>
+
+{% endblock %}

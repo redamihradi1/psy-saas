@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+
+{% block title %}Niveaux Adaptatifs - Vineland{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-8">
+    <!-- En-tête -->
+    <div class="mb-6 pb-6 border-b border-gray-200">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-signal text-primary mr-2"></i>
+                    Niveaux Adaptatifs avec Âges Équivalents - Vineland-II
+                </h2>
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    <div>
+                        <i class="fas fa-user mr-1"></i>
+                        <strong>Patient :</strong> {{ patient.nom_complet }}
+                    </div>
+                    <div>
+                        <i class="fas fa-birthday-cake mr-1"></i>
+                        <strong>Né(e) le :</strong> {{ patient.date_naissance|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar mr-1"></i>
+                        <strong>Date du test :</strong> {{ test.date_passation|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-hourglass-half mr-1"></i>
+                        <strong>Âge au test :</strong> {{ age.years }} ans, {{ age.months }} mois, {{ age.days }} jours
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+        <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-500 text-xl mr-3 mt-0.5"></i>
+            <div>
+                <h3 class="font-semibold text-blue-900 mb-1">À propos des niveaux adaptatifs et âges équivalents</h3>
+                <p class="text-sm text-blue-800">
+                    Les <strong>niveaux adaptatifs</strong> indiquent le niveau de fonctionnement du patient par rapport à la population de référence. 
+                    Les <strong>âges équivalents</strong> correspondent à l'âge moyen auquel les enfants obtiennent le même score brut.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résultats par domaine -->
+    {% for domain in complete_scores %}
+    <div class="mb-10">
+        <!-- En-tête du domaine -->
+        <div class="flex items-center justify-between mb-6 py-4 px-6 bg-gradient-to-r from-primary to-primary-dark rounded-lg shadow-lg">
+            <h2 class="text-2xl font-bold text-white flex items-center">
+                <i class="fas fa-folder-open mr-3"></i>
+                {{ domain.name }}
+            </h2>
+            <div class="text-sm text-white bg-white bg-opacity-20 px-3 py-1 rounded-full">
+                Niveau de confiance: {{ domain.niveau_confiance }}%
+            </div>
+        </div>
+
+        <!-- Scores du domaine (si disponibles) -->
+        {% if domain.domain_score %}
+        <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 mb-6 border-2 border-purple-200 shadow-md">
+            <h3 class="font-bold text-gray-900 mb-4 text-lg flex items-center">
+                <i class="fas fa-trophy text-primary mr-2"></i>
+                Scores du domaine
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <!-- Somme des notes-V -->
+                <div class="bg-white p-4 rounded-lg border border-purple-200 hover:shadow-lg transition">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">
+                        <i class="fas fa-plus-circle mr-1"></i>Somme notes-V
+                    </div>
+                    <div class="text-3xl font-bold text-primary">
+                        {{ domain.domain_score.somme_notes_v }}
+                    </div>
+                </div>
+
+                <!-- Note standard -->
+                <div class="bg-white p-4 rounded-lg border border-purple-200 hover:shadow-lg transition">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">
+                        <i class="fas fa-chart-line mr-1"></i>Note standard
+                    </div>
+                    <div class="text-3xl font-bold text-primary">
+                        {{ domain.domain_score.note_standard }}
+                    </div>
+                </div>
+
+                <!-- Rang percentile -->
+                <div class="bg-white p-4 rounded-lg border border-purple-200 hover:shadow-lg transition">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">
+                        <i class="fas fa-percentage mr-1"></i>Rang percentile
+                    </div>
+                    <div class="text-3xl font-bold text-primary">
+                        {{ domain.domain_score.rang_percentile }}
+                    </div>
+                </div>
+
+                <!-- Intervalle -->
+                {% if domain.domain_score.intervalle %}
+                <div class="bg-white p-4 rounded-lg border border-purple-200 hover:shadow-lg transition">
+                    <div class="text-xs text-gray-600 mb-1 uppercase font-medium">
+                        <i class="fas fa-chart-area mr-1"></i>Intervalle
+                    </div>
+                    <div class="text-3xl font-bold text-primary">
+                        ± {{ domain.domain_score.intervalle }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Niveau adaptatif du domaine -->
+                {% if domain.domain_score.niveau_adaptatif %}
+                <div class="bg-gradient-to-br from-primary to-primary-dark p-4 rounded-lg shadow-lg hover:shadow-xl transition">
+                    <div class="text-xs text-white mb-1 uppercase font-medium opacity-90">
+                        <i class="fas fa-signal mr-1"></i>Niveau adaptatif
+                    </div>
+                    <div class="text-lg font-bold text-white mt-2 leading-tight">
+                        {{ domain.domain_score.niveau_adaptatif }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Badge du niveau adaptatif (grand format) -->
+            {% if domain.domain_score.niveau_adaptatif %}
+            <div class="mt-6 flex justify-center">
+                <div class="inline-flex items-center 
+                            {% if 'Élevé' in domain.domain_score.niveau_adaptatif or 'Supérieur' in domain.domain_score.niveau_adaptatif %}
+                                bg-green-100 border-green-500 text-green-900
+                            {% elif 'Moyen' in domain.domain_score.niveau_adaptatif and 'supérieur' in domain.domain_score.niveau_adaptatif %}
+                                bg-blue-100 border-blue-500 text-blue-900
+                            {% elif 'Moyen' in domain.domain_score.niveau_adaptatif %}
+                                bg-yellow-100 border-yellow-500 text-yellow-900
+                            {% elif 'Faible' in domain.domain_score.niveau_adaptatif %}
+                                bg-orange-100 border-orange-500 text-orange-900
+                            {% else %}
+                                bg-red-100 border-red-500 text-red-900
+                            {% endif %}
+                            border-4 rounded-full px-8 py-4 shadow-lg">
+                    <i class="fas fa-award text-4xl mr-4"></i>
+                    <div>
+                        <div class="text-xs font-medium opacity-75 uppercase">Niveau adaptatif global</div>
+                        <div class="text-2xl font-bold">{{ domain.domain_score.niveau_adaptatif }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Sous-domaines -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for sous_domain in domain.sous_domaines %}
+            <div class="border-2 border-gray-200 rounded-lg p-5 hover:border-primary hover:shadow-xl transition transform hover:-translate-y-1">
+                <!-- Nom du sous-domaine -->
+                <h3 class="font-bold text-gray-900 mb-4 text-lg border-b-2 border-primary pb-2 flex items-center">
+                    <i class="fas fa-puzzle-piece text-primary mr-2"></i>
+                    {{ sous_domain.name }}
+                </h3>
+                
+                <div class="space-y-3">
+                    <!-- Note brute -->
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded">
+                        <span class="text-sm text-gray-600">Note brute :</span>
+                        <span class="text-xl font-bold text-gray-900">
+                            {{ sous_domain.note_brute }}
+                        </span>
+                    </div>
+
+                    <!-- Note échelle-V -->
+                    <div class="flex justify-between items-center bg-primary bg-opacity-10 p-2 rounded">
+                        <span class="text-sm text-gray-700 font-medium">Note échelle-V :</span>
+                        <span class="text-2xl font-bold text-primary">
+                            {{ sous_domain.note_echelle_v }}
+                        </span>
+                    </div>
+
+                    <!-- Intervalle -->
+                    {% if sous_domain.intervalle %}
+                    <div class="flex justify-between items-center bg-blue-50 p-2 rounded border border-blue-200">
+                        <span class="text-sm text-blue-700">Intervalle :</span>
+                        <span class="text-lg font-bold text-blue-900">
+                            ± {{ sous_domain.intervalle }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Niveau adaptatif du sous-domaine -->
+                    {% if sous_domain.niveau_adaptatif %}
+                    <div class="bg-gradient-to-r 
+                                {% if 'Élevé' in sous_domain.niveau_adaptatif or 'Supérieur' in sous_domain.niveau_adaptatif %}
+                                    from-green-50 to-emerald-50 border-green-300
+                                {% elif 'Moyen' in sous_domain.niveau_adaptatif and 'supérieur' in sous_domain.niveau_adaptatif %}
+                                    from-blue-50 to-cyan-50 border-blue-300
+                                {% elif 'Moyen' in sous_domain.niveau_adaptatif %}
+                                    from-yellow-50 to-amber-50 border-yellow-300
+                                {% elif 'Faible' in sous_domain.niveau_adaptatif %}
+                                    from-orange-50 to-red-50 border-orange-300
+                                {% else %}
+                                    from-red-50 to-pink-50 border-red-300
+                                {% endif %}
+                                p-3 rounded-lg border-2">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="text-xs 
+                                        {% if 'Élevé' in sous_domain.niveau_adaptatif %}text-green-700
+                                        {% elif 'Moyen' in sous_domain.niveau_adaptatif %}text-yellow-700
+                                        {% elif 'Faible' in sous_domain.niveau_adaptatif %}text-orange-700
+                                        {% else %}text-red-700{% endif %}
+                                        font-semibold uppercase flex items-center">
+                                <i class="fas fa-signal mr-1"></i>
+                                Niveau adaptatif
+                            </div>
+                            <i class="fas fa-star 
+                                      {% if 'Élevé' in sous_domain.niveau_adaptatif %}text-green-500
+                                      {% elif 'Moyen' in sous_domain.niveau_adaptatif %}text-yellow-500
+                                      {% elif 'Faible' in sous_domain.niveau_adaptatif %}text-orange-500
+                                      {% else %}text-red-500{% endif %}">
+                            </i>
+                        </div>
+                        <div class="text-sm font-bold 
+                                    {% if 'Élevé' in sous_domain.niveau_adaptatif %}text-green-900
+                                    {% elif 'Moyen' in sous_domain.niveau_adaptatif %}text-yellow-900
+                                    {% elif 'Faible' in sous_domain.niveau_adaptatif %}text-orange-900
+                                    {% else %}text-red-900{% endif %}">
+                            {{ sous_domain.niveau_adaptatif }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Âge équivalent -->
+                    {% if sous_domain.age_equivalent %}
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-200 shadow-md">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="text-xs text-purple-700 font-semibold uppercase flex items-center">
+                                <i class="fas fa-birthday-cake mr-1"></i>
+                                Âge équivalent
+                            </div>
+                            <i class="fas fa-child text-purple-500 text-xl"></i>
+                        </div>
+                        <div class="text-lg font-bold text-purple-900">
+                            {{ sous_domain.age_equivalent }}
+                        </div>
+                        
+                        <!-- Comparaison avec l'âge réel -->
+                        <div class="mt-2 pt-2 border-t border-purple-200 text-xs text-purple-700">
+                            {% if sous_domain.age_equivalent %}
+                                <div class="flex items-center justify-between">
+                                    <span>Âge réel :</span>
+                                    <span class="font-semibold">{{ age.years }} ans {{ age.months }} mois</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Indicateur visuel du niveau -->
+                <div class="mt-4">
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+                        <span>Faible</span>
+                        <span>Élevé</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-500
+                                    {% if 'Élevé' in sous_domain.niveau_adaptatif %}bg-gradient-to-r from-green-400 to-green-600
+                                    {% elif 'Moyen supérieur' in sous_domain.niveau_adaptatif %}bg-gradient-to-r from-blue-400 to-blue-600
+                                    {% elif 'Moyen' in sous_domain.niveau_adaptatif %}bg-gradient-to-r from-yellow-400 to-yellow-600
+                                    {% elif 'Faible' in sous_domain.niveau_adaptatif %}bg-gradient-to-r from-orange-400 to-orange-600
+                                    {% else %}bg-gradient-to-r from-red-400 to-red-600{% endif %}"
+                             style="width: {% widthratio sous_domain.note_echelle_v 24 100 %}%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Boutons de navigation -->
+    <div class="flex flex-wrap gap-4 mt-8 pt-6 border-t-2 border-gray-200">
+        <a href="{% url 'tests_psy:vineland_resultats' test.id %}" 
+           class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>Retour aux résultats
+        </a>
+
+        <a href="{% url 'tests_psy:vineland_pdf' test.id %}?niveau_confiance=90" 
+           class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg">
+            <i class="fas fa-file-pdf mr-2"></i>Télécharger le rapport PDF
+        </a>
+
+        <a href="{% url 'tests_psy:vineland_liste' %}" 
+           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg">
+            <i class="fas fa-list mr-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+
+<!-- Légende des niveaux adaptatifs -->
+<div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+        <i class="fas fa-book-open text-primary mr-2"></i>
+        Guide d'interprétation des niveaux adaptatifs
+    </h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-arrow-up text-green-600 text-2xl mr-2"></i>
+                <div class="font-bold text-green-900">Élevé / Supérieur</div>
+            </div>
+            <p class="text-sm text-green-800">
+                Fonctionnement au-dessus de la moyenne. 
+                Points forts significatifs.
+            </p>
+        </div>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-angle-up text-blue-600 text-2xl mr-2"></i>
+                <div class="font-bold text-blue-900">Moyen supérieur</div>
+            </div>
+            <p class="text-sm text-blue-800">
+                Fonctionnement légèrement au-dessus de la moyenne.
+            </p>
+        </div>
+
+        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-minus text-yellow-600 text-2xl mr-2"></i>
+                <div class="font-bold text-yellow-900">Moyen</div>
+            </div>
+            <p class="text-sm text-yellow-800">
+                Fonctionnement dans la moyenne attendue pour l'âge.
+            </p>
+        </div>
+
+        <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-arrow-down text-orange-600 text-2xl mr-2"></i>
+                <div class="font-bold text-orange-900">Faible / Très faible</div>
+            </div>
+            <p class="text-sm text-orange-800">
+                Fonctionnement en-dessous de la moyenne. 
+                Peut nécessiter un soutien.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Info sur les âges équivalents -->
+<div class="mt-6 bg-purple-50 border-l-4 border-purple-500 p-6 rounded-lg">
+    <div class="flex items-start">
+        <i class="fas fa-lightbulb text-purple-500 text-2xl mr-3 mt-0.5"></i>
+        <div>
+            <h3 class="font-semibold text-purple-900 mb-2">Interprétation des âges équivalents</h3>
+            <p class="text-sm text-purple-800 mb-2">
+                L'âge équivalent indique l'âge moyen auquel 50% des enfants de l'échantillon normatif 
+                obtiennent le même score brut que le patient évalué.
+            </p>
+            <p class="text-sm text-purple-800">
+                <strong>Important :</strong> L'âge équivalent est un indicateur descriptif et ne doit pas 
+                être utilisé seul pour l'interprétation. Il doit toujours être considéré en complément 
+                des notes standard et des niveaux adaptatifs.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Animation pour les barres de niveau */
+@keyframes fillLevel {
+    from {
+        width: 0%;
+    }
+}
+
+.h-3 > div {
+    animation: fillLevel 1.5s ease-out;
+}
+
+/* Effet de pulsation sur les badges */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.inline-flex.items-center:hover {
+    animation: pulse 2s infinite;
+}
+
+/* Transition douce pour les cartes */
+.grid > div {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
+
+{% endblock %}
