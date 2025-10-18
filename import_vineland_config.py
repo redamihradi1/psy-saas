@@ -403,4 +403,4 @@ if __name__ == '__main__':
                 print("❌ Choix invalide !")
                 sys.exit(1)
     
-    import_data(json_file)2
+    import_data(json_file)
