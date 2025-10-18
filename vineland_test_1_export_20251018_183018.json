@@ -1,0 +1,3030 @@
+{
+  "export_date": "2025-10-18T18:30:18.897750",
+  "test_id": 1,
+  "patient": {
+    "nom": "Morchid",
+    "prenom": "Latifa",
+    "date_naissance": "2008-09-28",
+    "categorie_age": "adulte",
+    "email": "",
+    "telephone": "212673807054"
+  },
+  "test": {
+    "date_passation": "2025-10-18 11:10:44.830243+00:00",
+    "psychologue_nom": "Mihradi",
+    "psychologue_prenom": "Reda",
+    "psychologue_email": "a@a.com"
+  },
+  "reponses": [
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 1,
+      "question_texte": "Pleure ou s'agite quand il/elle a faim ou qu'il/elle est mouillé(e).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 2,
+      "question_texte": "Sourit quand on lui sourit.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 3,
+      "question_texte": "Fait des petits bruits de plaisir (par exemple, gazouille, rit, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 4,
+      "question_texte": "Fait des bruits non-verbaux de bébé (par exemple, babille – « areuh »).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 5,
+      "question_texte": "Fait des bruits ou des gestes (par exemple, agite les bras) pour attirer l'attention de son parent ou de la personne qui s'occupe de lui/d'elle.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 6,
+      "question_texte": "Fait des bruits ou des gestes (par exemple, hoche la tête) si il/elle veut qu'une activité continue ou s'arrête.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 7,
+      "question_texte": "Fait au revoir de la main quand une autre personne le fait ou quand le parent ou la personne qui s'occupe de lui/d'elle lui dit de le faire.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 8,
+      "question_texte": "Dit « Pa-pa », « Ma-ma », ou un autre nom pour désigner le parent ou la personne qui s'occupe de lui/elle (y compris le prénom ou le surnom de la personne en question).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 9,
+      "question_texte": "Montre du doigt un objet qu'il/elle veut et qui est hors de portée.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 10,
+      "question_texte": "Montre du doigt ou fait un geste pour indiquer sa préférence lorsqu'on lui propose un choix (par exemple, « tu veux ça ou ça ? », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 11,
+      "question_texte": "Répète ou essaie de répéter des mots courants immédiatement après les avoir entendus (par exemple, « balle», «voiture», on y «va», etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 12,
+      "question_texte": "Nomme au moins trois objets (par exemple, biberon, chien, jouet favori, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 13,
+      "question_texte": "Formule des demandes en un mot (par exemple, porter, encore, dehors, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 14,
+      "question_texte": "Utilise les prénoms ou les surnoms de ses frères, sœurs ou amis, ou dit leurs noms quand on le lui demande.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 15,
+      "question_texte": "Répond ou essaie de répondre avec des mots quand on lui pose une question.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 16,
+      "question_texte": "Nomme au moins 10 objets.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 17,
+      "question_texte": "Dit son prénom ou son surnom (par exemple, Julie, Petite Sœur, etc.) quand on le lui demande.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 18,
+      "question_texte": "Fait des phrases avec un sujet et un verbe (par exemple, « papa parti », « aller maison », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 19,
+      "question_texte": "Pose des questions en changeant l'intonation du mot ou de l'expression (par exemple, « à moi ? », « moi partir ? ») ; la grammaire n'est pas importante.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 20,
+      "question_texte": "Dit au moins 50 mots reconnaissables.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 21,
+      "question_texte": "Utilise des mots simples pour décrire des choses (par exemple, sale, joli, grand, fort, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 22,
+      "question_texte": "Pose des questions commençant par « c'est quoi », « où », « pourquoi », « c'est qui », ou « qu'est-ce que c'est ? », (par exemple, « qu'est-ce que c'est ? », ou « chien ? »).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 23,
+      "question_texte": "Utilise des négations dans les phrases (par exemple, « moi pas partir », « je ne le boirai pas », etc.) ; la grammaire n'est pas importante.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 24,
+      "question_texte": "Raconte ce qui lui est arrivé dans des phrases simples (par exemple, « moi et Pierre jouer » ; « Paul m'a lu un livre », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 25,
+      "question_texte": "Donne correctement son âge quand on le lui demande.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 26,
+      "question_texte": "Dit au moins 100 mots reconnaissables.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 27,
+      "question_texte": "Utilise « dans », « sur », ou « sous » dans des expressions ou des phrases (par exemple, « balle va sous chaise », « pose-le sur la table », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 28,
+      "question_texte": "Utilise «et» dans des expressions ou des phrases (par exemple, « Maman et Papa », « je veux de la glace et du gâteau », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 29,
+      "question_texte": "Dit son nom et son prénom quand on le lui demande.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 30,
+      "question_texte": "Identifie et nomme la plupart des couleurs courantes (c'est-à-dire, rouge, bleu, vert, jaune, orange, violet, marron et noir).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 31,
+      "question_texte": "Pose des questions commençant par « qui » ou par « pourquoi » (par exemple, « qui c'est ? », « pourquoi je dois partir ? », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 32,
+      "question_texte": "Utilise des verbes autrement qu'à l'infinitif (par exemple, « mange », « partent », « chante », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 33,
+      "question_texte": "Utilise des indicateurs possessifs dans des expressions ou des phrases (par exemple, « c'est son livre », « c'est la balle de Pierre », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 34,
+      "question_texte": "Utilise des pronoms dans des expressions ou des phrases ; doit utiliser le genre et la forme corrects du pronom, mais les phrases elles-mêmes peuvent ne pas être grammaticalement correctes (par exemple, « il faire ça », « ils part », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 35,
+      "question_texte": "Pose des questions commençant par « quand » (par exemple, « quand est-ce qu'on mange ? », « quand est-ce qu'on va rentrer ? », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 36,
+      "question_texte": "Utilise les temps du passé (par exemple, marchait, cuisait, etc.) ; peut utiliser des verbes irréguliers en se trompant (par exemple, « je croivais », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 37,
+      "question_texte": "Utilise « derrière » ou « devant » dans des expressions ou des phrases (par exemple, « je marchais devant elle », « Pierre est derrière toi », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 38,
+      "question_texte": "Prononce les mots clairement sans substitution de sons (par exemple, ne dit pas « patir » pour « partir », « sat » pour « chat », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 39,
+      "question_texte": "Raconte les parties principales d'une histoire, d'un conte de fée ou du scénario d'une émission de télé ; il n'est pas nécessaire qu'il/elle donne beaucoup de détails ni qu'il/elle rapporte les événements dans l'ordre exact.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 40,
+      "question_texte": "Dit le jour et le mois de son anniversaire quand on le lui demande.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 41,
+      "question_texte": "Module le ton, le volume et le rythme de sa voix de manière appropriée (par exemple, ne parle pas systématiquement trop fort, trop bas, ou de façon monotone, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 42,
+      "question_texte": "Parle de ses expériences en détail (par exemple, raconte qui était impliqué, où l'activité s'est passée, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 43,
+      "question_texte": "Donne des consignes simples (par exemple, comment jouer à un jeu, comment fabriquer quelque chose).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 44,
+      "question_texte": "Utilise « entre » dans des expressions ou des phrases (par exemple, « la balle est partie entre les voitures », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 45,
+      "question_texte": "Donne son numéro de téléphone quand on le lui demande.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 46,
+      "question_texte": "Passe facilement d'un sujet à un autre durant une conversation.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 47,
+      "question_texte": "Reste sur un sujet durant une conversation, ne saute pas du coq à l'âne.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 48,
+      "question_texte": "Explique une idée de plusieurs façons (par exemple, « c'est un bon livre, il est passionnant et amusant à lire »).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 49,
+      "question_texte": "A des conversations qui durent 10 minutes (par exemple, raconte ses expériences, apporte des idées, partage ses sentiments, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 50,
+      "question_texte": "Utilise correctement des pluriels irréguliers (par exemple, chevaux, animaux, journaux, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 51,
+      "question_texte": "Donne son adresse complète (c'est-à-dire, le lieu-dit, ou le nom et le numéro de la rue, de l'appartement, la ville), avec ou sans le code postal, quand on le lui demande.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 52,
+      "question_texte": "Décrit un objectif à court-terme et ce qu'il/elle doit faire pour l'atteindre (par exemple, dit : « je veux avoir une bonne note à mon examen, et donc je vais travailler dur », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 53,
+      "question_texte": "Donne des consignes complexes aux autres (par exemple, sur la façon de se rendre en un lieu éloigné, sur une recette avec de nombreux ingrédients ou étapes, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Expressif",
+      "numero_item": 54,
+      "question_texte": "Décrit un objectif réaliste à long terme qui peut-être atteint dans les 6 mois ou plus (par exemple, « Je veux acheter un vélo alors je vais faire du baby-sitting et rendre service pour gagner assez d'argent pour l'acheter »).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 1,
+      "question_texte": "Tourne les yeux et la tête en direction d'un son.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 2,
+      "question_texte": "Regarde le parent ou la personne qui s'occupe de lui/elle quand il/elle entend sa voix.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 3,
+      "question_texte": "Répond à l'appel de son prénom (par exemple, se tourne vers celui qui parle, sourit, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 4,
+      "question_texte": "Montre qu'il/elle comprend la signification du « non », ou d'un mot ou geste ayant la même signification (par exemple, arrête brièvement son activité).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 5,
+      "question_texte": "Montre qu'il/elle comprend la signification du « oui », ou d'un mot ou geste ayant la même signification (par exemple, continue son activité, sourit, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 6,
+      "question_texte": "Écoute une histoire pendant au moins 5 minutes (c'est-à-dire, reste relativement tranquille et dirige son attention vers la personne qui raconte l'histoire).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 7,
+      "question_texte": "Désigne au moins trois parties principales du corps quand on le lui demande (par exemple, nez, bouche, mains, pieds, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 8,
+      "question_texte": "Désigne des objets familiers dans un livre ou un magazine lorsqu'ils sont nommés (par exemple, chien, voiture, tasse, clé, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 9,
+      "question_texte": "Écoute les consignes.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 10,
+      "question_texte": "Suit les consignes comprenant une action et un objet (par exemple, « Apporte-moi le livre », « Ferme la porte », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 11,
+      "question_texte": "Désigne au moins cinq parties non principales du corps quand on le lui demande (par exemple, doigts, coudes, dents, orteils, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 12,
+      "question_texte": "Suit des consignes faisant intervenir deux actions ou une action et deux objets (par exemple, « assieds-toi et mange », « apporte-moi les crayons et le papier », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 13,
+      "question_texte": "Suit les consignes de la forme « si-alors » (par exemple, « si tu veux jouer dehors, alors range tes affaires », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 14,
+      "question_texte": "Écoute une histoire pendant au moins 15 minutes.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 15,
+      "question_texte": "Écoute une histoire pendant au moins 30 minutes.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 16,
+      "question_texte": "Suit des consignes en trois parties (par exemple, « brosse-toi les dents, habille-toi et fais ton lit », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 17,
+      "question_texte": "Suit des consignes ou des instructions entendues 5 minutes plus tôt.",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 18,
+      "question_texte": "Comprend des expressions imagées (par exemple, « donne la langue au chat », « prends la porte », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 19,
+      "question_texte": "Écoute un cours ou une conférence pendant au moins 15 minutes.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Réceptif",
+      "numero_item": 20,
+      "question_texte": "Écoute un cours ou une conférence pendant au moins 30 minutes.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 1,
+      "question_texte": "Identifie une ou plusieurs lettres de l'alphabet en tant que lettre et les distingue des chiffres.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 2,
+      "question_texte": "Reconnaît son prénom en caractères d'imprimerie.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 3,
+      "question_texte": "Identifie au moins dix lettres de l'alphabet en caractères d'imprimerie.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 4,
+      "question_texte": "Écrit en capitale ou en cursive (en attaché) en utilisant l'orientation correcte (par exemple, en français, de gauche à droite ; dans certaines autres langues de droite à gauche ou de bas en haut).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 5,
+      "question_texte": "Copie son prénom.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 6,
+      "question_texte": "Identifie toutes les lettres d'imprimerie dans l'alphabet, en majuscules et en minuscules.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 7,
+      "question_texte": "Copie au moins trois mots simples à partir d'un exemple (par exemple, chat, voir, lapin, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 8,
+      "question_texte": "Écrit de mémoire son prénom et son nom.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 9,
+      "question_texte": "Lit au moins 10 mots à haute voix.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 10,
+      "question_texte": "Écrit de mémoire au moins 10 mots simples (par exemple, lit, balle, le, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 11,
+      "question_texte": "Lit des histoires simples à voix haute (histoires avec des phrases de 3 à 5 mots).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 12,
+      "question_texte": "Écrit des phrases simples de trois à quatre mots ; peut faire des petites fautes d'orthographe ou de grammaire.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 13,
+      "question_texte": "Écrit de mémoire plus de 20 mots ; peut faire des fautes d'orthographe.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 14,
+      "question_texte": "Lit et comprend des textes de niveau CE1 au moins.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 15,
+      "question_texte": "Classe des listes de mots par ordre alphabétique.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 16,
+      "question_texte": "Écrit de courtes notes ou messages d'au moins 3 phrases (par exemple, des cartes postales, des messages de remerciements, des emails, etc.).",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 17,
+      "question_texte": "Lit et comprend des textes de niveau CM1 au moins.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 18,
+      "question_texte": "Écrit des rapports, des articles ou des rédactions d'au moins une page ; peut utiliser un ordinateur.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 19,
+      "question_texte": "Écrit les adresses complètes du destinataire et de l'expéditeur sur des lettres ou des colis.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 20,
+      "question_texte": "Lit et comprend des textes de niveau 6ème au moins.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 21,
+      "question_texte": "Relit ou corrige son travail écrit avant de le rendre (par exemple, vérifie la ponctuation, l'orthographe, la grammaire, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 22,
+      "question_texte": "Écrit des lettres élaborées d'au moins 10 phrases ; peut utiliser l'ordinateur.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 23,
+      "question_texte": "Lit et comprend des textes de niveau 3ème au moins.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 24,
+      "question_texte": "Lit au moins deux articles de journal par semaine (version papier ou électronique).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Communication",
+      "sous_domaine": "Écrit",
+      "numero_item": 25,
+      "question_texte": "Écrit des lettres officielles (par exemple, des demandes d'information, des réclamations, des commandes, etc.) ; peut utiliser l'ordinateur.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 1,
+      "question_texte": "Est trop dépendant(e) (c'est-à-dire, s'agrippe à la personne qui s'occupe de lui/elle, à l'enseignant ou l'éducateur, aux frères et sœurs).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 2,
+      "question_texte": "Évite les autres et préfère être seul(e).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 3,
+      "question_texte": "A des difficultés d'alimentation (par exemple, mange trop vite ou trop lentement, stocke de la nourriture, mange trop, refuse de manger, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 4,
+      "question_texte": "A des problèmes de sommeil (par exemple, somnambulisme, cauchemars fréquents, dort beaucoup moins ou beaucoup plus que les enfants de son âge).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 5,
+      "question_texte": "Refuse d'aller à l'école ou au travail par peur, par sentiment de rejet ou d'isolement, etc.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 6,
+      "question_texte": "Est trop anxieux ou nerveux.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 7,
+      "question_texte": "Pleure ou rit trop facilement.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 8,
+      "question_texte": "A un contact visuel pauvre (c'est-à-dire, ne regarde pas ou ne fait pas face aux autres quand il/elle parle ou quand on lui parle).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 9,
+      "question_texte": "Est triste sans raison apparente.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 10,
+      "question_texte": "Évite les interactions sociales.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section A",
+      "numero_item": 11,
+      "question_texte": "Manque d'énergie ou d'intérêt pour la vie.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 1,
+      "question_texte": "Est impulsif(ve) (c'est-à-dire, agit sans réfléchir).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 2,
+      "question_texte": "Fait des grosses crises de colère.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 3,
+      "question_texte": "Désobéit volontairement et défie les représentants de l'autorité.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 4,
+      "question_texte": "Raille, taquine ou brutalise les autres.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 5,
+      "question_texte": "Est insensible aux autres ou ne les prend pas en considération.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 6,
+      "question_texte": "Ment, triche, ou vole.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 7,
+      "question_texte": "Est agressif(ve) physiquement (par exemple, frappe, donne des coups de pied, mord, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 8,
+      "question_texte": "Est têtu(e) ou boudeur(se).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 9,
+      "question_texte": "Tient des propos embarrassants ou pose des questions gênantes en public (par exemple, « tu es gros », « c'est quoi ce truc rouge sur ton nez ? »).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section B",
+      "numero_item": 10,
+      "question_texte": "Se conduit de façon inappropriée quand les autres l'y incitent.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 1,
+      "question_texte": "Suce son pouce ou ses doigts.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 2,
+      "question_texte": "Mouille son lit ou doit porter des couches la nuit.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 3,
+      "question_texte": "Agit de façon familière avec les étrangers (par exemple, leur prend la main, les prend dans ses bras, s'assied sur leurs genoux, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 4,
+      "question_texte": "Se ronge les ongles.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 5,
+      "question_texte": "A des tics (c'est-à-dire, des mouvements involontaires comme : clignements d'yeux, secousses, hochement de tête, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 6,
+      "question_texte": "Grince des dents le jour ou la nuit.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 7,
+      "question_texte": "A des difficultés d'attention.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 8,
+      "question_texte": "Est plus actif ou plus agité que d'autres de même âge.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 9,
+      "question_texte": "Utilise sans autorisation du matériel de l'école ou du travail à des fins personnelles (par exemple, téléphone, accès internet, fournitures de bureau).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 10,
+      "question_texte": "Est grossier (jurons, insultes).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 11,
+      "question_texte": "Fugue (c'est-à-dire, disparaît pendant au moins 24 heures).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 12,
+      "question_texte": "Fait l'école buissonnière ou manque le travail sans donner de motif.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 13,
+      "question_texte": "Ignore les autres ou ne porte pas d'attention aux personnes autour de lui/d'elle.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 14,
+      "question_texte": "Utilise de l'argent ou des cadeaux pour \"acheter\" de l'affection.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section C",
+      "numero_item": 15,
+      "question_texte": "Consomme de l'alcool ou des drogues illégales à l'école ou au travail.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 1,
+      "question_texte": "Se livre à des comportements sexuels inadaptés (par exemple, s'exhibe, se masturbe en public, fait des avances sexuelles inconvenantes, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 2,
+      "question_texte": "Est obsédé(e) par des objets ou des activités (par exemple, répète constamment des mots ou des phrases, est préoccupé(e) par des objets mécaniques, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 3,
+      "question_texte": "Exprime des pensées qui n'ont aucun sens (par exemple, dit qu'il/elle entend des voix, semble délirant(e), etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 4,
+      "question_texte": "A des habitudes ou manies bizarres (par exemple, fait des bruits répétitifs ou fait des mouvements de mains étranges, etc.).",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 5,
+      "question_texte": "Préfère systématiquement les objets aux personnes (par exemple, accorde plus d'attention aux objets qu'aux personnes, etc.).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 6,
+      "question_texte": "Manifeste des comportements d'auto-mutilation (par exemple, se cogne la tête, se frappe ou se mord, s'arrache la peau, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 7,
+      "question_texte": "Détruit délibérément ce qui appartient à l'autre ou à lui même.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 8,
+      "question_texte": "A un discours bizarre (par exemple, parle tout seul en public, emploie des expressions ou des phrases qui n'ont pas de sens, répète le même mot ou la même phrase en permanence, etc.).",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 9,
+      "question_texte": "N'est pas conscient de ce qui se passe autour de lui/elle (par exemple, semble dans les nuages, a le regard vide, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 10,
+      "question_texte": "Se balance d'avant en arrière de façon répétitive.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 11,
+      "question_texte": "A une peur inhabituelle de bruits, d'objets ou de situations ordinaires.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 12,
+      "question_texte": "Se rappelle en détail, des années après, d'informations dont on ne se souvient pas.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 13,
+      "question_texte": "Est incapable d'accomplir une journée normale d'école ou de travail à cause de douleurs ou de fatigues chroniques.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Comportements problématiques",
+      "sous_domaine": "Section D",
+      "numero_item": 14,
+      "question_texte": "Est incapable d'accomplir une journée normale d'école ou de travail à cause de symptômes psychologiques.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 1,
+      "question_texte": "Tend la main vers un jouet ou un objet.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 2,
+      "question_texte": "Saisit de petits objets (pas plus de 6 cm de côté) ; peut utiliser les deux mains.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 3,
+      "question_texte": "Passe un objet d'une main à l'autre.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 4,
+      "question_texte": "Presse un jouet ou un objet couineurs.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 5,
+      "question_texte": "Saisit un petit objet entre le pouce et les doigts.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 6,
+      "question_texte": "Retire un objet (par exemple, un cube ou une pince à linge) d'un récipient.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 7,
+      "question_texte": "Met un objet (par exemple, un cube ou une pince à linge) dans un récipient.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 8,
+      "question_texte": "Tourne une à une les pages d'un livre en carton, en tissu ou en papier.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 9,
+      "question_texte": "Empile au moins 4 petits cubes ou autres petits objets ; la construction ne doit pas tomber.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 10,
+      "question_texte": "Ouvre les portes en tournant ou en abaissant la poignée.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 11,
+      "question_texte": "Déballe de petits objets (par exemple, un chewing-gum ou un bonbon).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 12,
+      "question_texte": "Fait des puzzles simples, comportant au moins deux formes ou deux pièces.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 14,
+      "question_texte": "Utilise un mouvement de rotation de la main ou du poignet (par exemple, remonte un jouet mécanique, visse/dévisse le couvercle d'un pot, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 15,
+      "question_texte": "Tient correctement le crayon (pas à pleine main) pour dessiner ou écrire.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 16,
+      "question_texte": "Colorie des formes simples ; peut dépasser.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 17,
+      "question_texte": "Construit des structures en trois dimensions avec au moins 5 petits cubes (par exemple, une maison, un pont, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 18,
+      "question_texte": "Ouvre et ferme les ciseaux d'une seule main.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 19,
+      "question_texte": "Colle au moins 2 éléments ensemble (par exemple, pour un projet artistique ou scientifique).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 20,
+      "question_texte": "Utilise du scotch pour faire tenir des choses ensemble (par exemple, une page déchirée, un projet artistique, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 21,
+      "question_texte": "Dessine plus d'une forme reconnaissable (par exemple, un bonhomme, une maison, un arbre, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 22,
+      "question_texte": "Écrit des lettres ou des chiffres reconnaissables.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 23,
+      "question_texte": "Dessine un cercle à main levée en regardant un modèle.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 24,
+      "question_texte": "Utilise des ciseaux pour couper un papier le long d'une ligne droite.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 25,
+      "question_texte": "Colorie des formes simples, sans dépasser.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 26,
+      "question_texte": "Découpe des formes simples (par exemple, des cercles, des carrés, des rectangles, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 27,
+      "question_texte": "Utilise une gomme sans déchirer le papier.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 28,
+      "question_texte": "Dessine un carré à main levée en regardant un modèle.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 29,
+      "question_texte": "Dessine un triangle à main levée en regardant un modèle.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 30,
+      "question_texte": "Fait un nœud.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 31,
+      "question_texte": "Trace une ligne droite en utilisant une règle ou un bord droit.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 32,
+      "question_texte": "Utilise un mouvement de rotation pour déverrouiller un verrou, ou tourner une clef dans une serrure.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 33,
+      "question_texte": "Découpe des formes complexes (par exemple, des étoiles, des animaux, les lettres de l'alphabet, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 34,
+      "question_texte": "Utilise un clavier, une machine à écrire ou un écran tactile pour taper un nom ou des mots courts ; peut regarder les touches.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 35,
+      "question_texte": "Fait un double nœud.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Fine",
+      "numero_item": 36,
+      "question_texte": "Utilise un clavier pour taper jusqu'à 10 lignes ; peut regarder les touches.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 1,
+      "question_texte": "Tient sa tête pendant au moins 15 secondes sans assistance quand le parent ou la personne qui s'occupe de lui/elle le/la tient debout dans ses bras.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 2,
+      "question_texte": "Tient assis avec un support (par exemple, dans une chaise, avec des coussins, etc.) pendant au moins une minute.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 3,
+      "question_texte": "Tient assis sans support pendant au moins une minute.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 4,
+      "question_texte": "Rampe ou se déplace sur le ventre sur le sol.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 5,
+      "question_texte": "Tient assis sans support pendant au moins dix minutes.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 6,
+      "question_texte": "Se met en position assise et reste assis sans support pendant au moins une minute.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 7,
+      "question_texte": "Marche à quatre pattes sur au moins 1,50 mètre, sans que le ventre touche le sol.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 8,
+      "question_texte": "Se met en position debout.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 9,
+      "question_texte": "Monte l'escalier à quatre pattes ou en rampant.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 10,
+      "question_texte": "Fait au moins deux pas (sans aide).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 11,
+      "question_texte": "Se tient debout sans aide pendant 1 à 3 minutes.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 12,
+      "question_texte": "Fait rouler une balle alors qu'il/elle est en position assise.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 13,
+      "question_texte": "Monte et descend d'un meuble bas (par exemple, chaise, marchepied, toboggan, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 15,
+      "question_texte": "Se tient debout pendant au moins 5 minutes.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 16,
+      "question_texte": "Traverse la pièce ; peut être instable et tomber occasionnellement.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 17,
+      "question_texte": "Lance une balle.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 18,
+      "question_texte": "Marche pour se déplacer ; sans se tenir à quelque chose.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 19,
+      "question_texte": "Grimpe et descend d'une chaise d'adulte.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 20,
+      "question_texte": "Court sans tomber ; peut être maladroit et mal coordonné.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 21,
+      "question_texte": "Monte l'escalier, en mettant les deux pieds sur chaque marche ; peut utiliser la rampe.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 22,
+      "question_texte": "Donne un coup de pied dans un ballon.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 23,
+      "question_texte": "Court de façon fluide sans tomber.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 24,
+      "question_texte": "Descend l'escalier en regardant devant lui/elle, en posant les deux pieds sur chaque marche ; peut utiliser la rampe.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 25,
+      "question_texte": "Saute en décollant les deux pieds du sol.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 26,
+      "question_texte": "Lance une balle de n'importe quelle taille dans une direction spécifique.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 27,
+      "question_texte": "Attrape un ballon de plage de taille normale à deux mains lorsqu'il est lancé d'une distance de 50 centimètres à 1 mètre.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 28,
+      "question_texte": "Monte l'escalier, en alternant les pieds ; peut utiliser la rampe.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 29,
+      "question_texte": "Pédale sur un tricycle ou tout autre engin à trois roues sur une distance d'au moins 2 mètres.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 30,
+      "question_texte": "Saute ou sautille en avant au moins trois fois.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 31,
+      "question_texte": "Saute à cloche-pied au moins une fois sans tomber ; peut se tenir à quelque chose pour garder son équilibre.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 32,
+      "question_texte": "Monte et descend d'objets hauts (par exemple, un portique, une échelle de toboggan de 1,20 mètre, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 33,
+      "question_texte": "Descend l'escalier en alternant les pieds ; peut se tenir à la rampe.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 35,
+      "question_texte": "Fait du vélo avec des petites roues sur une distance d'au moins 3 mètres.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 36,
+      "question_texte": "Attrape un ballon de plage de taille normale (lancé depuis au moins 1,50 mètre) à deux mains.",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 37,
+      "question_texte": "Saute à cloche-pied vers l'avant avec facilité.",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 38,
+      "question_texte": "Sautille sur une distance d'au moins 1,50 mètre.",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 39,
+      "question_texte": "Attrape une balle de la taille d'une balle de tennis, lancée d'au moins 3 mètres ; se déplace pour l'attraper si nécessaire.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Motricité",
+      "sous_domaine": "Globale",
+      "numero_item": 40,
+      "question_texte": "Fait du vélo sans petites roues et sans tomber.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 1,
+      "question_texte": "Passe facilement d'une activité à l'autre à la maison.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 2,
+      "question_texte": "Dit « merci » quand on lui donne quelque chose.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 3,
+      "question_texte": "Change de comportement selon qu'il/elle connaît plus ou moins bien la personne (par exemple, agit différemment avec un membre de la famille et avec un étranger, etc.).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 4,
+      "question_texte": "Mange la bouche fermée.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 5,
+      "question_texte": "Dit « s'il te plaît » quand il/elle demande quelque chose.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 6,
+      "question_texte": "Termine les conversations de manière appropriée (par exemple, dit « au revoir », « à bientôt », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 7,
+      "question_texte": "S'essuie la bouche ou les mains pendant et/ou après le repas.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 8,
+      "question_texte": "Réagit de manière appropriée à des changements modérés de ses habitudes (par exemple, s'abstient de se plaindre, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 9,
+      "question_texte": "Dit « pardon » pour des fautes involontaires (par exemple, bousculer quelqu'un).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 10,
+      "question_texte": "Évite de narguer, taquiner ou maltraiter.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 11,
+      "question_texte": "Se comporte de façon appropriée quand on lui présente des étrangers (par exemple, salue de la tête, sourit, serre la main, dit bonjour, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 12,
+      "question_texte": "Modifie le volume de sa voix en fonction de l'endroit ou de la situation (par exemple, à la bibliothèque, au cinéma, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 13,
+      "question_texte": "Présente des excuses quand il/elle a fait de la peine à quelqu'un.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 14,
+      "question_texte": "S'abstient de parler la bouche pleine.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 15,
+      "question_texte": "Parle avec les autres sans interrompre ou être impoli.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 16,
+      "question_texte": "Accepte des suggestions ou des solutions utiles de la part des autres.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 17,
+      "question_texte": "Contrôle sa colère ou sa peine en cas de changement de programme pour une raison indépendante de sa volonté (par exemple, en cas de mauvais temps ou de panne de voiture, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 18,
+      "question_texte": "Garde des secrets ou des confidences pendant plus d'un jour.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 19,
+      "question_texte": "Dit qu'il/elle est désolé(e) quand il/elle commet involontairement une faute ou une erreur de jugement (par exemple, si sans le faire exprès, il/elle a laissé de côté un camarade au cours d'un jeu).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 20,
+      "question_texte": "Montre qu'il/elle comprend que le fait de se taquiner entre amis ou au sein de la famille peut être une forme d'humour ou une marque d'affection.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 21,
+      "question_texte": "Informe ses parents ou la personne qui s'occupe de lui/d'elle de son emploi du temps (par exemple, l'heure de départ ou de retour, l'endroit où il/elle se rend, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 22,
+      "question_texte": "Choisit d'éviter les activités dangereuses ou risquées (par exemple, sauter de très haut, prendre un auto-stoppeur, conduire dangereusement, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 23,
+      "question_texte": "Contrôle sa colère ou sa peine quand il/elle n'obtient pas ce qu'il/elle veut (par exemple, s'il/elle n'a pas la permission de regarder la télévision ou d'assister à une fête, ou si une suggestion qu'il/elle fait est rejetée par un ami ou la personne qui s'occupe de lui/elle).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 24,
+      "question_texte": "Est fidèle à ses engagements (par exemple, s'il/si elle promet de rencontrer quelqu'un, le rencontre, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 25,
+      "question_texte": "Se tient à l'écart ou met un terme à des relations ou des situations qui peuvent lui nuire ou être dangereuses (par exemple, moqueries, harcèlement moral, abus sexuel, escroquerie, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 26,
+      "question_texte": "Contrôle sa colère ou sa peine face à une critique constructive (par exemple, correction d'un comportement inadapté, discussion d'une note obtenue à un test, évaluation des performances, etc.).",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 27,
+      "question_texte": "Garde des secrets ou des confidences aussi longtemps que nécessaire.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 28,
+      "question_texte": "Réfléchit aux conséquences de ses actions avant de prendre des décisions (par exemple, évite d'agir de façon impulsive, prend en compte des informations importantes, etc.).",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 29,
+      "question_texte": "A conscience du danger potentiel et se montre prudent dans les situations sociales « à risque » (par exemple, les fêtes alcoolisées, les forums Internet, les petites annonces, etc.).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Adaptation",
+      "numero_item": 30,
+      "question_texte": "Se montre respectueux de ses collègues de travail (par exemple, ne distrait pas et n'interrompt pas les autres lorsqu'ils travaillent, est à l'heure pour les réunions, etc.).",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 1,
+      "question_texte": "Réagit quand le parent ou la personne qui s'occupe de lui/elle agit de façon ludique (par exemple, sourit, rit, tape des mains).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 2,
+      "question_texte": "Montre de l'intérêt pour l'endroit où il/elle est (par exemple, regarde autour de lui/d'elle, se déplace, touche des objets ou des gens, etc.).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 3,
+      "question_texte": "Joue à des jeux interactifs simples avec d'autres (par exemple, « coucou », « ainsi font les petites marionnettes »).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 4,
+      "question_texte": "Joue à côté d'un autre enfant, chacun faisant une chose différente.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 5,
+      "question_texte": "Choisit de jouer avec d'autres enfants (par exemple, ne reste pas en marge d'un groupe, n'évite pas les autres).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 6,
+      "question_texte": "Joue de façon coopérative avec un ou plusieurs enfants moins de 5 minutes.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 7,
+      "question_texte": "Joue de façon coopérative avec plusieurs enfants pendant plus de 5 minutes.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 8,
+      "question_texte": "Continue à jouer avec un autre enfant sans protester lorsque le parent ou la personne qui s'occupe de lui/d'elle s'en va.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 9,
+      "question_texte": "Partage ses jouets et ses affaires quand on le lui demande.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 10,
+      "question_texte": "Joue avec les autres avec une surveillance minimale.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 11,
+      "question_texte": "Utilise des objets de la vie courante ou d'autres objets pour des activités de faire-semblant (par exemple, faire semblant qu'un cube est une voiture, une boîte est une maison, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 12,
+      "question_texte": "Se protège en s'éloignant de ceux qui détruisent des objets ou font mal (par exemple, ceux qui mordent, frappent, jettent des choses, tirent les cheveux, etc.).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 13,
+      "question_texte": "Joue à des activités de faire-semblant simples avec d'autres (par exemple, jouer à se déguiser, faire semblant d'être un superhéros, etc.).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 14,
+      "question_texte": "Recherche la compagnie des autres pour jouer ou pour être ensemble (par exemple, invite quelqu'un à la maison, se rend chez les autres, joue avec d'autres enfants dans une aire de jeux, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 15,
+      "question_texte": "Attend son tour quand on le lui demande lorsqu'il participe à des jeux de société ou en sport.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 16,
+      "question_texte": "Participe à des jeux de plein air improvisés, en groupe (par exemple, chat perché, corde à sauter, jeux de ballon).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 17,
+      "question_texte": "Partage ses jouets et ses affaires sans qu'on le lui demande.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 18,
+      "question_texte": "Suit les règles dans des jeux simples (courses de relais, loto, jeux électroniques, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 19,
+      "question_texte": "Attend son tour sans qu'on le lui demande.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 20,
+      "question_texte": "Joue à des jeux de hasard : jeux de cartes ou jeux de société (par exemple, jeu de l'oie, bataille, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 21,
+      "question_texte": "Sort avec des amis durant la journée sous la surveillance d'un adulte (par exemple, au centre aéré, au centre commercial, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 22,
+      "question_texte": "Demande la permission avant d'utiliser un objet appartenant à un autre ou utilisé par un autre.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 23,
+      "question_texte": "S'abstient d'entrer dans un groupe de personnes lorsque des signaux non verbaux indiquent qu'il n'est pas le bienvenu.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 24,
+      "question_texte": "Joue à des jeux simples qui demandent de retenir le score (par exemple, tir au but, lancé de balle au panier, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 25,
+      "question_texte": "Fait preuve d'esprit sportif (c'est-à-dire, suit les règles, n'est pas trop agressif, félicite l'autre équipe ou l'autre joueur lors de leur victoire, et ne se met pas en colère lorsqu'il/elle perd).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 26,
+      "question_texte": "Joue à plus d'un jeu de cartes, de société ou électronique demandant de l'habileté et de la prise de décision (par exemple, Monopoly™, tarot, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 27,
+      "question_texte": "Sort avec des amis le soir sous la surveillance d'adultes (par exemple, concert, cinéma, événement sportif, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 28,
+      "question_texte": "Suit les règles dans des jeux ou des sports complexes (par exemple, football, volley, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 29,
+      "question_texte": "Sort avec des amis durant la journée sans la surveillance d'un adulte (par exemple, aller en ville, au parc, etc.).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 30,
+      "question_texte": "Planifie des activités de loisirs nécessitant d'organiser plus de deux choses à la fois (par exemple, une sortie à la plage incluant le transport, le repas, les activités ludiques, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Jeu et temps libre",
+      "numero_item": 31,
+      "question_texte": "Sort le soir avec des amis sans la surveillance d'un adulte (par exemple, concert, cinéma, événement sportif, etc.).",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 1,
+      "question_texte": "Regarde le visage de la personne qui s'occupe de lui/d'elle.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 2,
+      "question_texte": "Regarde (suit des yeux) pendant au moins 5 secondes, quelqu'un qui bouge à côté de son berceau ou de son lit.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 3,
+      "question_texte": "Manifeste deux émotions ou plus (par exemple, rit, pleure, crie, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 4,
+      "question_texte": "Sourit ou produit des sons à l'approche d'une personne familière.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 5,
+      "question_texte": "Établit ou essaie d'établir un contact avec quelqu'un (par exemple, sourit, fait du bruit, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 6,
+      "question_texte": "Lève les bras vers une personne familière quand celle-ci lui tend les bras.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 7,
+      "question_texte": "Manifeste des préférences pour certaines personnes et objets (par exemple, sourit, tend la main ou se déplace vers une personne ou un objet, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 8,
+      "question_texte": "Montre de l'affection aux personnes familières (par exemple, les touche, les serre dans ses bras, les embrasse, leur fait un câlin, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 9,
+      "question_texte": "Imite ou essaie d'imiter les expressions faciales du parent ou de la personne qui s'occupe de lui/d'elle (par exemple, sourit, fronce les sourcils, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 10,
+      "question_texte": "Se déplace pour chercher le parent ou la personne qui s'occupe de lui/d'elle ou une autre personne familière qui se trouve à proximité.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 11,
+      "question_texte": "Montre de l'intérêt pour les enfants du même âge, autres que ses frères et sœurs (par exemple, les regarde, leur sourit, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 12,
+      "question_texte": "Imite des mouvements simples (par exemple, tape dans ses mains, fait au revoir, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 13,
+      "question_texte": "Manifeste par des actions son contentement ou son inquiétude à l'égard des autres (par exemple, serre dans ses bras, tapote le bras, tient la main, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 14,
+      "question_texte": "Cherche à faire plaisir aux autres (par exemple, partage une friandise ou un jouet, essaie d'aider même s'il/elle n'y arrive pas, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 15,
+      "question_texte": "A des comportements de recherche d'amitié avec d'autres jeunes de même âge (par exemple, dit « tu veux jouer ? » ou prend un enfant par la main).",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 16,
+      "question_texte": "Imite des actions relativement complexes pendant que quelqu'un d'autre les réalise (par exemple, se raser, mettre du maquillage, se limer les ongles, etc.).",
+      "reponse": "NSP"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 17,
+      "question_texte": "Répond quand des adultes familiers engagent la conversation (par exemple, si on lui demande « comment vas-tu ? », répond « je vais très bien » ; si on lui dit « tu es bien gentil! », répond « merci », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 18,
+      "question_texte": "Répète des phrases entendues précédemment de la part d'un adulte (par exemple, « chéri(e), je suis rentré(e) » ; « pas de dessert avant d'avoir fini ton assiette » ; etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 19,
+      "question_texte": "Utilise des mots pour exprimer ses émotions (par exemple, « je suis content(e) », ou « j'ai peur »).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 20,
+      "question_texte": "A un meilleur ami ou des préférences pour certains amis plutôt que d'autres (garçons ou filles).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 21,
+      "question_texte": "Imite des actions relativement complexes plusieurs heures après avoir vu quelqu'un les exécuter (par exemple, se raser, mettre du maquillage, se limer les ongles, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 22,
+      "question_texte": "Utilise des mots pour exprimer son contentement ou son inquiétude à l'égard des autres (par exemple, dit « bravo ! », « bravo ! tu as gagné », « est-ce que tu te sens bien ? », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 23,
+      "question_texte": "Agit quand une autre personne a besoin d'un coup de main (par exemple, tenir la porte ouverte, ramasser un objet tombé, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 24,
+      "question_texte": "Reconnaît ce que les autres aiment et n'aiment pas (par exemple, dit « Lucas aime le foot » ; « Marie n'aime pas la pizza », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 25,
+      "question_texte": "Montre le même degré d'émotion que les personnes autour de lui/elle (par exemple, ne minimise ou ne dramatise pas une situation, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 26,
+      "question_texte": "Garde une distance appropriée entre lui/elle et les autres dans les situations sociales (par exemple, ne s'approche pas trop près de la personne à qui il/elle parle).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 27,
+      "question_texte": "Parle avec d'autres sur des sujets d'intérêt commun (par exemple, le sport, les émissions télévisées, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 28,
+      "question_texte": "Engage la conversation (banalités) quand il/elle rencontre des personnes qu'il/elle connaît (par exemple, « comment vas-tu ? », « quoi de neuf ? »).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 29,
+      "question_texte": "Voit ses amis régulièrement.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 30,
+      "question_texte": "Évite de tenir des propos embarrassants ou méchants, ou de poser des questions impolies en public.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 31,
+      "question_texte": "A des attentes raisonnables en amitié (par exemple, ne s'attend pas à être le seul ami de quelqu'un, ou à ce que ses amis soient toujours disponibles).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 32,
+      "question_texte": "Comprend que les autres ne peuvent pas connaître ses pensées s'il/elle ne les a pas exprimées.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 33,
+      "question_texte": "Est prudent quand il/elle parle de choses personnelles.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 34,
+      "question_texte": "Coopère avec d'autres pour organiser une activité ou pour y prendre part (par exemple, une fête d'anniversaire ou un événement sportif).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 35,
+      "question_texte": "Montre qu'il/elle comprend les allusions ou les signaux implicites dans la conversation (par exemple, comprendre que bailler peut signifier « je m'ennuie », ou que changer rapidement de sujet de conversation peut signifier « je ne veux pas parler de ça »).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 36,
+      "question_texte": "Engage une conversation en parlant de sujets qui intéressent les autres (par exemple, « alors Mathis m'a dit que tu aimais l'informatique ? »).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 37,
+      "question_texte": "Va à des rendez-vous ou à des sorties à plusieurs.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Socialisation",
+      "sous_domaine": "Relations interpersonnelles",
+      "numero_item": 38,
+      "question_texte": "Va à des rendez-vous amoureux.",
+      "reponse": "0"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 1,
+      "question_texte": "Montre qu'il/elle comprend la fonction du téléphone (par exemple, fait semblant de téléphoner, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 2,
+      "question_texte": "Parle au téléphone avec une personne familière.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 3,
+      "question_texte": "Utilise la télévision ou la radio sans aide (par exemple, mettre en marche, choisir une chaîne, sélectionner un programme etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 4,
+      "question_texte": "Compte au moins 10 objets, un par un.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 5,
+      "question_texte": "Montre qu'il/elle a conscience d'être en voiture et adopte un comportement approprié (par exemple, garde sa ceinture attachée, ne distrait pas le conducteur, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 6,
+      "question_texte": "Montre qu'il/elle comprend la fonction de l'argent (par exemple, dit « il faut de l'argent pour acheter quelque chose au magasin »).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 7,
+      "question_texte": "Utilise le trottoir (quand il y en a un) ou le bord de la route quand il/elle marche ou qu'il/elle utilise un engin avec des roues (tricycle, trottinette, patins à roulettes, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 8,
+      "question_texte": "Montre qu'il/elle comprend la fonction de l'horloge (par exemple, dit « l'horloge sert à donner l'heure », ou encore « à quelle heure on y va ? »).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 9,
+      "question_texte": "Respecte les règles de la maison (par exemple, ne pas courir dans la maison, ne pas sauter sur les meubles, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 10,
+      "question_texte": "Est capable de jouer à un jeu vidéo ou de lancer un logiciel si l'ordinateur est allumé ; n'a pas besoin de savoir allumer l'ordinateur.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 11,
+      "question_texte": "Va chercher la personne demandée au téléphone, ou indique à l'interlocuteur que cette personne n'est pas disponible.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 12,
+      "question_texte": "Reconnaît et identifie les différentes pièces de monnaie (euros et centimes d'euros) ; il n'est pas nécessaire que le sujet connaisse la valeur exacte des pièces de monnaie.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 13,
+      "question_texte": "Regarde des deux côtés de la rue avant de traverser.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 14,
+      "question_texte": "Indique le jour de la semaine quand on le lui demande.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 15,
+      "question_texte": "Montre qu'il/elle comprend le respect de l'intimité, pour lui/elle-même et pour les autres (par exemple, lorsqu'il est aux toilettes ou en train de se changer).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 16,
+      "question_texte": "Montre qu'il/elle connaît les numéros de téléphone à appeler en cas d'urgence lorsqu'on le lui demande.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 17,
+      "question_texte": "Donne l'heure à partir d'une horloge ou d'une montre digitale (en chiffre).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 18,
+      "question_texte": "Donne la valeur des pièces de monnaie (1, 2 euros, 10, 20, 50 centimes d'euros).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 19,
+      "question_texte": "Reconnaît les billets de différentes valeurs (par exemple, fait référence à un billet de 5 ou 10 Euros dans la conversation).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 20,
+      "question_texte": "Respecte les feux de signalisation pour les piétons (« bonhomme vert – rouge »).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 21,
+      "question_texte": "Montre la date du jour ou une autre date sur un calendrier quand on le lui demande.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 22,
+      "question_texte": "Montre qu'il/elle comprend que certains articles coûtent plus chers que d'autres (par exemple, dit « j'ai assez d'argent pour acheter un chewing-gum mais pas pour une barre chocolatée », ou « quel crayon coûte le moins cher ? »).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 23,
+      "question_texte": "Donne l'heure par demi-heure sur une montre ou une horloge à aiguilles (par exemple, « il est 13h30 », « il est 14h00 », etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 24,
+      "question_texte": "Utilise le téléphone pour appeler les autres (en utilisant un fixe ou un portable).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 25,
+      "question_texte": "Commande un menu complet dans un fast-food.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 26,
+      "question_texte": "Transporte ou range son argent de façon sûre (dans un porte-monnaie, un portefeuille, une sacoche, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 27,
+      "question_texte": "Donne l'heure par tranches de 5 minutes sur une montre ou une horloge à aiguilles (par exemple, « il est 11h05 », « il est 13h10 », etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 28,
+      "question_texte": "Respecte l'horaire du retour à la maison fixé par ses parents ou la personne qui s'occupe de lui/d'elle.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 29,
+      "question_texte": "Regarde ou écoute des programmes pour s'informer (par exemple, les prévisions météo, les nouvelles, les documentaires, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 30,
+      "question_texte": "Compte la monnaie qu'on lui rend lors d'un achat.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 31,
+      "question_texte": "Montre des connaissances en informatique pour exécuter des tâches complexes (par exemple, faire du traitement de texte, accéder à Internet, installer un logiciel, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 32,
+      "question_texte": "Évalue le prix et la qualité des produits avant de les acheter.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 33,
+      "question_texte": "Respecte les horaires des pauses (par exemple, les pauses-café ou déjeuner, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 34,
+      "question_texte": "Fait des trajets d'au moins 10 à 15 kilomètres pour se rendre dans un endroit familier (à vélo, en empruntant les transports en commun, ou en conduisant).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 35,
+      "question_texte": "Montre qu'il/elle comprend qu'il/elle peut faire une réclamation ou rapporter des problèmes légitimes quand il/elle n'est pas satisfait(e) d'un service ou d'une situation.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 36,
+      "question_texte": "Avertit l'école ou son responsable lorsqu'il/elle va être en retard ou absent.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 37,
+      "question_texte": "Utilise un compte courant ou un compte d'épargne de façon responsable (par exemple, en gardant un peu d'argent sur son compte, ou en vérifiant que les comptes sont équilibrés).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 38,
+      "question_texte": "Fait des trajets d'au moins 10 à 15 kilomètres pour se rendre dans un endroit non familier (à vélo, en empruntant les transports en commun, ou en conduisant).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 39,
+      "question_texte": "Gagne de l'argent en travaillant à temps partiel (au moins 10 heures par semaine) pendant une année.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 40,
+      "question_texte": "Essaie d'améliorer ses performances au travail après avoir reçu des critiques constructives de son responsable.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 41,
+      "question_texte": "Gère son argent (par exemple, paie lui-même la plupart de ses dépenses, utilise des chèques ou des virements bancaires pour ses achats, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 42,
+      "question_texte": "A eu un travail à temps plein durant une année.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 43,
+      "question_texte": "Fait un budget pour les dépenses mensuelles (le loyer, les dépenses courantes, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Communauté",
+      "numero_item": 44,
+      "question_texte": "Fait une demande de carte de crédit et l'utilise de manière responsable (n'excède pas la limite de crédit, respecte les délais de paiement, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 1,
+      "question_texte": "Est prudent avec les objets chauds (par exemple, le four, les plaques de cuisson, le feu, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 2,
+      "question_texte": "Aide à des tâches ménagères simples (par exemple, faire la poussière, ramasser les vêtements ou les jouets, nourrir les animaux, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 3,
+      "question_texte": "Débarrasse son couvert (objets incassables).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 4,
+      "question_texte": "Nettoie ou range l'aire de jeu ou de travail à la fin d'une activité (par exemple, la peinture au doigt, la construction de maquettes, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 5,
+      "question_texte": "Range ses affaires à leur place (par exemple, livres, jouets, magazines, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 6,
+      "question_texte": "Est prudent quand il/elle utilise des objets coupants (par exemple, ciseaux, couteaux, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 7,
+      "question_texte": "Débarrasse son couvert (y compris les objets fragiles).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 8,
+      "question_texte": "Aide à la préparation de plats nécessitant mélange et cuisson (par exemple, purée en flocons, pâte à gâteau etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 9,
+      "question_texte": "Utilise des appareils ménagers simples (par exemple, un grille-pain, un décapsuleur, un tire-bouchon, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 10,
+      "question_texte": "Utilise le micro-ondes pour réchauffer ou cuire des aliments (y compris le choix du programme, de la durée et la puissance).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 11,
+      "question_texte": "Range les vêtements propres à leur place (par exemple, dans des tiroirs ou un placard, sur des cintres, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 12,
+      "question_texte": "Utilise des outils (par exemple, un marteau pour planter des clous, un tournevis pour visser et dévisser des vis, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 13,
+      "question_texte": "Lave la vaisselle à la main ou remplit et utilise un lave-vaisselle.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 14,
+      "question_texte": "Passe le balai, la serpillière ou l'aspirateur soigneusement.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 15,
+      "question_texte": "Débarrasse la table complètement (par exemple, vide et empile la vaisselle, jette ce qui va à la poubelle, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 16,
+      "question_texte": "Utilise correctement des produits d'entretien (par exemple, lessive, cire pour les meubles, produit à vitres, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 17,
+      "question_texte": "Prépare un repas simple nécessitant de la cuisson mais sans préparation particulière (par exemple, du riz, de la soupe en sachet, des légumes surgelés, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 18,
+      "question_texte": "Nettoie une ou plusieurs pièces (en plus de sa propre chambre).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 19,
+      "question_texte": "Utilise un couteau aiguisé pour préparer le repas.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 20,
+      "question_texte": "Utilise la cuisinière ou le four pour chauffer, cuire ou cuisiner (par exemple, allume les plaques ou le four, sélectionne la température, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 21,
+      "question_texte": "Prépare un plat nécessitant de mesurer des quantités, de mélanger et de cuire plusieurs ingrédients.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 22,
+      "question_texte": "Lave le linge quand c'est nécessaire.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 23,
+      "question_texte": "Effectue des tâches d'entretien courant quand c'est nécessaire (par exemple, changer les ampoules, changer le sac de l'aspirateur, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Domestique",
+      "numero_item": 24,
+      "question_texte": "Prévoit et prépare le repas principal de la journée.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 1,
+      "question_texte": "Ouvre la bouche quand on lui présente de la nourriture.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 2,
+      "question_texte": "Mange des aliments solides (par exemple, des légumes cuits, de la viande en morceaux, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 3,
+      "question_texte": "Suce ou mâche de la nourriture que l'on peut manger avec les doigts (par exemple, biscuits, chips, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 4,
+      "question_texte": "Boit dans un verre ou une tasse ; peut en renverser.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 5,
+      "question_texte": "Fait comprendre que ses couches sont souillées ou mouillées (par exemple, en montrant, vocalisant, ou en tirant sur sa couche).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 6,
+      "question_texte": "Mange seul avec une cuillère ; peut en renverser.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 7,
+      "question_texte": "Boit avec une paille.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 8,
+      "question_texte": "Enlève un vêtement qui s'ouvre par devant (par exemple, un manteau ou un gilet) ; n'a pas besoin de savoir déboutonner ou défaire la fermeture éclair.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 9,
+      "question_texte": "Enfile des vêtements à ceinture élastique qui se remontent (par exemple, pantalon de jogging, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 10,
+      "question_texte": "Mange seul avec une fourchette ; peut en renverser.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 11,
+      "question_texte": "Boit dans un verre ou une tasse sans en renverser.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 12,
+      "question_texte": "Mange seul avec une cuillère sans en renverser.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 13,
+      "question_texte": "Urine aux toilettes ou sur le pot.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 14,
+      "question_texte": "Met un vêtement qui s'ouvre par devant (par exemple, un manteau ou un gilet) ; n'a pas besoin de savoir boutonner ou monter la fermeture éclair.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 15,
+      "question_texte": "Demande à aller aux toilettes.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 16,
+      "question_texte": "Défèque aux toilettes ou sur le pot.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 17,
+      "question_texte": "Est propre le jour.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 18,
+      "question_texte": "Remonte une fermeture éclair déjà attachée en bas (par exemple, sur un pantalon ou un sac à dos, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 19,
+      "question_texte": "Se mouche ou s'essuie le nez en utilisant un mouchoir.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 20,
+      "question_texte": "Est propre la nuit.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 21,
+      "question_texte": "Met ses chaussures au bon pied ; n'a pas besoin de faire ses lacets.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 22,
+      "question_texte": "Ferme des boutons-pression.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 23,
+      "question_texte": "Tient sa cuillère, sa fourchette et son couteau correctement.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 24,
+      "question_texte": "Se lave (en utilisant de l'eau et du savon) et se sèche le visage.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 25,
+      "question_texte": "Se brosse les dents.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 26,
+      "question_texte": "Boutonne de gros boutons de devant dans les bonnes boutonnières.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 27,
+      "question_texte": "Se couvre la bouche et le nez quand il/elle tousse ou éternue.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 28,
+      "question_texte": "Boutonne les petits boutons de devant dans les bonnes boutonnières.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 29,
+      "question_texte": "Attache et remonte une fermeture éclair qui n'est pas fixée en bas (par exemple, sur un gilet ou un sweat-shirt, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 30,
+      "question_texte": "Ouvre les robinets et ajuste la température en ajoutant de l'eau froide ou chaude.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 31,
+      "question_texte": "Porte des vêtements appropriés quand il fait humide ou froid (par exemple, un imperméable, des bottes, un sweat-shirt, etc.).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 32,
+      "question_texte": "Prend un bain ou une douche et se sèche de manière autonome.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 33,
+      "question_texte": "Trouve et utilise les toilettes publiques adaptées à son sexe (hommes/femmes).",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 34,
+      "question_texte": "Se lave et se sèche les cheveux (avec une serviette ou un sèche-cheveux).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 35,
+      "question_texte": "Prend soin de ses blessures superficielles (par exemple, nettoie la plaie, met un pansement, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 36,
+      "question_texte": "Prend des médicaments en suivant les indications sur la notice.",
+      "reponse": "2"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 37,
+      "question_texte": "Utilise le thermomètre pour prendre sa température ou celle de quelqu'un d'autre.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 38,
+      "question_texte": "Demande de l'aide médicale en cas d'urgence (par exemple, reconnaît les symptômes de maladie ou de blessure sérieuse, comme des difficultés respiratoires, des douleurs dans la poitrine, un saignement incontrôlé, etc.).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 39,
+      "question_texte": "Suit des prescriptions médicales pour des soins de santé (régime alimentaire spécial, traitement médical).",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 40,
+      "question_texte": "Gère sa pharmacie personnelle (médicaments prescrits et non prescrits) et se réapprovisionne si nécessaire.",
+      "reponse": "1"
+    },
+    {
+      "domaine": "Vie quotidienne",
+      "sous_domaine": "Personnel",
+      "numero_item": 41,
+      "question_texte": "Prend rendez-vous pour des examens de routine, médicaux et dentaires.",
+      "reponse": "1"
+    }
+  ]
+}

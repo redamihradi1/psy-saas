@@ -172,14 +172,20 @@ class License(models.Model):
             return True  # Illimité
         
         # Compter les tests existants
-        from tests_psy.models import TestD2R
+        from tests_psy.models import TestD2R,TestVineland
         # TODO: Ajouter Vineland et PEP3 quand disponibles
         
         if test_name.lower() == 'd2r':
             current_count = TestD2R.objects.filter(organization=self.organization).count()
             return current_count < max_tests
+        elif test_name.lower() == 'vineland':
+            current_count = TestVineland.objects.filter(organization=self.organization).count()
+            return current_count < max_tests
+        elif test_name.lower() == 'pep3':
+            # TODO: Implémenter quand PEP3 sera disponible
+            return True
         
-        return True
+        return False
     
     def get_tests_remaining(self, test_name):
         """Retourne le nombre de tests restants pour un test donné
@@ -201,11 +207,19 @@ class License(models.Model):
             return 'Illimité'
         
         # Compter les tests existants
-        from tests_psy.models import TestD2R
+        from tests_psy.models import TestD2R, TestVineland
         
-        if test_name.lower() == 'd2r':
+        test_name_lower = test_name.lower()
+        
+        if test_name_lower == 'd2r':
             current_count = TestD2R.objects.filter(organization=self.organization).count()
             return max(0, max_tests - current_count)
+        elif test_name_lower == 'vineland':
+            current_count = TestVineland.objects.filter(organization=self.organization).count()
+            return max(0, max_tests - current_count)
+        elif test_name_lower == 'pep3':
+            # TODO: Implémenter quand PEP3 sera disponible
+            return 'Illimité'
         
         return 'Illimité'
     

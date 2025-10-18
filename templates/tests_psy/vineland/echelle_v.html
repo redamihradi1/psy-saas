@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block title %}Notes Échelle-V - Vineland{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-8">
+    <!-- En-tête -->
+    <div class="mb-6 pb-6 border-b border-gray-200">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-chart-bar text-primary mr-2"></i>
+                    Notes Échelle-V - Vineland-II
+                </h2>
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    <div>
+                        <i class="fas fa-user mr-1"></i>
+                        <strong>Patient :</strong> {{ patient.nom_complet }}
+                    </div>
+                    <div>
+                        <i class="fas fa-birthday-cake mr-1"></i>
+                        <strong>Né(e) le :</strong> {{ patient.date_naissance|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar mr-1"></i>
+                        <strong>Date du test :</strong> {{ test.date_passation|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-hourglass-half mr-1"></i>
+                        <strong>Âge au test :</strong> {{ age.years }} ans, {{ age.months }} mois, {{ age.days }} jours
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+        <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-500 text-xl mr-3 mt-0.5"></i>
+            <div>
+                <h3 class="font-semibold text-blue-900 mb-1">À propos des notes échelle-V</h3>
+                <p class="text-sm text-blue-800">
+                    Les notes échelle-V sont des scores standardisés calculés à partir des scores bruts en tenant compte de l'âge du patient. 
+                    Ces notes permettent de comparer les performances du patient à celles d'un groupe de référence du même âge.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scores par domaine -->
+    {% for domain_name, domain_scores in echelle_v_scores.items %}
+    <div class="mb-8">
+        <!-- En-tête du domaine -->
+        <div class="domain-header mb-4 py-3 px-4 bg-gradient-to-r from-primary to-primary-dark rounded-lg shadow-md">
+            <h2 class="text-xl font-bold text-white flex items-center">
+                <i class="fas fa-folder-open mr-2"></i>
+                {{ domain_name }}
+            </h2>
+        </div>
+
+        <!-- Grille des sous-domaines -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for sous_domain, score in domain_scores.items %}
+            <div class="border-2 {% if score.error %}border-red-300 bg-red-50{% else %}border-gray-200{% endif %} rounded-lg p-5 hover:shadow-lg transition transform hover:-translate-y-1">
+                <!-- Nom du sous-domaine -->
+                <h3 class="font-semibold text-gray-900 mb-4 text-lg border-b pb-2 flex items-center">
+                    <i class="fas fa-chart-line text-primary mr-2"></i>
+                    {{ sous_domain }}
+                </h3>
+                
+                {% if score.error %}
+                    <!-- Message d'erreur -->
+                    <div class="flex items-start text-red-600 bg-red-100 p-3 rounded">
+                        <i class="fas fa-exclamation-triangle mr-2 mt-1"></i>
+                        <div class="text-sm">
+                            <p class="font-semibold">{{ score.error }}</p>
+                            <p class="text-xs mt-1">Score brut : {{ score.note_brute }}</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Scores -->
+                    <div class="space-y-4">
+                        <!-- Note brute -->
+                        <div class="flex justify-between items-center bg-gray-50 p-3 rounded">
+                            <span class="text-gray-600 font-medium text-sm">
+                                <i class="fas fa-calculator mr-1"></i>Note brute :
+                            </span>
+                            <span class="text-2xl font-bold text-gray-700">
+                                {{ score.note_brute }}
+                            </span>
+                        </div>
+
+                        <!-- Flèche de conversion -->
+                        <div class="text-center">
+                            <i class="fas fa-arrow-down text-primary text-2xl"></i>
+                        </div>
+
+                        <!-- Note échelle-V -->
+                        <div class="flex justify-between items-center bg-gradient-to-r from-primary to-primary-dark p-4 rounded-lg shadow-md">
+                            <span class="text-white font-semibold">
+                                <i class="fas fa-chart-bar mr-1"></i>Note échelle-V :
+                            </span>
+                            <span class="text-4xl font-bold text-white">
+                                {{ score.note_echelle_v }}
+                            </span>
+                        </div>
+
+                        <!-- Jauge visuelle -->
+                        <div class="mt-3">
+                            <div class="text-xs text-gray-500 mb-1 flex justify-between">
+                                <span>Faible</span>
+                                <span>Élevé</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full transition-all duration-500"
+                                     style="width: {% widthratio score.note_echelle_v 1 5 %}%">
+                                </div>
+                            </div>
+                            <div class="text-xs text-center text-gray-500 mt-1">
+                                Note sur 20
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Somme des notes échelle-V du domaine -->
+        <div class="mt-4 bg-gradient-to-r from-primary to-primary-dark border-2 border-primary rounded-lg p-5 shadow-lg">
+            <div class="flex justify-between items-center">
+                <div>
+                    <span class="text-white text-lg font-semibold block">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        Somme des notes échelle-V - {{ domain_name }}
+                    </span>
+                    <span class="text-white text-xs opacity-75">
+                        Total des sous-domaines
+                    </span>
+                </div>
+                <span class="text-5xl font-bold text-white">
+                    {% widthratio domain_scores.values|sum_echelle_v 1 1 %}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Résumé global -->
+    <div class="mt-8 bg-gray-50 rounded-lg p-6 border-2 border-gray-200">
+        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-clipboard-check text-primary mr-2"></i>
+            Résumé des notes échelle-V
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for domain_name, domain_scores in echelle_v_scores.items %}
+            <div class="bg-white p-4 rounded-lg border border-gray-200 hover:border-primary transition">
+                <div class="text-sm text-gray-600 mb-1">{{ domain_name }}</div>
+                <div class="text-3xl font-bold text-primary">
+                    {% widthratio domain_scores.values|sum_echelle_v 1 1 %}
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                    {{ domain_scores|length }} sous-domaine(s)
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Boutons de navigation -->
+    <div class="flex flex-wrap gap-4 mt-8 pt-6 border-t-2 border-gray-200">
+        <a href="{% url 'tests_psy:vineland_scores' test.id %}" 
+           class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>Retour aux scores bruts
+        </a>
+        
+        <a href="{% url 'tests_psy:vineland_resultats' test.id %}" 
+           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg transform hover:scale-105">
+            Voir les résultats complets<i class="fas fa-arrow-right ml-2"></i>
+        </a>
+
+        <a href="{% url 'tests_psy:vineland_pdf' test.id %}" 
+           class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg">
+            <i class="fas fa-file-pdf mr-2"></i>Télécharger le rapport PDF
+        </a>
+    </div>
+</div>
+
+<!-- Légende des notes échelle-V -->
+<div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+        <i class="fas fa-book-open text-primary mr-2"></i>
+        Interprétation des notes échelle-V
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div class="text-center p-3 bg-red-50 border-2 border-red-200 rounded-lg">
+            <div class="font-bold text-red-700">1-7</div>
+            <div class="text-xs text-red-600 mt-1">Très faible</div>
+        </div>
+        <div class="text-center p-3 bg-orange-50 border-2 border-orange-200 rounded-lg">
+            <div class="font-bold text-orange-700">8-12</div>
+            <div class="text-xs text-orange-600 mt-1">Faible</div>
+        </div>
+        <div class="text-center p-3 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
+            <div class="font-bold text-yellow-700">13-17</div>
+            <div class="text-xs text-yellow-600 mt-1">Moyen</div>
+        </div>
+        <div class="text-center p-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
+            <div class="font-bold text-blue-700">18-20</div>
+            <div class="text-xs text-blue-600 mt-1">Bon</div>
+        </div>
+        <div class="text-center p-3 bg-green-50 border-2 border-green-200 rounded-lg">
+            <div class="font-bold text-green-700">21+</div>
+            <div class="text-xs text-green-600 mt-1">Excellent</div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Animation pour les jauges */
+@keyframes fillBar {
+    from {
+        width: 0%;
+    }
+}
+
+.w-full > div {
+    animation: fillBar 1s ease-out;
+}
+
+/* Effet de brillance sur les cartes de scores */
+.grid > div {
+    position: relative;
+    overflow: hidden;
+}
+
+.grid > div::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    transition: all 0.5s;
+}
+
+.grid > div:hover::before {
+    left: 100%;
+}
+</style>
+
+{% endblock %}

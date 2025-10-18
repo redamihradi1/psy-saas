@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Scores Bruts - Vineland{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-8">
+    <!-- En-tête -->
+    <div class="mb-6 pb-6 border-b border-gray-200">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-calculator text-primary mr-2"></i>
+                    Scores Bruts - Vineland-II
+                </h2>
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    <div>
+                        <i class="fas fa-user mr-1"></i>
+                        <strong>Patient :</strong> {{ patient.nom_complet }}
+                    </div>
+                    <div>
+                        <i class="fas fa-birthday-cake mr-1"></i>
+                        <strong>Né(e) le :</strong> {{ patient.date_naissance|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar mr-1"></i>
+                        <strong>Date du test :</strong> {{ test.date_passation|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'tests_psy:vineland_questionnaire' test.id %}" 
+               class="text-primary hover:text-primary-dark transition">
+                <i class="fas fa-edit mr-1"></i>Modifier les réponses
+            </a>
+        </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+        <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-500 text-xl mr-3 mt-0.5"></i>
+            <div>
+                <h3 class="font-semibold text-blue-900 mb-1">À propos des scores bruts</h3>
+                <p class="text-sm text-blue-800">
+                    Les scores bruts représentent la somme des réponses pour chaque sous-domaine. 
+                    Ces scores seront ensuite convertis en notes échelle-V.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scores par domaine -->
+    {% for domain_name, domain_scores in scores.items %}
+    <div class="mb-8">
+        <!-- En-tête du domaine -->
+        <div class="mb-4 py-3 px-4 bg-gradient-to-r from-primary to-primary-dark rounded-lg">
+            <h2 class="text-xl font-bold text-white flex items-center">
+                <i class="fas fa-folder-open mr-2"></i>
+                {{ domain_name }}
+            </h2>
+        </div>
+
+        <!-- Grille des sous-domaines -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for sous_domain, score in domain_scores.items %}
+            <div class="border-2 border-gray-200 rounded-lg p-5 hover:border-primary hover:shadow-lg transition">
+                <!-- Nom du sous-domaine -->
+                <h3 class="font-semibold text-gray-900 mb-4 text-lg border-b pb-2">
+                    {{ sous_domain }}
+                </h3>
+                
+                <div class="space-y-3">
+                    <!-- Score brut -->
+                    <div class="flex justify-between items-center bg-primary bg-opacity-10 p-3 rounded">
+                        <span class="text-gray-700 font-semibold">Note brute :</span>
+                        <span class="text-3xl font-bold text-primary">
+                            {{ score.note_brute }}
+                        </span>
+                    </div>
+
+                    <!-- Nombre d'items -->
+                    <div class="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
+                        <span class="text-gray-600">Nombre d'items :</span>
+                        <span class="font-semibold text-gray-900">{{ score.items|length }}</span>
+                    </div>
+
+                    <!-- Détails des items (collapsible) -->
+                    <details class="mt-3">
+                        <summary class="cursor-pointer text-sm text-primary hover:text-primary-dark font-medium">
+                            <i class="fas fa-chevron-down mr-1"></i>
+                            Voir le détail des items
+                        </summary>
+                        <div class="mt-2 max-h-48 overflow-y-auto bg-gray-50 rounded p-2">
+                            <div class="space-y-1">
+                                {% for item in score.items %}
+                                <div class="flex justify-between text-xs py-1 px-2 hover:bg-white rounded">
+                                    <span class="text-gray-600">Item {{ item.numero }} :</span>
+                                    <span class="font-semibold {% if item.valeur == 2 %}text-green-600{% elif item.valeur == 1 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                                        {{ item.valeur }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Boutons de navigation -->
+    <div class="flex flex-wrap gap-4 mt-8 pt-6 border-t-2 border-gray-200">
+        <a href="{% url 'tests_psy:vineland_questionnaire' test.id %}" 
+           class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>Retour au questionnaire
+        </a>
+        
+        <a href="{% url 'tests_psy:vineland_echelle_v' test.id %}" 
+           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg transform hover:scale-105">
+            Voir les notes échelle-V<i class="fas fa-arrow-right ml-2"></i>
+        </a>
+
+        <a href="{% url 'tests_psy:vineland_resultats' test.id %}" 
+           class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg">
+            <i class="fas fa-chart-line mr-2"></i>Voir les résultats complets
+        </a>
+    </div>
+</div>
+
+<style>
+/* Style pour les details/summary */
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] summary i {
+    transform: rotate(180deg);
+    transition: transform 0.3s ease;
+}
+
+/* Scrollbar personnalisée */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+
+{% endblock %}
