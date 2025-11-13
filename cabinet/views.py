@@ -610,18 +610,18 @@ def pack_create(request):
     if request.method == 'POST':
         form = PackMindOfficeForm(request.POST)
         if form.is_valid():
-            PackMindOffice = form.save(commit=False)
+            pack = form.save(commit=False)
             if not request.user.is_superadmin():
-                PackMindOffice.organization = request.user.organization
-            PackMindOffice.save()
-            messages.success(request, "PackMindOffice créé!")
-            return redirect('cabinet:pack_detail', pack_id=PackMindOffice.id)
+                pack.organization = request.user.organization
+            pack.save()
+            messages.success(request, "Pack Mind Office créé!")
+            return redirect('cabinet:pack_detail', pack_id=pack.id)
     else:
         form = PackMindOfficeForm()
     
     context = {
         'form': form,
-        'title': 'Nouveau PackMindOffice',
+        'title': 'Nouveau Pack Mind Office',
     }
     
     return render(request, 'cabinet/pack_form.html', context)
@@ -632,40 +632,49 @@ def pack_detail(request, pack_id):
     """Détails d'un PackMindOffice"""
     
     if request.user.is_superadmin():
-        PackMindOffice = get_object_or_404(PackMindOffice.all_objects, id=pack_id)
+        pack = get_object_or_404(PackMindOffice.all_objects, id=pack_id)
     else:
-        PackMindOffice = get_object_or_404(PackMindOffice, id=pack_id)
+        pack = get_object_or_404(PackMindOffice, id=pack_id)
     
-    context = {'PackMindOffice': PackMindOffice}
+    # Récupérer les consultations qui ont utilisé ce pack
+    consultations_pack = Consultation.objects.filter(
+        pack_mind_office_utilise=pack
+    ).select_related('patient').order_by('-date_seance')
+    
+    context = {
+        'pack': pack,
+        'consultations_pack': consultations_pack
+    }
     return render(request, 'cabinet/pack_detail.html', context)
 
 
 @login_required
 def pack_edit(request, pack_id):
-    PackMindOffice = get_object_or_404(PackMindOffice, id=pack_id, organization=request.user.organization)
+    pack = get_object_or_404(PackMindOffice, id=pack_id, organization=request.user.organization)
     
     if request.method == 'POST':
-        form = PackMindOfficeForm(request.POST, instance=PackMindOffice)
+        form = PackMindOfficeForm(request.POST, instance=pack)
         if form.is_valid():
             form.save()
-            messages.success(request, "PackMindOffice modifié avec succès!")
-            return redirect('cabinet:pack_detail', pack_id=PackMindOffice.id)
+            messages.success(request, "Pack Mind Office modifié avec succès!")
+            return redirect('cabinet:pack_detail', pack_id=pack.id)
     else:
-        form = PackMindOfficeForm(instance=PackMindOffice)
+        form = PackMindOfficeForm(instance=pack)
     
     context = {
         'form': form,
-        'PackMindOffice': PackMindOffice,
-        'title': 'Modifier PackMindOffice',
+        'pack': pack,
+        'title': 'Modifier Pack Mind Office',
     }
     
     return render(request, 'cabinet/pack_form.html', context)
 
+
 @login_required
 def pack_delete(request, pack_id):
-    PackMindOffice = get_object_or_404(PackMindOffice, id=pack_id, organization=request.user.organization)
-    PackMindOffice.delete()
-    messages.success(request, "PackMindOffice supprimé avec succès!")
+    pack = get_object_or_404(PackMindOffice, id=pack_id, organization=request.user.organization)
+    pack.delete()
+    messages.success(request, "Pack Mind Office supprimé avec succès!")
     return redirect('cabinet:packs_list')
 
 
@@ -724,32 +733,41 @@ def agenda(request):
     })
 
 # API pour récupérer les consultations (format FullCalendar)
+# API pour récupérer les consultations (format FullCalendar)
+@login_required
 def consultations_api(request):
     """API JSON pour FullCalendar"""
     organization = request.user.organization
-    consultations = Consultation.objects.filter(
-        patient__organization=organization
-    ).select_related('patient')
+    
+    if request.user.is_superadmin():
+        consultations = Consultation.all_objects.select_related('patient').all()
+    else:
+        consultations = Consultation.objects.select_related('patient').all()
     
     events = []
     for consultation in consultations:
+        # Calculer l'heure de fin en ajoutant la durée
+        end_time = consultation.date_seance + timedelta(minutes=consultation.duree_minutes)
+        
         events.append({
             'id': consultation.id,
             'title': f"{consultation.patient.prenom} {consultation.patient.nom}",
-            'start': f"{consultation.date}T{consultation.heure}",
-            'end': f"{consultation.date}T{consultation.heure}",
+            'start': consultation.date_seance.isoformat(),
+            'end': end_time.isoformat(),
             'extendedProps': {
                 'patient_id': consultation.patient.id,
                 'type': consultation.type_consultation,
-                'statut': consultation.statut,
-                'duree': consultation.duree if hasattr(consultation, 'duree') else 60,
-                'notes': consultation.notes or ''
+                'statut': consultation.statut_consultation,  # ← Corrigé (c'était 'statut')
+                'duree': consultation.duree_minutes,
+                'notes': consultation.notes_cliniques or ''  # ← Corrigé (c'était 'notes')
             }
         })
     
     return JsonResponse(events, safe=False)
 
+
 # Créer consultation (AJAX)
+@login_required
 @require_http_methods(["POST"])
 def consultation_create_ajax(request):
     """Création de consultation via AJAX"""
@@ -758,41 +776,56 @@ def consultation_create_ajax(request):
         patient_id = request.POST.get('patient')
         patient = Patient.objects.get(id=patient_id, organization=organization)
         
+        # Combiner date et heure en un seul DateTimeField
+        date_str = request.POST.get('date')
+        heure_str = request.POST.get('heure')
+        date_seance = timezone.datetime.strptime(f"{date_str} {heure_str}", "%Y-%m-%d %H:%M")
+        date_seance = timezone.make_aware(date_seance)
+        
         consultation = Consultation.objects.create(
             patient=patient,
-            date=request.POST.get('date'),
-            heure=request.POST.get('heure'),
-            type_consultation=request.POST.get('type_consultation', 'suivi'),
-            statut=request.POST.get('statut', 'prevue'),
-            notes=request.POST.get('notes', '')
+            organization=organization,
+            date_seance=date_seance,
+            duree_minutes=int(request.POST.get('duree', 60)),
+            type_consultation=request.POST.get('type_consultation', 'individuelle'),
+            statut_consultation=request.POST.get('statut', 'planifie'),  # ← Corrigé
+            notes_cliniques=request.POST.get('notes', ''),  # ← Corrigé
+            tarif=0,  # Tu peux adapter selon tes besoins
+            lieu_consultation='visio'  # Valeur par défaut
         )
         
         return JsonResponse({'success': True, 'id': consultation.id})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
+
 # Modifier consultation (AJAX)
+@login_required
 @require_http_methods(["POST"])
 def consultation_edit_ajax(request, pk):
     """Modification de consultation via AJAX"""
     try:
-        organization = request.user.organization
-        consultation = Consultation.objects.get(
-            pk=pk, 
-            patient__organization=organization
-        )
+        if request.user.is_superadmin():
+            consultation = Consultation.all_objects.get(pk=pk)
+        else:
+            consultation = Consultation.objects.get(pk=pk)
         
-        consultation.date = request.POST.get('date')
-        consultation.heure = request.POST.get('heure')
+        # Combiner date et heure
+        date_str = request.POST.get('date')
+        heure_str = request.POST.get('heure')
+        date_seance = timezone.datetime.strptime(f"{date_str} {heure_str}", "%Y-%m-%d %H:%M")
+        date_seance = timezone.make_aware(date_seance)
+        
+        consultation.date_seance = date_seance
+        consultation.duree_minutes = int(request.POST.get('duree', 60))
         consultation.type_consultation = request.POST.get('type_consultation')
-        consultation.statut = request.POST.get('statut')
-        consultation.notes = request.POST.get('notes', '')
+        consultation.statut_consultation = request.POST.get('statut')  # ← Corrigé
+        consultation.notes_cliniques = request.POST.get('notes', '')  # ← Corrigé
         consultation.save()
         
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
-
 
 @login_required
 def fichier_upload(request, patient_id):
