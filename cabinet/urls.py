@@ -23,6 +23,7 @@ urlpatterns = [
     path('consultations/<int:consultation_id>/delete/', views.consultation_delete, name='consultation_delete'),
     path('consultations/<int:consultation_id>/reporter/', views.consultation_reporter, name='consultation_reporter'),
     path('consultations/<int:consultation_id>/annuler/', views.consultation_annuler, name='consultation_annuler'),
+    path('consultations/<int:consultation_id>/confirmer-paiement/', views.consultation_confirmer_paiement, name='consultation_confirmer_paiement'),
 
     # Gestion des fichiers patients
     path('patients/<int:patient_id>/fichiers/upload/', views.fichier_upload, name='fichier_upload'),

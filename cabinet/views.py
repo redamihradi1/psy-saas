@@ -550,6 +550,30 @@ def consultation_annuler(request, consultation_id):
     return render(request, 'cabinet/consultation_annuler.html', context)
 
 @login_required
+def consultation_confirmer_paiement(request, consultation_id):
+    """Confirmer le paiement d'une consultation"""
+    
+    if request.user.is_superadmin():
+        consultation = get_object_or_404(Consultation.all_objects, id=consultation_id)
+    else:
+        consultation = get_object_or_404(
+            Consultation, 
+            id=consultation_id,
+            patient__organization=request.user.organization
+        )
+    
+    if request.method == 'POST':
+        consultation.statut_paiement = 'paye'
+        consultation.date_paiement = timezone.now().date()
+        consultation.save()
+        
+        messages.success(request, f"Paiement de {consultation.tarif} DHS confirmé avec succès!")
+        return redirect('cabinet:consultation_detail', consultation_id=consultation.id)
+    
+    # Si GET, rediriger vers la page de détail
+    return redirect('cabinet:consultation_detail', consultation_id=consultation.id)
+
+@login_required
 def consultation_delete(request, consultation_id):
     """Supprimer une consultation"""
     

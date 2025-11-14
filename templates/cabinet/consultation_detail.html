@@ -229,7 +229,16 @@
                    class="block w-full text-center bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition">
                     <i class="fas fa-edit mr-2"></i>Modifier
                 </a>
-                
+                {% if consultation.statut_paiement == 'attente' %}
+                <form method="POST" action="{% url 'cabinet:consultation_confirmer_paiement' consultation_id=consultation.id %}" 
+                    onsubmit="return confirm('Confirmer le paiement de {{ consultation.tarif }} DHS ?');">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-check-circle mr-2"></i>Confirmer paiement ({{ consultation.tarif }} DHS)
+                    </button>
+                </form>
+                {% endif %}
                 {% if consultation.statut_consultation != 'annulee' %}
                 <a href="{% url 'cabinet:consultation_reporter' consultation_id=consultation.id %}" 
                    class="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition">
