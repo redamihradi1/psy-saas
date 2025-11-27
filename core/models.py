@@ -6,19 +6,19 @@ class TenantManager(models.Manager):
     Manager personnalisé qui filtre automatiquement par organisation.
     À utiliser dans tous les modèles qui doivent être filtrés par tenant.
     """
-    
+
     def get_queryset(self):
-        from threading import local
-        
+        from core.middleware import get_current_tenant
+
         # Récupérer le tenant depuis le contexte local du thread
         queryset = super().get_queryset()
-        
+
         # Si on a un tenant actif, filtrer par organisation
-        tenant = getattr(self.model, '_current_tenant', None)
-        
+        tenant = get_current_tenant()
+
         if tenant:
             return queryset.filter(organization=tenant)
-        
+
         return queryset
 
 
@@ -46,9 +46,9 @@ class TenantModel(models.Model):
     def save(self, *args, **kwargs):
         # Auto-assigner l'organisation si elle n'est pas définie
         if not self.organization_id:
-            from threading import local
-            tenant = getattr(self.__class__, '_current_tenant', None)
+            from core.middleware import get_current_tenant
+            tenant = get_current_tenant()
             if tenant:
                 self.organization = tenant
-        
+
         super().save(*args, **kwargs)
