@@ -1,5 +1,5 @@
 from django.urls import path
-from tests_psy.views import d2r, vineland
+from tests_psy.views import d2r, vineland, beck
 
 app_name = 'tests_psy'
 
@@ -29,4 +29,12 @@ urlpatterns = [
     path('vineland/<int:test_id>/resultats/', vineland.vineland_resultats, name='vineland_resultats'),
     path('vineland/<int:test_id>/pdf/', vineland.vineland_pdf, name='vineland_pdf'),
     path('vineland/<int:test_id>/comparaisons/', vineland.vineland_comparaisons, name='vineland_comparaisons'),
+
+    # ========== BECK ==========
+    path('beck/', beck.beck_liste, name='beck_liste'),
+    path('beck/nouveau/', beck.beck_nouveau, name='beck_nouveau'),
+    path('beck/nouveau/<int:patient_id>/', beck.beck_nouveau, name='beck_nouveau_patient'),
+    path('beck/<int:test_id>/passation/', beck.beck_passation, name='beck_passation'),
+    path('beck/<int:test_id>/resultats/', beck.beck_resultats, name='beck_resultats'),
+    path('beck/<int:test_id>/pdf/', beck.beck_pdf, name='beck_pdf'),
 ]

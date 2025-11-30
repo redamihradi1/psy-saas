@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport Beck - {{ patient.nom_complet }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Helvetica', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #333;
+        }
+        .header {
+            border-bottom: 3px solid #4F46E5;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #4F46E5;
+            margin: 0;
+            font-size: 24pt;
+        }
+        .header p {
+            color: #666;
+            margin: 5px 0;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4F46E5;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .info-box h2 {
+            margin-top: 0;
+            color: #4F46E5;
+            font-size: 14pt;
+        }
+        .score-box {
+            text-align: center;
+            padding: 20px;
+            background-color: #EEF2FF;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .score-box .score {
+            font-size: 48pt;
+            font-weight: bold;
+            color: #4F46E5;
+            margin: 10px 0;
+        }
+        .score-box .label {
+            font-size: 12pt;
+            color: #666;
+        }
+        .niveau-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .niveau-minimale { background-color: #D1FAE5; color: #065F46; }
+        .niveau-legere { background-color: #FEF3C7; color: #92400E; }
+        .niveau-moderee { background-color: #FFEDD5; color: #9A3412; }
+        .niveau-severe { background-color: #FEE2E2; color: #991B1B; }
+        .alert-box {
+            background-color: #FEE2E2;
+            border-left: 4px solid #DC2626;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .alert-box h3 {
+            color: #DC2626;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table th {
+            background-color: #4F46E5;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        table td {
+            padding: 8px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        table tr:hover {
+            background-color: #F9FAFB;
+        }
+        .recommendations {
+            margin: 20px 0;
+        }
+        .recommendations li {
+            margin: 10px 0;
+            padding-left: 10px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #E5E7EB;
+            text-align: center;
+            color: #666;
+            font-size: 9pt;
+        }
+        .signature {
+            margin-top: 60px;
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 300px;
+            margin: 0 auto;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- En-tête -->
+    <div class="header">
+        <h1>INVENTAIRE DE DÉPRESSION DE BECK (BDI-II)</h1>
+        <p><strong>{{ organization.name }}</strong></p>
+        <p>Date du test : {{ test.date_passation|date:"d/m/Y à H:i" }}</p>
+    </div>
+
+    <!-- Informations patient -->
+    <div class="info-box">
+        <h2>Informations Patient</h2>
+        <p><strong>Nom :</strong> {{ patient.nom_complet }}</p>
+        <p><strong>Date de naissance :</strong> {{ patient.date_naissance|date:"d/m/Y" }} ({{ patient.age }} ans)</p>
+        <p><strong>Psychologue :</strong> {{ psychologue.get_full_name }}</p>
+    </div>
+
+    <!-- Alerte suicide -->
+    {% if test.alerte_suicide %}
+    <div class="alert-box">
+        <h3>⚠️ ALERTE : IDÉES SUICIDAIRES DÉTECTÉES</h3>
+        <p>Le patient a exprimé des idées suicidaires (Item 9 : score ≥ 2).</p>
+        <p><strong>Une évaluation approfondie du risque suicidaire et un suivi immédiat sont recommandés.</strong></p>
+    </div>
+    {% endif %}
+
+    <!-- Score -->
+    <div class="score-box">
+        <div class="label">SCORE TOTAL</div>
+        <div class="score">{{ test.score_total }}</div>
+        <div class="label">/ 63 points ({{ test.score_pourcentage }}%)</div>
+    </div>
+
+    <!-- Niveau de dépression -->
+    <div class="niveau-box niveau-{{ test.niveau_depression }}">
+        <h2 style="margin: 0;">{{ test.get_niveau_depression_display|upper }}</h2>
+        {% if test.niveau_depression == 'minimale' %}
+        <p style="margin: 5px 0;">0-13 points</p>
+        {% elif test.niveau_depression == 'legere' %}
+        <p style="margin: 5px 0;">14-19 points</p>
+        {% elif test.niveau_depression == 'moderee' %}
+        <p style="margin: 5px 0;">20-28 points</p>
+        {% else %}
+        <p style="margin: 5px 0;">29-63 points</p>
+        {% endif %}
+    </div>
+
+    <!-- Interprétation -->
+    <div class="info-box">
+        <h2>Interprétation</h2>
+        <p>{{ interpretation }}</p>
+    </div>
+
+    <!-- Recommandations -->
+    <div class="info-box">
+        <h2>Recommandations Cliniques</h2>
+        <ul class="recommendations">
+            {% for recommandation in recommandations %}
+            <li>{{ recommandation }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Détail des réponses -->
+    <h2 style="color: #4F46E5; margin-top: 30px;">Détail des Réponses</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 70%;">Réponses cochées</th>
+                <th style="width: 25%;">Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for numero in "123456789101112131415161718192021"|make_list %}
+              {% with item_num=numero|add:0 %}
+                {% if reponses_par_item|get_item:item_num %}
+                  {% with reponse=reponses_par_item|get_item:item_num %}
+                  <tr>
+                      <td><strong>{{ item_num }}</strong></td>
+                      <td>
+                          <strong>{{ reponse.item.categorie }}</strong><br>
+                          {% for phrase in reponse.phrases %}
+                          <span style="color: #666;">• [{{ phrase.score_valeur }}] {{ phrase.texte }}</span><br>
+                          {% endfor %}
+                      </td>
+                      <td style="text-align: center;">
+                          <strong style="color: #4F46E5; font-size: 14pt;">{{ reponse.score }}</strong>
+                      </td>
+                  </tr>
+                  {% endwith %}
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Signature -->
+    <div class="signature">
+        <p><strong>Psychologue :</strong></p>
+        <div class="signature-line">
+            {{ psychologue.get_full_name }}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Ce rapport est confidentiel et destiné uniquement à un usage professionnel.</p>
+        <p>Beck Depression Inventory (BDI-II) © Aaron T. Beck</p>
+        <p>Généré le {{ test.date_passation|date:"d/m/Y à H:i" }} par {{ organization.name }}</p>
+    </div>
+</body>
+</html>

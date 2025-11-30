@@ -2,17 +2,20 @@ from django.contrib import admin
 from .models import (
     # Commun
     Domain, SousDomain,
-    
+
     # D2R
-    TestD2R, SymboleReference, NormeExactitude, 
+    TestD2R, SymboleReference, NormeExactitude,
     NormeRythmeTraitement, NormeCapaciteConcentration,
-    
+
     # Vineland
     TestVineland, ReponseVineland, PlageItemVineland, QuestionVineland,
     EchelleVMapping, NoteDomaineVMapping, IntervaleConfianceSousDomaine,
     IntervaleConfianceDomaine, NiveauAdaptatif, AgeEquivalentSousDomaine,
     ComparaisonDomaineVineland, ComparaisonSousDomaineVineland,
-    FrequenceDifferenceDomaineVineland, FrequenceDifferenceSousDomaineVineland
+    FrequenceDifferenceDomaineVineland, FrequenceDifferenceSousDomaineVineland,
+
+    # Beck
+    TestBeck, ReponseItemBeck, ItemBeck, PhraseBeck
 )
 
 
@@ -325,3 +328,77 @@ class FrequenceDifferenceSousDomaineVinelandAdmin(admin.ModelAdmin):
     list_filter = ['age']
     search_fields = ['sous_domaine1__name', 'sous_domaine2__name']
     ordering = ['age', 'sous_domaine1']
+
+# ========== ADMIN BECK (TESTS) ==========
+
+@admin.register(TestBeck)
+class TestBeckAdmin(admin.ModelAdmin):
+    list_display = ['patient', 'psychologue', 'date_passation', 'score_total', 'niveau_depression', 'alerte_suicide', 'organization']
+    list_filter = ['date_passation', 'niveau_depression', 'alerte_suicide', 'organization']
+    search_fields = ['patient__nom', 'patient__prenom', 'psychologue__username']
+    date_hierarchy = 'date_passation'
+    readonly_fields = ['date_passation', 'score_total', 'niveau_depression', 'alerte_suicide']
+
+    fieldsets = (
+        ('Informations générales', {
+            'fields': ('patient', 'psychologue', 'organization', 'date_passation')
+        }),
+        ('Résultats', {
+            'fields': ('score_total', 'niveau_depression', 'alerte_suicide')
+        }),
+        ('Notes', {
+            'fields': ('notes',)
+        })
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        # Score calculé automatiquement, donc en lecture seule
+        if obj:  # Modification
+            return self.readonly_fields + ('patient', 'psychologue', 'organization')
+        return self.readonly_fields
+
+
+@admin.register(ReponseItemBeck)
+class ReponseItemBeckAdmin(admin.ModelAdmin):
+    list_display = ['test', 'item', 'score_item', 'organization']
+    list_filter = ['item__numero', 'score_item', 'organization']
+    search_fields = ['test__patient__nom', 'test__patient__prenom']
+    readonly_fields = ['score_item']
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # Filtrer les phrases disponibles selon l'item sélectionné
+        if db_field.name == "phrases_cochees":
+            # On laisse Django gérer, mais on pourrait filtrer ici si besoin
+            pass
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+
+# ========== ADMIN BECK (CONFIGURATION) ==========
+
+@admin.register(ItemBeck)
+class ItemBeckAdmin(admin.ModelAdmin):
+    list_display = ['numero', 'categorie']
+    list_filter = ['numero']
+    search_fields = ['categorie']
+    ordering = ['numero']
+
+
+@admin.register(PhraseBeck)
+class PhraseBeckAdmin(admin.ModelAdmin):
+    list_display = ['item', 'score_valeur', 'texte_court', 'ordre']
+    list_filter = ['item__numero', 'score_valeur']
+    search_fields = ['texte', 'item__categorie']
+    ordering = ['item__numero', 'ordre']
+
+    fieldsets = (
+        ('Item', {
+            'fields': ('item', 'ordre')
+        }),
+        ('Contenu', {
+            'fields': ('score_valeur', 'texte')
+        })
+    )
+
+    def texte_court(self, obj):
+        return obj.texte[:60] + '...' if len(obj.texte) > 60 else obj.texte
+    texte_court.short_description = 'Phrase'
