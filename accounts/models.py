@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from datetime import timedelta
+from tests_psy.models import TestBeck
+
+from core import tests
 
 class Organization(models.Model):
     """Cabinet/Organisation du psychologue"""
@@ -89,6 +92,9 @@ class License(models.Model):
     has_vineland = models.BooleanField(default=False, verbose_name="Accès Test Vineland")
     max_tests_vineland = models.IntegerField(default=0, verbose_name="Nombre max de tests Vineland (0 = illimité)")
     
+    has_beck = models.BooleanField(default=False, verbose_name="Accès Test Beck")
+    max_tests_beck = models.IntegerField(default=0, verbose_name="Nombre max de tests Beck (0 = illimité)")
+
     has_pep3 = models.BooleanField(default=False, verbose_name="Accès Test PEP3")
     max_tests_pep3 = models.IntegerField(default=0, verbose_name="Nombre max de tests PEP3 (0 = illimité)")
     
@@ -164,6 +170,7 @@ class License(models.Model):
         test_limits = {
             'd2r': self.max_tests_d2r,
             'vineland': self.max_tests_vineland,
+            'beck': self.max_tests_beck,
             'pep3': self.max_tests_pep3,
         }
         
@@ -180,6 +187,9 @@ class License(models.Model):
             return current_count < max_tests
         elif test_name.lower() == 'vineland':
             current_count = TestVineland.objects.filter(organization=self.organization).count()
+            return current_count < max_tests
+        elif test_name.lower() == 'beck':  # ← AJOUTER
+            current_count = TestBeck.objects.filter(organization=self.organization).count()
             return current_count < max_tests
         elif test_name.lower() == 'pep3':
             # TODO: Implémenter quand PEP3 sera disponible
@@ -199,6 +209,7 @@ class License(models.Model):
         test_limits = {
             'd2r': self.max_tests_d2r,
             'vineland': self.max_tests_vineland,
+            'beck': self.max_tests_beck,
             'pep3': self.max_tests_pep3,
         }
         
@@ -216,6 +227,9 @@ class License(models.Model):
             return max(0, max_tests - current_count)
         elif test_name_lower == 'vineland':
             current_count = TestVineland.objects.filter(organization=self.organization).count()
+            return max(0, max_tests - current_count)
+        elif test_name_lower == 'beck':  
+            current_count = TestBeck.objects.filter(organization=self.organization).count()
             return max(0, max_tests - current_count)
         elif test_name_lower == 'pep3':
             # TODO: Implémenter quand PEP3 sera disponible
@@ -238,6 +252,7 @@ class License(models.Model):
         test_mapping = {
             'd2r': self.has_d2r,
             'vineland': self.has_vineland,
+            'beck': self.has_beck,
             'pep3': self.has_pep3,
         }
         
@@ -254,6 +269,8 @@ class License(models.Model):
             tests.append('D2R')
         if self.has_vineland:
             tests.append('Vineland')
+        if self.has_beck:
+            tests.append('Beck')
         if self.has_pep3:
             tests.append('PEP3')
         return tests
@@ -264,6 +281,6 @@ class License(models.Model):
         Returns:
             list: Liste des noms de tests non disponibles
         """
-        all_tests = ['D2R', 'Vineland', 'PEP3']
+        all_tests = ['D2R', 'Vineland', 'PEP3' , 'Beck']
         available = self.get_available_tests()
         return [test for test in all_tests if test not in available]

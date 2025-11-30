@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8">
+  <div class="container mx-auto px-4 max-w-4xl">
+
+    <!-- Header avec navigation -->
+    <div class="mb-8">
+      <a href="{% url 'tests_psy:beck_liste' %}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition-colors group">
+        <i class="fas fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition-transform"></i>
+        Retour à la liste
+      </a>
+    </div>
+
+    <!-- En-tête du test -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-100">
+      <div class="text-center mb-6">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">INVENTAIRE DE BECK POUR LA DÉPRESSION</h1>
+        <div class="h-1 w-32 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto rounded-full"></div>
+      </div>
+
+      <!-- Informations patient -->
+      <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Patient</p>
+            <p class="font-bold text-gray-900 text-lg">{{ patient.nom_complet }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Date</p>
+            <p class="font-bold text-gray-900 text-lg">{% now "d/m/Y" %}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Âge</p>
+            <p class="font-bold text-gray-900 text-lg">{{ patient.age }} ans</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-5">
+        <h3 class="font-bold text-amber-900 mb-3 flex items-center">
+          <i class="fas fa-info-circle mr-2"></i>Instructions importantes
+        </h3>
+        <p class="text-amber-800 mb-3">Ceci est un questionnaire contenant plusieurs groupes de phrases. Pour chacun des groupes :</p>
+        <ol class="list-decimal list-inside text-amber-800 space-y-2 ml-2">
+          <li>Lisez attentivement toutes les phrases.</li>
+          <li>Cochez <strong>une seule phrase</strong> qui décrit le mieux comment vous vous sentez <strong>depuis une semaine et dans le moment présent</strong>.</li>
+          <li>Si aucune phrase ne vous convient parfaitement, choisissez celle qui se rapproche le plus de votre état.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Barre de progression flottante -->
+    <div class="sticky top-4 z-10 mb-6">
+      <div class="bg-white rounded-xl shadow-lg p-4 border border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="bg-indigo-100 rounded-full p-3">
+              <i class="fas fa-chart-line text-indigo-600"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">Progression</p>
+              <p class="font-bold text-gray-900"><span id="items_completed">0</span> / 21 items complétés</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <div class="bg-purple-100 rounded-full p-3">
+              <i class="fas fa-star text-purple-600"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">Score total</p>
+              <p class="font-bold text-gray-900"><span id="total_score">0</span> / 63</p>
+            </div>
+          </div>
+        </div>
+        <!-- Barre de progression -->
+        <div class="mt-3 bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div id="progress_bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire -->
+    <form method="post" id="beckForm">
+      {% csrf_token %}
+
+      <div class="space-y-6">
+        {% for item in items %}
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-300">
+          <!-- En-tête de l'item -->
+          <div class="bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-white font-bold text-lg">
+                <span class="inline-block bg-white bg-opacity-20 rounded-full px-3 py-1 mr-3">{{ item.numero }}</span>
+                {{ item.categorie }}
+              </h3>
+              <div class="bg-white bg-opacity-20 rounded-full px-4 py-2">
+                <span class="text-white text-sm font-semibold">Score : </span>
+                <span class="text-white text-lg font-bold" id="score_item_{{ item.numero }}">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Options de réponse -->
+          <div class="p-6">
+            <div class="space-y-3">
+              {% for phrase in item.phrases.all %}
+              <label class="flex items-start p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer transition-all duration-200 group has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50">
+                <div class="flex items-center h-6">
+                  <input
+                    type="radio"
+                    name="item_{{ item.numero }}"
+                    value="{{ phrase.id }}"
+                    data-score="{{ phrase.score_valeur }}"
+                    data-item="{{ item.numero }}"
+                    class="w-5 h-5 border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-2 cursor-pointer"
+                    {% if phrase.id in reponses_existantes|get_item:item.numero %}checked{% endif %}
+                  >
+                </div>
+                <div class="ml-4 flex-1">
+                  <div class="flex items-start">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm mr-3 flex-shrink-0 group-hover:bg-indigo-200 transition-colors">
+                      {{ phrase.score_valeur }}
+                    </span>
+                    <span class="text-gray-700 leading-relaxed group-hover:text-gray-900 transition-colors">
+                      {{ phrase.texte }}
+                    </span>
+                  </div>
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="mt-8 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div class="text-center sm:text-left">
+            <p class="text-sm text-gray-600 mb-1">Résultat final</p>
+            <p class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">
+              <span id="final_score">0</span> / 63 points
+            </p>
+          </div>
+          <div class="flex space-x-4">
+            <a href="{% url 'tests_psy:beck_liste' %}" class="px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all">
+              <i class="fas fa-times mr-2"></i>Annuler
+            </a>
+            <button type="submit" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+              <i class="fas fa-check mr-2"></i>Terminer le test
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('beckForm');
+  
+  // Fonction pour calculer le score d'un item (avec radio, c'est le score sélectionné directement)
+  function updateItemScore(itemNumber) {
+    const selectedRadio = form.querySelector(`input[data-item="${itemNumber}"]:checked`);
+    const score = selectedRadio ? parseInt(selectedRadio.dataset.score) : 0;
+    
+    const scoreDisplay = document.getElementById(`score_item_${itemNumber}`);
+    if (scoreDisplay) {
+      scoreDisplay.textContent = score;
+    }
+    
+    return score > 0;
+  }
+  
+  // Fonction pour calculer le score total
+  function calculateTotalScore() {
+    let totalScore = 0;
+    
+    for (let i = 1; i <= 21; i++) {
+      const selectedRadio = form.querySelector(`input[data-item="${i}"]:checked`);
+      if (selectedRadio) {
+        totalScore += parseInt(selectedRadio.dataset.score);
+      }
+    }
+    
+    return totalScore;
+  }
+  
+  // Fonction pour mettre à jour la progression
+  function updateProgress() {
+    let completedItems = 0;
+    
+    for (let i = 1; i <= 21; i++) {
+      if (updateItemScore(i)) {
+        completedItems++;
+      }
+    }
+    
+    const totalScore = calculateTotalScore();
+    const progressPercent = (completedItems / 21) * 100;
+    
+    document.getElementById('items_completed').textContent = completedItems;
+    document.getElementById('total_score').textContent = totalScore;
+    document.getElementById('final_score').textContent = totalScore;
+    document.getElementById('progress_bar').style.width = progressPercent + '%';
+  }
+  
+  // Écouter les changements sur les radio buttons
+  const radioButtons = form.querySelectorAll('input[type="radio"]');
+  radioButtons.forEach(radio => {
+    radio.addEventListener('change', function() {
+      const itemNumber = this.dataset.item;
+      updateItemScore(itemNumber);
+      updateProgress();
+    });
+  });
+  
+  // Initialiser au chargement
+  updateProgress();
+  
+  // Validation avant soumission
+  form.addEventListener('submit', function(e) {
+    const completedItems = parseInt(document.getElementById('items_completed').textContent);
+    
+    if (completedItems < 21) {
+      e.preventDefault();
+      const confirmMessage = `⚠️ Attention !\n\nSeulement ${completedItems}/21 items sont complétés.\n\nVoulez-vous quand même soumettre le test ?`;
+      if (!confirm(confirmMessage)) {
+        return false;
+      }
+    }
+  });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+ 
+
+{% block title %}{{ title }}{% endblock %}
+
+ 
+
+{% block content %}
+
+<div class="container mx-auto px-4 py-6 max-w-7xl">
+
+  <!-- Header -->
+
+  <div class="mb-6">
+
+    <a href="{% url 'tests_psy:beck_liste' %}" class="text-primary hover:text-primary-dark mb-4 inline-block">
+
+      <i class="fas fa-arrow-left mr-2"></i>Retour à la liste
+
+    </a>
+
+    <div class="flex justify-between items-center">
+
+      <div>
+
+        <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+
+        <p class="text-gray-600 mt-2">Test passé le {{ test.date_passation|date:"d/m/Y à H:i" }}</p>
+
+      </div>
+
+      <a href="{% url 'tests_psy:beck_pdf' test.id %}" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg transition shadow-md" target="_blank">
+
+        <i class="fas fa-file-pdf mr-2"></i>Export PDF
+
+      </a>
+
+    </div>
+
+  </div>
+
+ 
+
+  <!-- Alerte suicide si nécessaire -->
+
+  {% if test.alerte_suicide %}
+
+  <div class="bg-red-100 border-l-4 border-red-500 p-6 mb-6">
+
+    <div class="flex">
+
+      <div class="flex-shrink-0">
+
+        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+
+      </div>
+
+      <div class="ml-4">
+
+        <h3 class="text-lg font-semibold text-red-900">⚠️ ALERTE : Idées suicidaires détectées</h3>
+
+        <p class="text-red-800 mt-2">
+
+          Le patient a exprimé des idées suicidaires (Item 9 : score ≥ 2).
+
+          <strong>Une évaluation approfondie du risque suicidaire et un suivi immédiat sont recommandés.</strong>
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {% endif %}
+
+ 
+
+  <!-- Score principal -->
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+    <!-- Score total -->
+
+    <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+
+      <p class="text-gray-600 text-sm uppercase tracking-wide">Score Total</p>
+
+      <p class="text-6xl font-bold text-primary mt-2">{{ test.score_total }}</p>
+
+      <p class="text-gray-500 text-sm mt-1">/ 63 points</p>
+
+      <div class="mt-4">
+
+        <div class="w-full bg-gray-200 rounded-full h-2">
+
+          <div class="bg-primary h-2 rounded-full" style="width: {{ test.score_pourcentage }}%"></div>
+
+        </div>
+
+        <p class="text-xs text-gray-500 mt-1">{{ test.score_pourcentage }}%</p>
+
+      </div>
+
+    </div>
+
+ 
+
+    <!-- Niveau de dépression -->
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+
+      <p class="text-gray-600 text-sm uppercase tracking-wide mb-3">Niveau de dépression</p>
+
+      {% if test.niveau_depression == 'minimale' %}
+
+      <div class="bg-green-100 rounded-lg p-4 text-center">
+
+        <i class="fas fa-smile text-green-600 text-4xl mb-2"></i>
+
+        <p class="text-xl font-bold text-green-900">Minimale</p>
+
+        <p class="text-sm text-green-700 mt-1">0-9 points</p>
+
+      </div>
+
+      {% elif test.niveau_depression == 'legere' %}
+
+      <div class="bg-yellow-100 rounded-lg p-4 text-center">
+
+        <i class="fas fa-meh text-yellow-600 text-4xl mb-2"></i>
+
+        <p class="text-xl font-bold text-yellow-900">Légère</p>
+
+        <p class="text-sm text-yellow-700 mt-1">10-18 points</p>
+
+      </div>
+
+      {% elif test.niveau_depression == 'moderee' %}
+
+      <div class="bg-orange-100 rounded-lg p-4 text-center">
+
+        <i class="fas fa-frown text-orange-600 text-4xl mb-2"></i>
+
+        <p class="text-xl font-bold text-orange-900">Modérée</p>
+
+        <p class="text-sm text-orange-700 mt-1">19-29 points</p>
+
+      </div>
+
+      {% else %}
+
+      <div class="bg-red-100 rounded-lg p-4 text-center">
+
+        <i class="fas fa-sad-tear text-red-600 text-4xl mb-2"></i>
+
+        <p class="text-xl font-bold text-red-900">Sévère</p>
+
+        <p class="text-sm text-red-700 mt-1">30-63 points</p>
+
+      </div>
+
+      {% endif %}
+
+    </div>
+
+ 
+
+    <!-- Psychologue -->
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+
+      <p class="text-gray-600 text-sm uppercase tracking-wide mb-3">Informations</p>
+
+      <div class="space-y-3">
+
+        <div>
+
+          <p class="text-xs text-gray-500">Patient</p>
+
+          <p class="font-semibold text-gray-900">{{ patient.nom_complet }}</p>
+
+        </div>
+
+        <div>
+
+          <p class="text-xs text-gray-500">Âge</p>
+
+          <p class="font-semibold text-gray-900">{{ patient.age }} ans</p>
+
+        </div>
+
+        <div>
+
+          <p class="text-xs text-gray-500">Psychologue</p>
+
+          <p class="font-semibold text-gray-900">{{ test.psychologue.get_full_name }}</p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+ 
+
+  <!-- Interprétation -->
+
+  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+
+    <h2 class="text-xl font-bold text-gray-900 mb-4">
+
+      <i class="fas fa-clipboard-check text-primary mr-2"></i>Interprétation
+
+    </h2>
+
+    <p class="text-gray-700">{{ interpretation }}</p>
+
+  </div>
+
+ 
+
+
+</div>
+
+ 
+
+{% if nb_tests_precedents > 1 %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const ctx = document.getElementById('evolutionChart').getContext('2d');
+
+new Chart(ctx, {
+
+  type: 'line',
+
+  data: {
+
+    labels: {{ evolution_data.dates|safe }},
+
+    datasets: [{
+
+      label: 'Score Beck',
+
+      data: {{ evolution_data.scores|safe }},
+
+      borderColor: '#4F46E5',
+
+      backgroundColor: 'rgba(79, 70, 229, 0.1)',
+
+      tension: 0.4,
+
+      fill: true
+
+    }]
+
+  },
+
+  options: {
+
+    responsive: true,
+
+    plugins: {
+
+      legend: {
+
+        display: false
+
+      }
+
+    },
+
+    scales: {
+
+      y: {
+
+        beginAtZero: true,
+
+        max: 63,
+
+        title: {
+
+          display: true,
+
+          text: 'Score'
+
+        }
+
+      }
+
+    }
+
+  }
+
+});
+
+</script>
+
+{% endif %}
+
+{% endblock %}

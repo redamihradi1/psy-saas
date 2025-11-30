@@ -26,6 +26,13 @@ from .vineland import (
     FrequenceDifferenceSousDomaineVineland
 )
 
+from .beck import (
+    ItemBeck,
+    PhraseBeck,
+    TestBeck,
+    ReponseItemBeck
+)
+
 __all__ = [
     # Commun
     'Domain',
@@ -54,4 +61,10 @@ __all__ = [
     'ComparaisonSousDomaineVineland',
     'FrequenceDifferenceDomaineVineland',
     'FrequenceDifferenceSousDomaineVineland',
+
+    # Beck
+    'ItemBeck',
+    'PhraseBeck',
+    'TestBeck',
+    'ReponseItemBeck',
 ]
