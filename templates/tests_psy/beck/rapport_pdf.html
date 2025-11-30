@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+{% load custom_filters %}
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Rapport Beck - {{ patient.nom_complet }}</title>
+
+    <style>
+
+        @page {
+
+            size: A4;
+
+            margin: 2cm;
+
+        }
+
+        body {
+
+            font-family: 'Helvetica', Arial, sans-serif;
+
+            font-size: 11pt;
+
+            line-height: 1.5;
+
+            color: #333;
+
+        }
+
+        .header {
+
+            border-bottom: 3px solid #4F46E5;
+
+            padding-bottom: 15px;
+
+            margin-bottom: 20px;
+
+        }
+
+        .header h1 {
+
+            color: #4F46E5;
+
+            margin: 0;
+
+            font-size: 24pt;
+
+        }
+
+        .header p {
+
+            color: #666;
+
+            margin: 5px 0;
+
+        }
+
+        .info-box {
+
+            background-color: #f8f9fa;
+
+            border-left: 4px solid #4F46E5;
+
+            padding: 15px;
+
+            margin: 20px 0;
+
+        }
+
+        .info-box h2 {
+
+            margin-top: 0;
+
+            color: #4F46E5;
+
+            font-size: 14pt;
+
+        }
+
+        .score-box {
+
+            text-align: center;
+
+            padding: 20px;
+
+            background-color: #EEF2FF;
+
+            border-radius: 10px;
+
+            margin: 20px 0;
+
+        }
+
+        .score-box .score {
+
+            font-size: 48pt;
+
+            font-weight: bold;
+
+            color: #4F46E5;
+
+            margin: 10px 0;
+
+        }
+
+        .score-box .label {
+
+            font-size: 12pt;
+
+            color: #666;
+
+        }
+
+        .niveau-box {
+
+            padding: 15px;
+
+            border-radius: 8px;
+
+            margin: 20px 0;
+
+            text-align: center;
+
+        }
+
+        .niveau-minimale { background-color: #D1FAE5; color: #065F46; }
+
+        .niveau-legere { background-color: #FEF3C7; color: #92400E; }
+
+        .niveau-moderee { background-color: #FFEDD5; color: #9A3412; }
+
+        .niveau-severe { background-color: #FEE2E2; color: #991B1B; }
+
+        .alert-box {
+
+            background-color: #FEE2E2;
+
+            border-left: 4px solid #DC2626;
+
+            padding: 15px;
+
+            margin: 20px 0;
+
+        }
+
+        .alert-box h3 {
+
+            color: #DC2626;
+
+            margin-top: 0;
+
+        }
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            margin: 20px 0;
+
+        }
+
+        table th {
+
+            background-color: #4F46E5;
+
+            color: white;
+
+            padding: 10px;
+
+            text-align: left;
+
+        }
+
+        table td {
+
+            padding: 8px;
+
+            border-bottom: 1px solid #E5E7EB;
+
+        }
+
+        table tr:hover {
+
+            background-color: #F9FAFB;
+
+        }
+
+        .recommendations {
+
+            margin: 20px 0;
+
+        }
+
+        .recommendations li {
+
+            margin: 10px 0;
+
+            padding-left: 10px;
+
+        }
+
+        .footer {
+
+            margin-top: 40px;
+
+            padding-top: 20px;
+
+            border-top: 2px solid #E5E7EB;
+
+            text-align: center;
+
+            color: #666;
+
+            font-size: 9pt;
+
+        }
+
+        .signature {
+
+            margin-top: 60px;
+
+        }
+
+        .signature-line {
+
+            border-top: 1px solid #333;
+
+            width: 300px;
+
+            margin: 0 auto;
+
+            padding-top: 5px;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- En-tête -->
+
+    <div class="header">
+
+        <h1>INVENTAIRE DE DÉPRESSION DE BECK (BDI-II)</h1>
+
+        <p>Date du test : {{ test.date_passation|date:"d/m/Y à H:i" }}</p>
+
+    </div>
+
+ 
+
+    <!-- Informations patient -->
+
+    <div class="info-box">
+
+        <h2>Informations Patient</h2>
+
+        <p><strong>Nom :</strong> {{ patient.nom_complet }}</p>
+
+        <p><strong>Date de naissance :</strong> {{ patient.date_naissance|date:"d/m/Y" }} ({{ patient.age }} ans)</p>
+
+        <p><strong>Psychologue :</strong> {{ psychologue.get_full_name }}</p>
+
+    </div>
+
+
+
+ 
+
+    <!-- Score -->
+
+    <div class="score-box">
+
+        <div class="label">SCORE TOTAL</div>
+
+        <div class="score">{{ test.score_total }}</div>
+
+        <div class="label">/ 63 points </div>
+
+    </div>
+
+ 
+
+    <!-- Niveau de dépression -->
+
+    <div class="niveau-box niveau-{{ test.niveau_depression }}">
+
+        <h2 style="margin: 0;">{{ test.get_niveau_depression_display|upper }}</h2>
+
+        {% if test.niveau_depression == 'minimale' %}
+
+        <p style="margin: 5px 0;">0-9 points</p>
+
+        {% elif test.niveau_depression == 'legere' %}
+
+        <p style="margin: 5px 0;">10-18 points</p>
+
+        {% elif test.niveau_depression == 'moderee' %}
+
+        <p style="margin: 5px 0;">19-29 points</p>
+
+        {% else %}
+
+        <p style="margin: 5px 0;">30-63 points</p>
+
+        {% endif %}
+
+    </div>
+
+
+</body>
+
+</html>
