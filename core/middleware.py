@@ -50,8 +50,12 @@ class TenantMiddleware:
                         if not license.is_active():
                             if not request.path.startswith('/admin/') and not request.path.startswith('/accounts/'):
                                 return HttpResponseForbidden("Votre licence a expiré.")
-                    except:
-                        pass
+                    except Exception as e:
+                        # Log l'erreur mais ne bloque pas l'accès si la licence n'existe pas
+                        # (l'organisation pourrait ne pas encore avoir de licence)
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.warning(f"Erreur lors de la vérification de licence pour {request.tenant}: {e}")
         else:
             request.tenant = None
             set_current_tenant(None)
