@@ -88,7 +88,10 @@ class License(models.Model):
     
     has_vineland = models.BooleanField(default=False, verbose_name="Accès Test Vineland")
     max_tests_vineland = models.IntegerField(default=0, verbose_name="Nombre max de tests Vineland (0 = illimité)")
-    
+
+    has_beck = models.BooleanField(default=False, verbose_name="Accès Test Beck")
+    max_tests_beck = models.IntegerField(default=0, verbose_name="Nombre max de tests Beck (0 = illimité)")
+
     has_pep3 = models.BooleanField(default=False, verbose_name="Accès Test PEP3")
     max_tests_pep3 = models.IntegerField(default=0, verbose_name="Nombre max de tests PEP3 (0 = illimité)")
     
@@ -164,88 +167,96 @@ class License(models.Model):
         test_limits = {
             'd2r': self.max_tests_d2r,
             'vineland': self.max_tests_vineland,
+            'beck': self.max_tests_beck,
             'pep3': self.max_tests_pep3,
         }
-        
+
         max_tests = test_limits.get(test_name.lower(), 0)
         if max_tests == 0:
             return True  # Illimité
-        
+
         # Compter les tests existants
-        from tests_psy.models import TestD2R,TestVineland
-        # TODO: Ajouter Vineland et PEP3 quand disponibles
-        
+        from tests_psy.models import TestD2R, TestVineland, TestBeck
+
         if test_name.lower() == 'd2r':
             current_count = TestD2R.objects.filter(organization=self.organization).count()
             return current_count < max_tests
         elif test_name.lower() == 'vineland':
             current_count = TestVineland.objects.filter(organization=self.organization).count()
             return current_count < max_tests
+        elif test_name.lower() == 'beck':
+            current_count = TestBeck.objects.filter(organization=self.organization).count()
+            return current_count < max_tests
         elif test_name.lower() == 'pep3':
             # TODO: Implémenter quand PEP3 sera disponible
             return True
-        
+
         return False
     
     def get_tests_remaining(self, test_name):
         """Retourne le nombre de tests restants pour un test donné
-        
+
         Args:
-            test_name (str): Nom du test ('d2r', 'vineland', 'pep3')
-            
+            test_name (str): Nom du test ('d2r', 'vineland', 'beck', 'pep3')
+
         Returns:
             int or str: Nombre restant ou 'Illimité'
         """
         test_limits = {
             'd2r': self.max_tests_d2r,
             'vineland': self.max_tests_vineland,
+            'beck': self.max_tests_beck,
             'pep3': self.max_tests_pep3,
         }
-        
+
         max_tests = test_limits.get(test_name.lower(), 0)
         if max_tests == 0:
             return 'Illimité'
-        
+
         # Compter les tests existants
-        from tests_psy.models import TestD2R, TestVineland
-        
+        from tests_psy.models import TestD2R, TestVineland, TestBeck
+
         test_name_lower = test_name.lower()
-        
+
         if test_name_lower == 'd2r':
             current_count = TestD2R.objects.filter(organization=self.organization).count()
             return max(0, max_tests - current_count)
         elif test_name_lower == 'vineland':
             current_count = TestVineland.objects.filter(organization=self.organization).count()
             return max(0, max_tests - current_count)
+        elif test_name_lower == 'beck':
+            current_count = TestBeck.objects.filter(organization=self.organization).count()
+            return max(0, max_tests - current_count)
         elif test_name_lower == 'pep3':
             # TODO: Implémenter quand PEP3 sera disponible
             return 'Illimité'
-        
+
         return 'Illimité'
     
     def has_test_access(self, test_name):
         """Vérifie si la licence donne accès à un test spécifique
-        
+
         Args:
-            test_name (str): Nom du test ('d2r', 'vineland', 'pep3')
-            
+            test_name (str): Nom du test ('d2r', 'vineland', 'beck', 'pep3')
+
         Returns:
             bool: True si l'accès est autorisé, False sinon
         """
         if not self.is_active():
             return False
-        
+
         test_mapping = {
             'd2r': self.has_d2r,
             'vineland': self.has_vineland,
+            'beck': self.has_beck,
             'pep3': self.has_pep3,
         }
-        
+
         return test_mapping.get(test_name.lower(), False)
     
     def get_available_tests(self):
         """Retourne la liste des tests disponibles pour cette licence
-        
+
         Returns:
             list: Liste des noms de tests disponibles
         """
@@ -254,16 +265,18 @@ class License(models.Model):
             tests.append('D2R')
         if self.has_vineland:
             tests.append('Vineland')
+        if self.has_beck:
+            tests.append('Beck')
         if self.has_pep3:
             tests.append('PEP3')
         return tests
     
     def get_missing_tests(self):
         """Retourne la liste des tests NON disponibles
-        
+
         Returns:
             list: Liste des noms de tests non disponibles
         """
-        all_tests = ['D2R', 'Vineland', 'PEP3']
+        all_tests = ['D2R', 'Vineland', 'Beck', 'PEP3']
         available = self.get_available_tests()
         return [test for test in all_tests if test not in available]
