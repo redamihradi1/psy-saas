@@ -170,14 +170,24 @@ document.addEventListener('DOMContentLoaded', function() {
   // Fonction pour calculer le score d'un item (avec radio, c'est le score sélectionné directement)
   function updateItemScore(itemNumber) {
     const selectedRadio = form.querySelector(`input[data-item="${itemNumber}"]:checked`);
-    const score = selectedRadio ? parseInt(selectedRadio.dataset.score) : 0;
     
     const scoreDisplay = document.getElementById(`score_item_${itemNumber}`);
+    
+    if (!selectedRadio) {
+      // Aucune réponse sélectionnée
+      if (scoreDisplay) {
+        scoreDisplay.textContent = '0';
+      }
+      return false;
+    }
+    
+    // Une réponse est sélectionnée
+    const score = parseInt(selectedRadio.dataset.score);
     if (scoreDisplay) {
       scoreDisplay.textContent = score;
     }
     
-    return score > 0;
+    return true;
   }
   
   // Fonction pour calculer le score total
@@ -232,10 +242,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (completedItems < 21) {
       e.preventDefault();
-      const confirmMessage = `⚠️ Attention !\n\nSeulement ${completedItems}/21 items sont complétés.\n\nVoulez-vous quand même soumettre le test ?`;
-      if (!confirm(confirmMessage)) {
-        return false;
+      
+      // Afficher un message d'erreur
+      alert(`❌ Impossible de soumettre le test !\n\nVous devez compléter les 21 items avant de soumettre.\n\nActuellement : ${completedItems}/21 items complétés.\nItems manquants : ${21 - completedItems}`);
+      
+      // Scroller vers le premier item non complété
+      for (let i = 1; i <= 21; i++) {
+        const selectedRadio = form.querySelector(`input[data-item="${i}"]:checked`);
+        if (!selectedRadio) {
+          const firstIncomplete = document.querySelector(`input[data-item="${i}"]`);
+          if (firstIncomplete) {
+            firstIncomplete.closest('.bg-white').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstIncomplete.closest('.bg-white').classList.add('ring-4', 'ring-red-500', 'ring-opacity-50');
+            setTimeout(() => {
+              firstIncomplete.closest('.bg-white').classList.remove('ring-4', 'ring-red-500', 'ring-opacity-50');
+            }, 3000);
+          }
+          break;
+        }
       }
+      
+      return false;
     }
   });
 });
