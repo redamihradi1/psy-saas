@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<div class="container mx-auto px-4 py-6 max-w-6xl">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <a href="{% url 'tests_psy:stai_liste' %}" class="text-primary hover:text-primary-dark mb-4 inline-block">
+      <i class="fas fa-arrow-left mr-2"></i>Retour à la liste
+    </a>
+    <div class="flex justify-between items-start">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+        <p class="text-gray-600 mt-2">
+          Test passé le {{ test.date_passation|date:"d/m/Y à H:i" }}
+        </p>
+      </div>
+      <a href="{% url 'tests_psy:stai_pdf' test.id %}" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg transition shadow-md" target="_blank">
+        <i class="fas fa-file-pdf mr-2"></i>Export PDF
+      </a>
+    </div>
+  </div>
+
+  <!-- Info patient -->
+  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Informations patient</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <p class="text-sm text-gray-600">Nom complet</p>
+        <p class="font-semibold text-gray-900">{{ patient.nom_complet }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-600">Âge</p>
+        <p class="font-semibold text-gray-900">{{ patient.age }} ans</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-600">Date de naissance</p>
+        <p class="font-semibold text-gray-900">{{ patient.date_naissance|date:"d/m/Y" }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-600">Psychologue</p>
+        <p class="font-semibold text-gray-900">{{ test.psychologue.get_full_name }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scores principaux -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+    <!-- Score ÉTAT -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900">
+          <i class="fas fa-thermometer-half text-primary mr-2"></i>ANXIÉTÉ ÉTAT (Y1)
+        </h2>
+      </div>
+
+      <div class="text-center py-6">
+        <div class="text-6xl font-bold text-primary mb-2">{{ test.score_etat }}</div>
+        <div class="text-gray-500 text-lg mb-4">sur 80 points</div>
+
+        {% if test.niveau_anxiete_etat == 'minimale' %}
+        <div class="inline-block px-6 py-3 rounded-full bg-green-100 text-green-800 font-semibold text-lg">
+          Anxiété minimale
+        </div>
+        {% elif test.niveau_anxiete_etat == 'faible' %}
+        <div class="inline-block px-6 py-3 rounded-full bg-blue-100 text-blue-800 font-semibold text-lg">
+          Anxiété faible
+        </div>
+        {% elif test.niveau_anxiete_etat == 'moderee' %}
+        <div class="inline-block px-6 py-3 rounded-full bg-yellow-100 text-yellow-800 font-semibold text-lg">
+          Anxiété modérée
+        </div>
+        {% elif test.niveau_anxiete_etat == 'elevee' %}
+        <div class="inline-block px-6 py-3 rounded-full bg-orange-100 text-orange-800 font-semibold text-lg">
+          Anxiété élevée
+        </div>
+        {% else %}
+        <div class="inline-block px-6 py-3 rounded-full bg-red-100 text-red-800 font-semibold text-lg">
+          Anxiété très élevée
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="mt-6 pt-6 border-t">
+        <h3 class="font-semibold text-gray-900 mb-2">Interprétation</h3>
+        <p class="text-gray-700 text-sm">{{ test.interpretation_etat }}</p>
+      </div>
+    </div>
+
+    <!-- Score TRAIT -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900">
+          <i class="fas fa-user-check text-primary mr-2"></i>ANXIÉTÉ TRAIT (Y2)
+        </h2>
+      </div>
+
+      <div class="text-center py-6">
+        <div class="text-6xl font-bold text-primary mb-2">{{ test.score_trait }}</div>
+        <div class="text-gray-500 text-lg mb-4">sur 80 points</div>
+
+        {% if test.niveau_anxiete_trait == 'minimale' %}
+        <div class="inline-block px-6 py-3 rounded-full bg-green-100 text-green-800 font-semibold text-lg">
+          Anxiété minimale
+        </div>
+        {% elif test.niveau_anxiete_trait == 'faible' %}
+        <div class="inline-block px-6 py-3 rounded-full bg-blue-100 text-blue-800 font-semibold text-lg">
+          Anxiété faible
+        </div>
+        {% elif test.niveau_anxiete_trait == 'moderee' %}
+        <div class="inline-block px-6 py-3 rounded-full bg-yellow-100 text-yellow-800 font-semibold text-lg">
+          Anxiété modérée
+        </div>
+        {% elif test.niveau_anxiete_trait == 'elevee' %}
+        <div class="inline-block px-6 py-3 rounded-full bg-orange-100 text-orange-800 font-semibold text-lg">
+          Anxiété élevée
+        </div>
+        {% else %}
+        <div class="inline-block px-6 py-3 rounded-full bg-red-100 text-red-800 font-semibold text-lg">
+          Anxiété très élevée
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="mt-6 pt-6 border-t">
+        <h3 class="font-semibold text-gray-900 mb-2">Interprétation</h3>
+        <p class="text-gray-700 text-sm">{{ test.interpretation_trait }}</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Recommandations -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+    <!-- Recommandations ÉTAT -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">
+        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Recommandations ÉTAT
+      </h2>
+      {% if recommandations_etat %}
+      <ul class="space-y-2">
+        {% for reco in recommandations_etat %}
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+          <span class="text-gray-700 text-sm">{{ reco }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-gray-500 text-sm">Aucune recommandation spécifique.</p>
+      {% endif %}
+    </div>
+
+    <!-- Recommandations TRAIT -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">
+        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Recommandations TRAIT
+      </h2>
+      {% if recommandations_trait %}
+      <ul class="space-y-2">
+        {% for reco in recommandations_trait %}
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+          <span class="text-gray-700 text-sm">{{ reco }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-gray-500 text-sm">Aucune recommandation spécifique.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Évolution (si tests précédents) -->
+  {% if nb_tests_precedents > 1 %}
+  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">
+      <i class="fas fa-chart-line text-primary mr-2"></i>Évolution des scores
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-3 text-center">Évolution ÉTAT</h3>
+        <canvas id="chartEtat" width="400" height="300"></canvas>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-3 text-center">Évolution TRAIT</h3>
+        <canvas id="chartTrait" width="400" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Graphique ÉTAT
+    const ctxEtat = document.getElementById('chartEtat').getContext('2d');
+    new Chart(ctxEtat, {
+      type: 'line',
+      data: {
+        labels: {{ evolution_data_etat.dates|safe }},
+        datasets: [{
+          label: 'Score ÉTAT',
+          data: {{ evolution_data_etat.scores|safe }},
+          borderColor: '#4F46E5',
+          backgroundColor: 'rgba(79, 70, 229, 0.1)',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 80,
+            title: {
+              display: true,
+              text: 'Score'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+
+    // Graphique TRAIT
+    const ctxTrait = document.getElementById('chartTrait').getContext('2d');
+    new Chart(ctxTrait, {
+      type: 'line',
+      data: {
+        labels: {{ evolution_data_trait.dates|safe }},
+        datasets: [{
+          label: 'Score TRAIT',
+          data: {{ evolution_data_trait.scores|safe }},
+          borderColor: '#10B981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 80,
+            title: {
+              display: true,
+              text: 'Score'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  </script>
+  {% endif %}
+
+  <!-- Note de bas de page -->
+  <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+    <p>
+      <i class="fas fa-info-circle mr-2"></i>
+      <strong>Note :</strong> Ce questionnaire validé ne remplacera jamais l'évaluation clinique d'un professionnel.
+      Les résultats doivent être interprétés dans le contexte global du patient.
+    </p>
+  </div>
+
+</div>
+
+{% endblock %}

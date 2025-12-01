@@ -2,11 +2,11 @@ from django.contrib import admin
 from .models import (
     # Commun
     Domain, SousDomain,
-    
+
     # D2R
-    TestD2R, SymboleReference, NormeExactitude, 
+    TestD2R, SymboleReference, NormeExactitude,
     NormeRythmeTraitement, NormeCapaciteConcentration,
-    
+
     # Vineland
     TestVineland, ReponseVineland, PlageItemVineland, QuestionVineland,
     EchelleVMapping, NoteDomaineVMapping, IntervaleConfianceSousDomaine,
@@ -15,7 +15,10 @@ from .models import (
     FrequenceDifferenceDomaineVineland, FrequenceDifferenceSousDomaineVineland,
 
     # Beck
-    TestBeck, ReponseItemBeck, ItemBeck, PhraseBeck
+    TestBeck, ReponseItemBeck, ItemBeck, PhraseBeck,
+
+    # STAI
+    TestSTAI, ReponseItemSTAI, ItemSTAI
 )
 
 
@@ -396,3 +399,69 @@ class PhraseBeckAdmin(admin.ModelAdmin):
     def texte_court(self, obj):
         return obj.texte[:60] + '...' if len(obj.texte) > 60 else obj.texte
     texte_court.short_description = 'Phrase'
+
+
+# ========== ADMIN STAI (TESTS) ==========
+
+@admin.register(TestSTAI)
+class TestSTAIAdmin(admin.ModelAdmin):
+    list_display = ['patient', 'psychologue', 'date_passation', 'score_etat', 'score_trait', 'niveau_anxiete_etat', 'niveau_anxiete_trait', 'organization']
+    list_filter = ['date_passation', 'niveau_anxiete_etat', 'niveau_anxiete_trait', 'organization']
+    search_fields = ['patient__nom', 'patient__prenom', 'psychologue__username']
+    date_hierarchy = 'date_passation'
+    readonly_fields = ['date_passation', 'score_etat', 'score_trait', 'niveau_anxiete_etat', 'niveau_anxiete_trait']
+
+    fieldsets = (
+        ('Informations générales', {
+            'fields': ('patient', 'psychologue', 'organization', 'date_passation')
+        }),
+        ('Résultats ÉTAT', {
+            'fields': ('score_etat', 'niveau_anxiete_etat')
+        }),
+        ('Résultats TRAIT', {
+            'fields': ('score_trait', 'niveau_anxiete_trait')
+        }),
+        ('Notes', {
+            'fields': ('notes',)
+        })
+    )
+
+
+@admin.register(ReponseItemSTAI)
+class ReponseItemSTAIAdmin(admin.ModelAdmin):
+    list_display = ['test', 'item', 'valeur_choisie', 'score_calcule', 'organization']
+    list_filter = ['item__section', 'item__numero', 'organization']
+    search_fields = ['test__patient__nom', 'test__patient__prenom']
+    readonly_fields = ['score_calcule']
+
+    fieldsets = (
+        ('Test et Item', {
+            'fields': ('test', 'item', 'organization')
+        }),
+        ('Réponse', {
+            'fields': ('valeur_choisie', 'score_calcule')
+        })
+    )
+
+
+# ========== ADMIN STAI (CONFIGURATION) ==========
+
+@admin.register(ItemSTAI)
+class ItemSTAIAdmin(admin.ModelAdmin):
+    list_display = ['numero', 'section', 'texte_court', 'est_inverse']
+    list_filter = ['section', 'est_inverse']
+    search_fields = ['texte', 'numero']
+    ordering = ['numero']
+
+    fieldsets = (
+        ('Identification', {
+            'fields': ('numero', 'section')
+        }),
+        ('Contenu', {
+            'fields': ('texte', 'est_inverse')
+        })
+    )
+
+    def texte_court(self, obj):
+        return obj.texte[:60] + '...' if len(obj.texte) > 60 else obj.texte
+    texte_court.short_description = 'Texte'

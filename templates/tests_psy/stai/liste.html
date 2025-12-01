@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<div class="container mx-auto px-4 py-6">
+
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+        <p class="text-gray-600 mt-2">Inventaire d'anxiété état-trait de Spielberger (STAI)</p>
+      </div>
+
+      {% if peut_creer %}
+      <a href="{% url 'tests_psy:stai_nouveau' %}" class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-lg transition shadow-md">
+        <i class="fas fa-plus mr-2"></i>Nouveau test STAI
+      </a>
+      {% else %}
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <p class="font-semibold">Limite atteinte</p>
+        <p class="text-sm">Tests restants : {{ tests_restants }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+          <i class="fas fa-clipboard-list text-2xl"></i>
+        </div>
+        <div class="ml-4">
+          <p class="text-gray-600 text-sm">Total tests</p>
+          <p class="text-2xl font-bold text-gray-900">{{ tests.count }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="p-3 rounded-full bg-green-100 text-green-600">
+          <i class="fas fa-check-circle text-2xl"></i>
+        </div>
+        <div class="ml-4">
+          <p class="text-gray-600 text-sm">Tests disponibles</p>
+          <p class="text-2xl font-bold text-gray-900">{{ tests_restants }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+          <i class="fas fa-users text-2xl"></i>
+        </div>
+        <div class="ml-4">
+          <p class="text-gray-600 text-sm">Patients évalués</p>
+          <p class="text-2xl font-bold text-gray-900">{{ tests.values_list.patient.distinct.count }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des tests -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    {% if tests %}
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Score ÉTAT</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Score TRAIT</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Psychologue</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for test in tests %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10 bg-primary-light rounded-full flex items-center justify-center">
+                <span class="text-primary font-semibold">{{ test.patient.prenom.0 }}{{ test.patient.nom.0 }}</span>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900">{{ test.patient.nom_complet }}</div>
+                <div class="text-sm text-gray-500">{{ test.patient.age }} ans</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ test.date_passation|date:"d/m/Y à H:i" }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-center">
+            <div class="flex flex-col items-center">
+              <span class="text-2xl font-bold text-gray-900">{{ test.score_etat }}</span>
+              <span class="text-xs text-gray-500">/80</span>
+              {% if test.niveau_anxiete_etat == 'minimale' %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                Minimale
+              </span>
+              {% elif test.niveau_anxiete_etat == 'faible' %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                Faible
+              </span>
+              {% elif test.niveau_anxiete_etat == 'moderee' %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                Modérée
+              </span>
+              {% elif test.niveau_anxiete_etat == 'elevee' %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                Élevée
+              </span>
+              {% else %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                Très élevée
+              </span>
+              {% endif %}
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-center">
+            <div class="flex flex-col items-center">
+              <span class="text-2xl font-bold text-gray-900">{{ test.score_trait }}</span>
+              <span class="text-xs text-gray-500">/80</span>
+              {% if test.niveau_anxiete_trait == 'minimale' %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                Minimale
+              </span>
+              {% elif test.niveau_anxiete_trait == 'faible' %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                Faible
+              </span>
+              {% elif test.niveau_anxiete_trait == 'moderee' %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                Modérée
+              </span>
+              {% elif test.niveau_anxiete_trait == 'elevee' %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                Élevée
+              </span>
+              {% else %}
+              <span class="mt-1 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                Très élevée
+              </span>
+              {% endif %}
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ test.psychologue.get_full_name }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <a href="{% url 'tests_psy:stai_resultats' test.id %}" class="text-primary hover:text-primary-dark mr-3" title="Voir les résultats">
+              <i class="fas fa-chart-bar"></i>
+            </a>
+            <a href="{% url 'tests_psy:stai_pdf' test.id %}" class="text-red-600 hover:text-red-900" title="Export PDF" target="_blank">
+              <i class="fas fa-file-pdf"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-12">
+      <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
+      <p class="text-gray-500 text-lg">Aucun test STAI pour le moment</p>
+      {% if peut_creer %}
+      <a href="{% url 'tests_psy:stai_nouveau' %}" class="mt-4 inline-block bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-lg transition">
+        Créer le premier test
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}
