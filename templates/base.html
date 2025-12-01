@@ -106,6 +106,16 @@
           </a>
         </li>
         {% endif %}
+
+        <!-- Test STAI - Affiché uniquement si accès autorisé -->
+        {% if user.organization.license.has_stai %} 
+        <li>
+          <a href="{% url 'tests_psy:stai_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-heartbeat w-5"></i>
+            <span class="ml-3">Test STAI (Anxiété)</span>
+          </a>
+        </li>
+        {% endif %}
         
         <!-- Test PEP3 - Affiché uniquement si accès autorisé -->
         {% if user.organization.license.has_pep3 %}

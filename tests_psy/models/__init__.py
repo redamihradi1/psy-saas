@@ -33,6 +33,14 @@ from .beck import (
     ReponseItemBeck
 )
 
+from .stai import (
+
+    ItemSTAI,
+    TestSTAI,
+    ReponseItemSTAI
+
+)
+
 __all__ = [
     # Commun
     'Domain',
@@ -67,4 +75,9 @@ __all__ = [
     'PhraseBeck',
     'TestBeck',
     'ReponseItemBeck',
+
+    # STAI
+    'ItemSTAI',
+    'TestSTAI',
+    'ReponseItemSTAI',
 ]
