@@ -184,35 +184,48 @@ def calculate_all_scores(test_vineland):
     
     return scores
 
+def _age_apres_ou_egal_au_debut(mapping, age_years, age_months, age_days):
+    """
+    True si (age_years, age_months, age_days) est >= à la borne de début du mapping.
+    Le jour n'est comparé que quand année ET mois coïncident exactement, et
+    seulement si age_debut_jour est renseigné.
+    """
+    if mapping.age_debut_annee != age_years:
+        return mapping.age_debut_annee < age_years
+    if mapping.age_debut_mois != age_months:
+        return mapping.age_debut_mois < age_months
+    if mapping.age_debut_jour is None:
+        return True
+    return mapping.age_debut_jour <= age_days
+
+
+def _age_avant_ou_egal_a_la_fin(mapping, age_years, age_months, age_days):
+    """Symétrique de _age_apres_ou_egal_au_debut pour la borne de fin."""
+    if mapping.age_fin_annee != age_years:
+        return mapping.age_fin_annee > age_years
+    if mapping.age_fin_mois != age_months:
+        return mapping.age_fin_mois > age_months
+    if mapping.age_fin_jour is None:
+        return True
+    return mapping.age_fin_jour >= age_days
+
+
 def find_echelle_v_mapping(sous_domain_obj, note_brute, age_info):
     """Trouve le mapping échelle-v correspondant à la note brute et l'âge."""
     age_years = age_info['years']
     age_months = age_info['months']
     age_days = age_info['days']
-    
+
     mappings = EchelleVMapping.objects.filter(
         sous_domaine=sous_domain_obj,
         note_brute_min__lte=note_brute,
         note_brute_max__gte=note_brute
     )
-    
+
     for mapping in mappings:
-        if mapping.age_debut_jour is not None and mapping.age_fin_jour is not None:
-            # Vérification avec jours
-            if ((mapping.age_debut_annee < age_years or 
-                (mapping.age_debut_annee == age_years and mapping.age_debut_mois <= age_months) or
-                (mapping.age_debut_annee == age_years and mapping.age_debut_mois == age_months and mapping.age_debut_jour <= age_days))):
-                if ((mapping.age_fin_annee > age_years or
-                    (mapping.age_fin_annee == age_years and mapping.age_fin_mois >= age_months) or
-                    (mapping.age_fin_annee == age_years and mapping.age_fin_mois == age_months and mapping.age_fin_jour >= age_days))):
-                    return mapping
-        else:
-            # Vérification sans jours
-            if ((mapping.age_debut_annee < age_years or 
-                (mapping.age_debut_annee == age_years and mapping.age_debut_mois <= age_months))):
-                if ((mapping.age_fin_annee > age_years or
-                    (mapping.age_fin_annee == age_years and mapping.age_fin_mois >= age_months))):
-                    return mapping
+        if (_age_apres_ou_egal_au_debut(mapping, age_years, age_months, age_days)
+                and _age_avant_ou_egal_a_la_fin(mapping, age_years, age_months, age_days)):
+            return mapping
     return None
 
 
