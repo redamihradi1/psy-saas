@@ -512,3 +512,7 @@ class PatientFichier(TenantModel):  # ← Hérite de TenantModel
     @property
     def est_image(self):
         return self.extension in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff']
+
+    @property
+    def est_pdf(self):
+        return self.extension == 'pdf'

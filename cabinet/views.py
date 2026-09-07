@@ -245,7 +245,7 @@ def patient_detail(request, patient_id):
     
     consultations = patient.consultation_set.order_by('-date_seance')[:10]
     
-    packs_utilises = PackMindOffice.objects.filter(patient=patient) if hasattr(patient, 'pack_set') else []
+    packs_utilises = PackMindOffice.objects.filter(consultation__patient=patient).distinct()
     
     total_consultations = patient.consultation_set.count()
     total_paye = patient.consultation_set.aggregate(total=Sum('tarif'))['total'] or 0
@@ -314,25 +314,6 @@ def patient_delete(request, patient_id):
     context = {'patient': patient}
     return render(request, 'cabinet/patient_delete.html', context)
 
-
-@login_required
-def anamnese_create(request, patient_id):
-    patient = get_object_or_404(Patient, id=patient_id, organization=request.user.organization)
-    
-    if request.method == 'POST':
-        anamnese = Anamnese.objects.create(
-            patient=patient,
-            motif_consultation=request.POST.get('motif_consultation'),
-            antecedents_medicaux=request.POST.get('antecedents_medicaux', ''),
-            situation_professionnelle=request.POST.get('situation_professionnelle', ''),
-            objectifs_therapie=request.POST.get('objectifs_therapie', ''),
-            niveau_stress=request.POST.get('niveau_stress', 5),
-            deja_consulte_psy=request.POST.get('deja_consulte_psy') == 'on'
-        )
-        messages.success(request, 'Anamnèse créée avec succès')
-        return redirect('cabinet:patient_detail', patient_id=patient.id)
-    
-    return render(request, 'cabinet/anamnese_create.html', {'patient': patient})
 
 @login_required
 def anamnese_edit(request, patient_id):
@@ -487,26 +468,17 @@ def consultation_reporter(request, consultation_id):
     )
     
     if request.method == 'POST':
-        # Sauvegarder la date originale si première fois
-        if not consultation.date_seance_originale:
-            consultation.date_seance_originale = consultation.date_seance
-        
         # Nouvelle date - parser la string en datetime
         nouvelle_date_str = request.POST.get('nouvelle_date')
         nouvelle_date = parse_datetime(nouvelle_date_str)
-        
+
         if not nouvelle_date:
             messages.error(request, "Format de date invalide")
             return redirect('cabinet:consultation_reporter', consultation_id=consultation.id)
-        
+
         motif_report = request.POST.get('motif_report', '')
-        
-        consultation.date_seance = nouvelle_date
-        consultation.statut_consultation = 'reportee'
-        consultation.nombre_reports += 1
-        consultation.motif_report = motif_report
-        consultation.save()
-        
+        consultation.reporter(nouvelle_date, motif_report)
+
         messages.success(request, f"Consultation reportée au {nouvelle_date.strftime('%d/%m/%Y à %H:%M')}")
         return redirect('cabinet:consultation_detail', consultation_id=consultation.id)
     
@@ -535,11 +507,9 @@ def consultation_annuler(request, consultation_id):
             PackMindOffice.nombre_seances_utilisees -= 1
             PackMindOffice.save()
             messages.success(request, f"La séance a été rendue au PackMindOffice {PackMindOffice.nom_pack}")
-        
-        consultation.statut_consultation = 'annulee'
-        consultation.motif_report = motif_annulation  # On utilise ce champ pour le motif
-        consultation.save()
-        
+
+        consultation.annuler(motif_annulation)
+
         messages.warning(request, "Consultation annulée")
         return redirect('cabinet:consultation_detail', consultation_id=consultation.id)
     
@@ -697,8 +667,9 @@ def pack_edit(request, pack_id):
 @login_required
 def pack_delete(request, pack_id):
     pack = get_object_or_404(PackMindOffice, id=pack_id, organization=request.user.organization)
-    pack.delete()
-    messages.success(request, "Pack Mind Office supprimé avec succès!")
+    if request.method == 'POST':
+        pack.delete()
+        messages.success(request, "Pack Mind Office supprimé avec succès!")
     return redirect('cabinet:packs_list')
 
 

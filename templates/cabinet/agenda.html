@@ -287,9 +287,9 @@
         
         const formData = new FormData(this);
         const consultationId = document.getElementById('consultationId').value;
-        const url = consultationId ? 
-            `/cabinet/consultations/${consultationId}/edit/` : 
-            '/cabinet/consultations/create/';
+        const url = consultationId ?
+            `/cabinet/consultations/${consultationId}/edit-ajax/` :
+            '/cabinet/consultations/create-ajax/';
         
         fetch(url, {
             method: 'POST',

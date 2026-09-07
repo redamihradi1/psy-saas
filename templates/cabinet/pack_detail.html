@@ -257,10 +257,14 @@
                    class="block w-full text-center bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition">
                     <i class="fas fa-edit mr-2"></i>Modifier le pack
                 </a>
-                <button onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce pack ?')) window.location.href='{% url 'cabinet:pack_delete' pack_id=pack.id %}'" 
-                        class="block w-full text-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
-                    <i class="fas fa-trash mr-2"></i>Supprimer
-                </button>
+                <form method="post" action="{% url 'cabinet:pack_delete' pack_id=pack.id %}"
+                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce pack ?');">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="block w-full text-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-trash mr-2"></i>Supprimer
+                    </button>
+                </form>
             </div>
         </div>
     </div>

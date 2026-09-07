@@ -13,8 +13,7 @@ urlpatterns = [
     path('patients/<int:patient_id>/', views.patient_detail, name='patient_detail'),
     path('patients/<int:patient_id>/edit/', views.patient_edit, name='patient_edit'),
     path('patients/<int:patient_id>/delete/', views.patient_delete, name='patient_delete'),
-    path('patients/<int:patient_id>/anamnese/create/', views.anamnese_create, name='anamnese_create'),
-    
+
     # Consultations
     path('consultations/', views.consultations_list, name='consultations_list'),
     path('consultations/create/', views.consultation_create, name='consultation_create'),
@@ -38,8 +37,8 @@ urlpatterns = [
     # Agenda
     path('agenda/', views.agenda, name='agenda'),
     path('consultations/api/', views.consultations_api, name='consultations_api'),
-    path('consultations/create/', views.consultation_create_ajax, name='consultation_create_ajax'),
-    path('consultations/<int:pk>/edit/', views.consultation_edit_ajax, name='consultation_edit_ajax'),
+    path('consultations/create-ajax/', views.consultation_create_ajax, name='consultation_create_ajax'),
+    path('consultations/<int:pk>/edit-ajax/', views.consultation_edit_ajax, name='consultation_edit_ajax'),
     
     # Packs
     path('packs/', views.packs_list, name='packs_list'),
