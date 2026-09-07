@@ -11,6 +11,10 @@ media/
 d2r_config_data.json
 vineland_config_data.json
 
+# Exports de données patient réelles (PII) - ne doivent jamais être versionnés
+vineland_test_*_export_*.json
+*_export_*.json
+
 # Understand Anything (knowledge graph tool data)
 .ua/
 .understand-anything/
