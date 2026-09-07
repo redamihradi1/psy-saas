@@ -776,10 +776,10 @@ def create_cover_page(elements, patient, test, age_info, styles, niveau_confianc
         styles['normal']
     ))
     elements.append(Paragraph(f"Date d'évaluation: {test.date_passation.strftime('%d/%m/%Y')}", styles['normal']))
-    elements.append(Paragraph(
-        f"Évaluateur: {test.psychologue.get_full_name() or test.psychologue.username}",
-        styles['normal']
-    ))
+    evaluateur = "Non assigné"
+    if test.psychologue:
+        evaluateur = test.psychologue.get_full_name() or test.psychologue.username
+    elements.append(Paragraph(f"Évaluateur: {evaluateur}", styles['normal']))
     
     # Paramètres d'analyse
     elements.append(Spacer(1, 0.5*cm))

@@ -33,7 +33,7 @@
             </div>
             <div class="flex justify-between">
                 <dt class="text-gray-600">Psychologue :</dt>
-                <dd class="font-medium text-gray-900">{{ test.psychologue.get_full_name|default:test.psychologue.username }}</dd>
+                <dd class="font-medium text-gray-900">{% if test.psychologue %}{{ test.psychologue.get_full_name|default:test.psychologue.username }}{% else %}—{% endif %}</dd>
             </div>
         </dl>
     </div>
