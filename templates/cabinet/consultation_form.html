@@ -17,9 +17,9 @@
     </div>
 
     <div class="bg-white rounded-xl shadow p-6">
-        <form method="POST" id="consultationForm">
+        <form method="POST" id="consultationForm" novalidate>
             {% csrf_token %}
-            
+
             <!-- Informations principales -->
             <div class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
@@ -31,7 +31,14 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Patient <span class="text-red-500">*</span>
                         </label>
-                        {{ form.patient }}
+                        <div class="relative" id="patientCombobox">
+                            <input type="text" id="patientSearchInput"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Rechercher un patient par nom..." autocomplete="off">
+                            <div id="patientOptionsList"
+                                 class="hidden absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"></div>
+                        </div>
+                        <div class="hidden">{{ form.patient }}</div>
                         {% if form.patient.errors %}
                         <p class="text-xs text-red-500 mt-1">{{ form.patient.errors.0 }}</p>
                         {% endif %}
@@ -230,6 +237,75 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Champ Patient : liste déroulante native remplacée par une recherche filtrée
+    (function initPatientCombobox() {
+        const select = document.getElementById('id_patient');
+        const input = document.getElementById('patientSearchInput');
+        const list = document.getElementById('patientOptionsList');
+        if (!select || !input || !list) return;
+
+        const options = Array.from(select.options)
+            .filter(o => o.value)
+            .map(o => ({ value: o.value, label: o.textContent.trim() }));
+
+        function normalize(str) {
+            return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        }
+
+        function renderList(filter) {
+            const query = normalize(filter || '');
+            const filtered = options.filter(o => normalize(o.label).includes(query));
+            list.innerHTML = '';
+            if (filtered.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'px-4 py-2 text-gray-500 text-sm';
+                empty.textContent = 'Aucun patient trouvé';
+                list.appendChild(empty);
+            } else {
+                filtered.forEach(o => {
+                    const item = document.createElement('div');
+                    item.className = 'px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm';
+                    item.textContent = o.label;
+                    item.addEventListener('mousedown', function(e) {
+                        e.preventDefault(); // évite que le blur ferme la liste avant le clic
+                        selectOption(o);
+                    });
+                    list.appendChild(item);
+                });
+            }
+            list.classList.remove('hidden');
+        }
+
+        function selectOption(o) {
+            select.value = o.value;
+            input.value = o.label;
+            list.classList.add('hidden');
+        }
+
+        // Pré-remplissage (édition) avec le patient déjà sélectionné
+        const current = options.find(o => o.value === select.value);
+        if (current) {
+            input.value = current.label;
+        }
+
+        input.addEventListener('focus', function() { renderList(input.value); });
+        input.addEventListener('input', function() {
+            select.value = '';
+            renderList(input.value);
+        });
+        input.addEventListener('blur', function() {
+            list.classList.add('hidden');
+            const match = options.find(o => o.value === select.value);
+            input.value = match ? match.label : '';
+        });
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                list.classList.add('hidden');
+                input.blur();
+            }
+        });
+    })();
+
     const lieuSelect = document.querySelector('select[name="lieu_consultation"]');
     const packSection = document.getElementById('packSection');
     const usePackCheckbox = document.getElementById('usePackCheckbox');

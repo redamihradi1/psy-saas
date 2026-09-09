@@ -213,8 +213,7 @@ def patient_create(request):
         if form.is_valid():
             patient = form.save(commit=False)
             # Auto-assigner l'organisation
-            if not request.user.is_superadmin():
-                patient.organization = request.user.organization
+            patient.organization = request.user.organization
             patient.save()
             messages.success(request, f"Patient {patient.nom_complet} créé avec succès!")
             return redirect('cabinet:patient_detail', patient_id=patient.id)
@@ -385,8 +384,7 @@ def consultation_create(request):
         form = ConsultationForm(request.POST, request=request)
         if form.is_valid():
             consultation = form.save(commit=False)
-            if not request.user.is_superadmin():
-                consultation.organization = request.user.organization
+            consultation.organization = consultation.patient.organization
             consultation.save()
             
             # IMPORTANT : Déduire une séance du PackMindOffice si utilisé
@@ -605,8 +603,7 @@ def pack_create(request):
         form = PackMindOfficeForm(request.POST)
         if form.is_valid():
             pack = form.save(commit=False)
-            if not request.user.is_superadmin():
-                pack.organization = request.user.organization
+            pack.organization = request.user.organization
             pack.save()
             messages.success(request, "Pack Mind Office créé!")
             return redirect('cabinet:pack_detail', pack_id=pack.id)
@@ -709,8 +706,7 @@ def anamnese_create(request, patient_id):
             contraintes_horaires=request.POST.get('contraintes_horaires', ''),
             deja_consulte_psy=request.POST.get('deja_consulte_psy') == 'true',
         )
-        if not request.user.is_superadmin():
-            anamnese.organization = request.user.organization
+        anamnese.organization = patient.organization
         anamnese.save()
         messages.success(request, "Anamnèse créée avec succès!")
         return redirect('cabinet:patient_detail', patient_id=patient.id)

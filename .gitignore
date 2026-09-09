@@ -18,3 +18,6 @@ vineland_test_*_export_*.json
 # Understand Anything (knowledge graph tool data)
 .ua/
 .understand-anything/
+
+# Notes de passation personnelles (jamais commitées)
+passation.md
