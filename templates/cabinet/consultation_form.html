@@ -62,7 +62,6 @@
                         {% if form.lieu_consultation.errors %}
                         <p class="text-xs text-red-500 mt-1">{{ form.lieu_consultation.errors.0 }}</p>
                         {% endif %}
-                        <p class="text-xs text-gray-500 mt-1" id="lieu-info"></p>
                     </div>
                     
                     <div>
@@ -93,54 +92,6 @@
                         {% if form.tarif.errors %}
                         <p class="text-xs text-red-500 mt-1">{{ form.tarif.errors.0 }}</p>
                         {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pack Mind Office (affiché seulement si lieu = mind_office) -->
-            <div id="packSection" class="mb-8 hidden">
-                <div class="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-6">
-                    <h3 class="text-lg font-semibold text-purple-900 mb-4">
-                        <i class="fas fa-box text-purple-600 mr-2"></i>
-                        Pack Mind Office
-                    </h3>
-                    
-                    <div class="mb-4">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="usePackCheckbox" class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                            <span class="ml-2 text-gray-700 font-medium">Utiliser un pack pour cette séance</span>
-                        </label>
-                        <p class="text-sm text-gray-600 mt-2 ml-7">
-                            Cochez cette case pour déduire une séance d'un de vos packs actifs
-                        </p>
-                    </div>
-                    
-                    <div id="packSelectContainer" class="hidden mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Sélectionner un pack
-                        </label>
-                        {{ form.pack_mind_office_utilise }}
-                        {% if form.pack_mind_office_utilise.errors %}
-                        <p class="text-xs text-red-500 mt-1">{{ form.pack_mind_office_utilise.errors.0 }}</p>
-                        {% endif %}
-                        
-                        <div id="packInfo" class="mt-4 bg-white rounded-lg p-4 border border-purple-200 hidden">
-                            <div class="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <span class="text-gray-600">Séances restantes:</span>
-                                    <span class="font-bold text-purple-600" id="packSeances">-</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600">Prix par séance:</span>
-                                    <span class="font-bold text-green-600" id="packPrix">-</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 text-sm text-gray-600 flex items-start gap-2">
-                        <i class="fas fa-info-circle text-purple-500 mt-0.5"></i>
-                        <span>Si vous utilisez un pack, une séance sera automatiquement déduite du pack sélectionné.</span>
                     </div>
                 </div>
             </div>
@@ -306,76 +257,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     })();
 
-    const lieuSelect = document.querySelector('select[name="lieu_consultation"]');
-    const packSection = document.getElementById('packSection');
-    const usePackCheckbox = document.getElementById('usePackCheckbox');
-    const packSelectContainer = document.getElementById('packSelectContainer');
-    const packSelect = document.querySelector('select[name="pack_mind_office_utilise"]');
-    const packInfo = document.getElementById('packInfo');
-    const lieuInfo = document.getElementById('lieu-info');
-    
-    // Données des packs (pour afficher les infos)
-    const packsData = {};
-    {% for pack in form.pack_mind_office_utilise.field.queryset %}
-    packsData[{{ pack.id }}] = {
-        seances: {{ pack.seances_restantes }},
-        prix: '{{ pack.prix_par_seance }}'
-    };
-    {% endfor %}
-    
-    
-    // Gérer l'affichage de la section pack selon le lieu
-    function handleLieuChange() {
-        const lieu = lieuSelect.value;
-        
-        if (lieu === 'mind_office') {
-            packSection.classList.remove('hidden');
-            lieuInfo.textContent = '💡 Vous pouvez utiliser un pack pour cette consultation';
-            lieuInfo.classList.add('text-purple-600');
-        } else {
-            packSection.classList.add('hidden');
-            usePackCheckbox.checked = false;
-            packSelectContainer.classList.add('hidden');
-            packSelect.value = '';
-            lieuInfo.textContent = '';
-        }
-    }
-    
-    // Gérer la checkbox "Utiliser un pack"
-    usePackCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            packSelectContainer.classList.remove('hidden');
-        } else {
-            packSelectContainer.classList.add('hidden');
-            packSelect.value = '';
-            packInfo.classList.add('hidden');
-        }
-    });
-    
-    // Afficher les infos du pack sélectionné
-    packSelect.addEventListener('change', function() {
-        const packId = this.value;
-        
-        if (packId && packsData[packId]) {
-            const pack = packsData[packId];
-            document.getElementById('packSeances').textContent = pack.seances;
-            document.getElementById('packPrix').textContent = pack.prix + ' DHS';
-            packInfo.classList.remove('hidden');
-        } else {
-            packInfo.classList.add('hidden');
-        }
-    });
-    
-    // Vider le pack si checkbox non cochée lors de la soumission
-    document.getElementById('consultationForm').addEventListener('submit', function(e) {
-        if (!usePackCheckbox.checked) {
-            packSelect.value = '';
-        }
-    });
-    
-    // Initialisation
-    lieuSelect.addEventListener('change', handleLieuChange);
-    handleLieuChange();
 });
 </script>
 

@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import Organization, License, User
-from cabinet.models import Patient, Consultation, PackMindOffice
+from cabinet.models import Patient, Consultation
 
 
 class ConsultationTestCaseBase(TestCase):
@@ -23,35 +23,8 @@ class ConsultationTestCaseBase(TestCase):
 
 class ConsultationCreateTests(ConsultationTestCaseBase):
 
-    def test_creation_deduit_une_seance_du_pack_utilise(self):
-        pack = PackMindOffice.objects.create(
-            organization=self.organization, nombre_seances_total=10, nombre_seances_utilisees=2,
-            date_achat=date.today(), prix_pack=1000,
-        )
-
+    def test_creation_redirige_vers_le_detail(self):
         response = self.client.post(reverse('cabinet:consultation_create'), {
-            'patient': self.patient.id,
-            'date_seance': '2024-06-15T10:00',
-            'duree_minutes': 60,
-            'type_consultation': 'individuelle',
-            'lieu_consultation': 'visio',
-            'pack_mind_office_utilise': pack.id,
-            'tarif': '0',
-            'statut_paiement': 'attente',
-        })
-
-        pack.refresh_from_db()
-        consultation = Consultation.objects.get(patient=self.patient)
-        self.assertRedirects(response, reverse('cabinet:consultation_detail', kwargs={'consultation_id': consultation.id}))
-        self.assertEqual(pack.nombre_seances_utilisees, 3)
-
-    def test_creation_sans_pack_ne_touche_a_aucun_pack(self):
-        pack = PackMindOffice.objects.create(
-            organization=self.organization, nombre_seances_total=10, nombre_seances_utilisees=2,
-            date_achat=date.today(), prix_pack=1000,
-        )
-
-        self.client.post(reverse('cabinet:consultation_create'), {
             'patient': self.patient.id,
             'date_seance': '2024-06-15T10:00',
             'duree_minutes': 60,
@@ -61,8 +34,9 @@ class ConsultationCreateTests(ConsultationTestCaseBase):
             'statut_paiement': 'attente',
         })
 
-        pack.refresh_from_db()
-        self.assertEqual(pack.nombre_seances_utilisees, 2)
+        consultation = Consultation.objects.get(patient=self.patient)
+        self.assertRedirects(response, reverse('cabinet:consultation_detail', kwargs={'consultation_id': consultation.id}))
+        self.assertEqual(consultation.organization, self.organization)
 
 
 class ConsultationReporterTests(ConsultationTestCaseBase):
@@ -107,7 +81,7 @@ class ConsultationReporterTests(ConsultationTestCaseBase):
 class ConsultationAnnulerTests(ConsultationTestCaseBase):
     """
     Régression : la vue mettait 'annulee' au lieu de 'annule', cassant
-    consultation.est_annule. Vérifie aussi le remboursement de séance de pack.
+    consultation.est_annule.
     """
 
     def setUp(self):
@@ -130,22 +104,6 @@ class ConsultationAnnulerTests(ConsultationTestCaseBase):
         self.assertEqual(self.consultation.statut_consultation, 'annule')
         self.assertTrue(self.consultation.est_annule)
         self.assertEqual(self.consultation.motif_report, 'Patient malade')
-
-    def test_annulation_rembourse_la_seance_au_pack(self):
-        pack = PackMindOffice.objects.create(
-            organization=self.organization, nombre_seances_total=10, nombre_seances_utilisees=3,
-            date_achat=date.today(), prix_pack=1000,
-        )
-        self.consultation.pack_mind_office_utilise = pack
-        self.consultation.save()
-
-        self.client.post(
-            reverse('cabinet:consultation_annuler', kwargs={'consultation_id': self.consultation.id}),
-            {'motif_annulation': ''},
-        )
-
-        pack.refresh_from_db()
-        self.assertEqual(pack.nombre_seances_utilisees, 2)
 
 
 class ConsultationConfirmerPaiementTests(ConsultationTestCaseBase):

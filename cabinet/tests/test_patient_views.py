@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import Organization, License, User
-from cabinet.models import Patient, Consultation, PackMindOffice
+from cabinet.models import Patient
 
 
 class CabinetTestCaseBase(TestCase):
@@ -84,7 +84,6 @@ class PatientCreateTests(CabinetTestCaseBase):
 
 
 class PatientDetailTests(CabinetTestCaseBase):
-    """Couvre aussi la régression packs_utilises (toujours vide auparavant)."""
 
     def setUp(self):
         super().setUp()
@@ -96,41 +95,6 @@ class PatientDetailTests(CabinetTestCaseBase):
         response = self.client.get(reverse('cabinet:patient_detail', kwargs={'patient_id': self.patient.id}))
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.context['anamnese'])
-
-    def test_packs_utilises_liste_les_packs_via_les_consultations(self):
-        pack = PackMindOffice.objects.create(
-            organization=self.organization, nombre_seances_total=10, nombre_seances_utilisees=1,
-            date_achat=date.today(), prix_pack=1000,
-        )
-        Consultation.objects.create(
-            organization=self.organization, patient=self.patient, date_seance="2024-01-01T10:00:00Z",
-            tarif=400, pack_mind_office_utilise=pack,
-        )
-
-        response = self.client.get(reverse('cabinet:patient_detail', kwargs={'patient_id': self.patient.id}))
-
-        self.assertIn(pack, response.context['packs_utilises'])
-
-    def test_packs_utilises_vide_si_aucune_consultation_avec_pack(self):
-        response = self.client.get(reverse('cabinet:patient_detail', kwargs={'patient_id': self.patient.id}))
-        self.assertEqual(list(response.context['packs_utilises']), [])
-
-    def test_packs_dun_autre_patient_napparaissent_pas(self):
-        autre_patient = Patient.objects.create(
-            organization=self.organization, nom="Martin", prenom="Alice", date_naissance=date(1990, 1, 1)
-        )
-        pack = PackMindOffice.objects.create(
-            organization=self.organization, nombre_seances_total=10, nombre_seances_utilisees=1,
-            date_achat=date.today(), prix_pack=1000,
-        )
-        Consultation.objects.create(
-            organization=self.organization, patient=autre_patient, date_seance="2024-01-01T10:00:00Z",
-            tarif=400, pack_mind_office_utilise=pack,
-        )
-
-        response = self.client.get(reverse('cabinet:patient_detail', kwargs={'patient_id': self.patient.id}))
-
-        self.assertEqual(list(response.context['packs_utilises']), [])
 
 
 class PatientDeleteTests(CabinetTestCaseBase):

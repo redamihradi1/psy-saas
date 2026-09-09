@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Patient, Anamnese, Consultation, PackMindOffice, PatientFichier
+from .models import Patient, Anamnese, Consultation, PatientFichier
 
 
 @admin.register(Patient)
@@ -47,20 +47,6 @@ class ConsultationAdmin(admin.ModelAdmin):
     search_fields = ['patient__nom', 'patient__prenom']
     readonly_fields = ['date_creation', 'date_modification']
     date_hierarchy = 'date_seance'
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superadmin():
-            return qs
-        return qs.filter(organization=request.user.organization)
-
-
-@admin.register(PackMindOffice)
-class PackMindOfficeAdmin(admin.ModelAdmin):
-    list_display = ['nom_pack', 'seances_restantes', 'statut', 'prix_pack', 'organization', 'date_achat']
-    list_filter = ['statut', 'organization', 'date_achat']
-    search_fields = ['nom_pack']
-    readonly_fields = ['date_creation', 'date_modification', 'seances_restantes', 'pourcentage_utilise']
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)

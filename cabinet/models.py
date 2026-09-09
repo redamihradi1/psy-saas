@@ -160,73 +160,6 @@ class Anamnese(TenantModel):  # ← Hérite de TenantModel
         return f"Anamnèse de {self.patient}"
 
 
-class PackMindOffice(TenantModel):  # ← Hérite de TenantModel
-    STATUT_CHOICES = [
-        ('actif', 'Actif'),
-        ('expire', 'Expiré'),
-        ('suspendu', 'Suspendu'),
-    ]
-    
-    nom_pack = models.CharField(
-        max_length=100,
-        verbose_name="Nom du pack",
-        default="Pack Mind Office"
-    )
-    nombre_seances_total = models.IntegerField(verbose_name="Nombre de séances total")
-    nombre_seances_utilisees = models.IntegerField(
-        default=0,
-        verbose_name="Nombre de séances utilisées"
-    )
-    date_achat = models.DateField(verbose_name="Date d'achat")
-    date_expiration = models.DateField(
-        blank=True, 
-        null=True,
-        verbose_name="Date d'expiration"
-    )
-    prix_pack = models.DecimalField(
-        max_digits=8, 
-        decimal_places=2,
-        verbose_name="Prix du pack (DHS)"
-    )
-    statut = models.CharField(
-        max_length=10, 
-        choices=STATUT_CHOICES,
-        default='actif',
-        verbose_name="Statut"
-    )
-    notes = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name="Notes"
-    )
-    date_creation = models.DateTimeField(auto_now_add=True)
-    date_modification = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name = "Pack Mind Office"
-        verbose_name_plural = "Packs Mind Office"
-        ordering = ['-date_achat']
-    
-    def __str__(self):
-        return f"{self.nom_pack} - {self.seances_restantes} séances restantes"
-    
-    @property
-    def seances_restantes(self):
-        return self.nombre_seances_total - self.nombre_seances_utilisees
-    
-    @property
-    def prix_par_seance(self):
-        if self.nombre_seances_total > 0:
-            return round(self.prix_pack / self.nombre_seances_total, 2)
-        return 0
-    
-    @property
-    def pourcentage_utilise(self):
-        if self.nombre_seances_total > 0:
-            return round((self.nombre_seances_utilisees / self.nombre_seances_total) * 100, 1)
-        return 0
-
-
 class Consultation(TenantModel):  # ← Hérite de TenantModel
     LIEU_CONSULTATION_CHOICES = [
         ('visio', 'Visioconférence'),
@@ -313,14 +246,7 @@ class Consultation(TenantModel):  # ← Hérite de TenantModel
         default='visio',
         verbose_name="Lieu de consultation"
     )
-    pack_mind_office_utilise = models.ForeignKey(
-        PackMindOffice,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        verbose_name="Pack Mind Office utilisé"
-    )
-    
+
     statut_consultation = models.CharField(
         max_length=20,
         choices=STATUT_CONSULTATION_CHOICES,

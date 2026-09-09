@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from accounts.models import Organization
-from cabinet.models import Patient, PackMindOffice, Consultation, PatientFichier
+from cabinet.models import Patient, Consultation, PatientFichier
 
 
 class PatientAgeTests(TestCase):
@@ -34,38 +34,6 @@ class PatientAgeTests(TestCase):
     def test_nom_complet(self):
         patient = self._patient(date(1990, 1, 1))
         self.assertEqual(patient.nom_complet, "Jean Dupont")
-
-
-class PackMindOfficePropertiesTests(TestCase):
-
-    def setUp(self):
-        self.organization = Organization.objects.create(name="Cabinet Test", slug="cabinet-test")
-
-    def _pack(self, total, utilisees, prix):
-        return PackMindOffice.objects.create(
-            organization=self.organization, nombre_seances_total=total,
-            nombre_seances_utilisees=utilisees, date_achat=date.today(), prix_pack=prix,
-        )
-
-    def test_seances_restantes(self):
-        pack = self._pack(total=10, utilisees=3, prix=1000)
-        self.assertEqual(pack.seances_restantes, 7)
-
-    def test_prix_par_seance(self):
-        pack = self._pack(total=10, utilisees=0, prix=1000)
-        self.assertEqual(pack.prix_par_seance, 100)
-
-    def test_prix_par_seance_avec_zero_seances_ne_plante_pas(self):
-        pack = self._pack(total=0, utilisees=0, prix=1000)
-        self.assertEqual(pack.prix_par_seance, 0)
-
-    def test_pourcentage_utilise(self):
-        pack = self._pack(total=10, utilisees=3, prix=1000)
-        self.assertEqual(pack.pourcentage_utilise, 30.0)
-
-    def test_pourcentage_utilise_avec_zero_seances_ne_plante_pas(self):
-        pack = self._pack(total=0, utilisees=0, prix=1000)
-        self.assertEqual(pack.pourcentage_utilise, 0)
 
 
 class ConsultationStatusMethodsTests(TestCase):

@@ -10,8 +10,8 @@ from django.views.decorators.http import require_http_methods
 import json
 from django.utils import timezone
 from django.db.models import Sum
-from .models import Patient, Consultation, PackMindOffice, Anamnese
-from .forms import PatientForm, ConsultationForm, PackMindOfficeForm
+from .models import Patient, Consultation, Anamnese
+from .forms import PatientForm, ConsultationForm
 from django.utils.dateparse import parse_datetime
 from django.http import FileResponse, Http404
 from .models import PatientFichier
@@ -79,21 +79,6 @@ def dashboard_view(request):
         statut_paiement='paye'
     ).aggregate(total=Sum('tarif'))['total'] or 0
     
-    # --- PACKS ---
-    packs_actifs = PackMindOffice.objects.filter(
-        organization=organization,
-        statut='actif'
-    ).filter(nombre_seances_utilisees__lt=F('nombre_seances_total')).count()
-    
-    # Pour les séances restantes, on doit calculer manuellement
-    seances_restantes = sum([
-        pack.seances_restantes 
-        for pack in PackMindOffice.objects.filter(
-            organization=organization,
-            statut='actif'
-        ).filter(nombre_seances_utilisees__lt=F('nombre_seances_total'))
-    ])
-    
     # --- STATISTIQUES MOYENNES ---
     stats_moyennes = Consultation.objects.filter(
         organization=organization
@@ -146,8 +131,6 @@ def dashboard_view(request):
         'consultations_semaine': consultations_semaine,
         'ca_mois': ca_mois,
         'ca_semaine': ca_semaine,
-        'packs_actifs': packs_actifs,
-        'seances_restantes': seances_restantes,
         'prochaines_consultations': prochaines_consultations,
         'patients_recents': patients_recents,
         'tarif_moyen': stats_moyennes['tarif_moyen'] or 0,
@@ -243,9 +226,7 @@ def patient_detail(request, patient_id):
         anamnese = None
     
     consultations = patient.consultation_set.order_by('-date_seance')[:10]
-    
-    packs_utilises = PackMindOffice.objects.filter(consultation__patient=patient).distinct()
-    
+
     total_consultations = patient.consultation_set.count()
     total_paye = patient.consultation_set.aggregate(total=Sum('tarif'))['total'] or 0
     
@@ -258,7 +239,6 @@ def patient_detail(request, patient_id):
         'patient': patient,
         'anamnese': anamnese,
         'consultations': consultations,
-        'packs_utilises': packs_utilises,
         'total_consultations': total_consultations,
         'total_paye': total_paye,
         'derniere_consultation': derniere_consultation,
@@ -386,16 +366,9 @@ def consultation_create(request):
             consultation = form.save(commit=False)
             consultation.organization = consultation.patient.organization
             consultation.save()
-            
-            # IMPORTANT : Déduire une séance du PackMindOffice si utilisé
-            if consultation.pack_mind_office_utilise:
-                PackMindOffice = consultation.pack_mind_office_utilise
-                PackMindOffice.nombre_seances_utilisees += 1
-                PackMindOffice.save()
-                messages.success(request, f"Consultation créée ! Une séance a été déduite du PackMindOffice {PackMindOffice.nom_pack}. ({PackMindOffice.seances_restantes} séances restantes)")
-            else:
-                messages.success(request, "Consultation créée!")
-            
+
+            messages.success(request, "Consultation créée!")
+
             return redirect('cabinet:consultation_detail', consultation_id=consultation.id)
     else:
         form = ConsultationForm(request=request)
@@ -498,13 +471,6 @@ def consultation_annuler(request, consultation_id):
     
     if request.method == 'POST':
         motif_annulation = request.POST.get('motif_annulation', '')
-        
-        # IMPORTANT : Rendre la séance au PackMindOffice si elle avait été utilisée
-        if consultation.pack_mind_office_utilise:
-            PackMindOffice = consultation.pack_mind_office_utilise
-            PackMindOffice.nombre_seances_utilisees -= 1
-            PackMindOffice.save()
-            messages.success(request, f"La séance a été rendue au PackMindOffice {PackMindOffice.nom_pack}")
 
         consultation.annuler(motif_annulation)
 
@@ -557,117 +523,6 @@ def consultation_delete(request, consultation_id):
     
     context = {'consultation': consultation}
     return render(request, 'cabinet/consultation_delete.html', context)
-
-
-@login_required
-def packs_list(request):
-    organization = request.user.organization
-    
-    # Récupérer tous les packs
-    packs = PackMindOffice.objects.filter(organization=organization).order_by('-date_achat')
-    
-    # Filtres
-    search_query = request.GET.get('search', '')
-    statut_filter = request.GET.get('statut', '')
-    
-    if search_query:
-        packs = packs.filter(nom_pack__icontains=search_query)
-    
-    if statut_filter:
-        packs = packs.filter(statut=statut_filter)
-    
-    # Statistiques
-    total_packs = packs.count()
-    packs_actifs = packs.filter(statut='actif').count()
-    seances_totales_restantes = sum([p.seances_restantes for p in packs])
-    chiffre_affaires_packs = packs.aggregate(total=Sum('prix_pack'))['total'] or 0
-    
-    context = {
-        'packs': packs,
-        'search_query': search_query,
-        'statut_filter': statut_filter,
-        'total_packs': total_packs,
-        'packs_actifs': packs_actifs,
-        'seances_totales_restantes': seances_totales_restantes,
-        'chiffre_affaires_packs': chiffre_affaires_packs,
-    }
-    
-    return render(request, 'cabinet/packs_list.html', context)
-
-
-@login_required
-def pack_create(request):
-    """Créer un PackMindOffice"""
-    
-    if request.method == 'POST':
-        form = PackMindOfficeForm(request.POST)
-        if form.is_valid():
-            pack = form.save(commit=False)
-            pack.organization = request.user.organization
-            pack.save()
-            messages.success(request, "Pack Mind Office créé!")
-            return redirect('cabinet:pack_detail', pack_id=pack.id)
-    else:
-        form = PackMindOfficeForm()
-    
-    context = {
-        'form': form,
-        'title': 'Nouveau Pack Mind Office',
-    }
-    
-    return render(request, 'cabinet/pack_form.html', context)
-
-
-@login_required
-def pack_detail(request, pack_id):
-    """Détails d'un PackMindOffice"""
-    
-    if request.user.is_superadmin():
-        pack = get_object_or_404(PackMindOffice.all_objects, id=pack_id)
-    else:
-        pack = get_object_or_404(PackMindOffice, id=pack_id)
-    
-    # Récupérer les consultations qui ont utilisé ce pack
-    consultations_pack = Consultation.objects.filter(
-        pack_mind_office_utilise=pack
-    ).select_related('patient').order_by('-date_seance')
-    
-    context = {
-        'pack': pack,
-        'consultations_pack': consultations_pack
-    }
-    return render(request, 'cabinet/pack_detail.html', context)
-
-
-@login_required
-def pack_edit(request, pack_id):
-    pack = get_object_or_404(PackMindOffice, id=pack_id, organization=request.user.organization)
-    
-    if request.method == 'POST':
-        form = PackMindOfficeForm(request.POST, instance=pack)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Pack Mind Office modifié avec succès!")
-            return redirect('cabinet:pack_detail', pack_id=pack.id)
-    else:
-        form = PackMindOfficeForm(instance=pack)
-    
-    context = {
-        'form': form,
-        'pack': pack,
-        'title': 'Modifier Pack Mind Office',
-    }
-    
-    return render(request, 'cabinet/pack_form.html', context)
-
-
-@login_required
-def pack_delete(request, pack_id):
-    pack = get_object_or_404(PackMindOffice, id=pack_id, organization=request.user.organization)
-    if request.method == 'POST':
-        pack.delete()
-        messages.success(request, "Pack Mind Office supprimé avec succès!")
-    return redirect('cabinet:packs_list')
 
 
 @login_required

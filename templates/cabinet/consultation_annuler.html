@@ -42,22 +42,6 @@
                     placeholder="Ex: Annulation par le patient, urgence médicale..."></textarea>
             </div>
 
-            {% if consultation.pack_mind_office_utilise %}
-            <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-6">
-                <div class="flex items-start">
-                    <i class="fas fa-box text-green-600 text-xl mr-3 mt-1"></i>
-                    <div>
-                        <h4 class="font-semibold text-green-900 mb-1">Pack Mind Office</h4>
-                        <p class="text-sm text-green-800">
-                            Cette consultation utilisait le pack <strong>{{ consultation.pack_mind_office_utilise.nom_pack }}</strong>.
-                            <br>
-                            ✅ La séance sera <strong>automatiquement rendue au pack</strong> lors de l'annulation.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
             <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4 mb-6">
                 <div class="flex items-start">
                     <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3 mt-1"></i>

@@ -1,9 +1,8 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from django.db import models
 from datetime import date, timedelta
-from .models import Patient, Anamnese, Consultation, PackMindOffice, PatientFichier
+from .models import Patient, Anamnese, Consultation, PatientFichier
 
 
 class PatientForm(forms.ModelForm):
@@ -112,7 +111,7 @@ class ConsultationForm(forms.ModelForm):
         model = Consultation
         fields = [
             'patient', 'date_seance', 'duree_minutes', 'type_consultation',
-            'lieu_consultation', 'pack_mind_office_utilise', 'tarif',
+            'lieu_consultation', 'tarif',
             'statut_paiement', 'date_paiement', 'notes_cliniques',
             'objectifs_seance', 'exercices_prevus', 'suivi_progression'
         ]
@@ -131,9 +130,6 @@ class ConsultationForm(forms.ModelForm):
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
             }),
             'lieu_consultation': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-            }),
-            'pack_mind_office_utilise': forms.Select(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
             }),
             'tarif': forms.NumberInput(attrs={
@@ -175,14 +171,7 @@ class ConsultationForm(forms.ModelForm):
             self.fields['patient'].queryset = Patient.objects.filter(
                 organization=self.request.tenant
             ).order_by('nom', 'prenom')
-            
-            self.fields['pack_mind_office_utilise'].queryset = PackMindOffice.objects.filter(
-                organization=self.request.tenant,
-                statut='actif',
-                nombre_seances_utilisees__lt=models.F('nombre_seances_total')
-            ).order_by('-date_achat')
-        
-        self.fields['pack_mind_office_utilise'].required = False
+
         self.fields['date_paiement'].required = False
         
         if self.instance and self.instance.pk and self.instance.date_seance:
@@ -190,40 +179,3 @@ class ConsultationForm(forms.ModelForm):
             self.initial['date_seance'] = local_dt.strftime('%Y-%m-%dT%H:%M')
 
 
-class PackMindOfficeForm(forms.ModelForm):
-    class Meta:
-        model = PackMindOffice
-        exclude = ['nombre_seances_utilisees', 'date_creation', 'date_modification', 'organization']
-        widgets = {
-            'nom_pack': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-            }),
-            'nombre_seances_total': forms.NumberInput(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'min': 1
-            }),
-            'date_achat': forms.DateInput(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'type': 'date'
-            }, format='%Y-%m-%d'),
-            'date_expiration': forms.DateInput(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'type': 'date'
-            }, format='%Y-%m-%d'),
-            'prix_pack': forms.NumberInput(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'step': 0.01
-            }),
-            'statut': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-            }),
-            'notes': forms.Textarea(attrs={
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'rows': 3
-            }),
-        }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['date_achat'].input_formats = ['%Y-%m-%d']
-        self.fields['date_expiration'].input_formats = ['%Y-%m-%d']

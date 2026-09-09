@@ -116,31 +116,6 @@
                 </div>
             </div>
             
-            <!-- Pack utilisé -->
-            {% if consultation.pack_mind_office_utilise %}
-            <div class="mt-6 bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h4 class="font-semibold text-purple-900 flex items-center">
-                            <i class="fas fa-box text-purple-600 mr-2"></i>
-                            Pack Mind Office utilisé
-                        </h4>
-                        <p class="text-sm text-purple-700 mt-1">
-                            <a href="{% url 'cabinet:pack_detail' pack_id=consultation.pack_mind_office_utilise.id %}" 
-                               class="font-medium hover:underline">
-                                {{ consultation.pack_mind_office_utilise.nom_pack }}
-                            </a>
-                            - Une séance a été déduite de ce pack
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-sm text-purple-600">Prix pack</div>
-                        <div class="font-bold text-purple-900">{{ consultation.pack_mind_office_utilise.prix_par_seance }} DHS/séance</div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
             <!-- Info report/annulation -->
             {% if consultation.statut_consultation == 'reportee' and consultation.date_seance_originale %}
             <div class="mt-6 bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4">

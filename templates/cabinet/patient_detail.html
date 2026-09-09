@@ -71,18 +71,6 @@
 
     <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
         <div class="flex items-center">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                <i class="fas fa-box text-purple-600 text-xl"></i>
-            </div>
-            <div>
-                <div class="text-2xl font-bold text-gray-800">{{ packs_utilises.count }}</div>
-                <div class="text-sm text-gray-500">Packs utilisés</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
-        <div class="flex items-center">
             <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
                 <i class="fas fa-clock text-orange-600 text-xl"></i>
             </div>
@@ -133,10 +121,6 @@
             <button onclick="switchTab('consultations')" id="tab-consultations"
                     class="tab-button px-4 py-3 rounded-lg font-medium transition">
                 <i class="fas fa-calendar-check mr-2"></i>Consultations ({{ total_consultations }})
-            </button>
-            <button onclick="switchTab('packs')" id="tab-packs"
-                    class="tab-button px-4 py-3 rounded-lg font-medium transition">
-                <i class="fas fa-box mr-2"></i>Packs ({{ packs_utilises.count }})
             </button>
             <button onclick="switchTab('fichiers')" id="tab-fichiers"
                     class="tab-button px-4 py-3 rounded-lg font-medium transition">
@@ -549,90 +533,6 @@
             {% endif %}
         </div>
 
-        <!-- Onglet Packs -->
-        <div id="content-packs" class="tab-content hidden">
-            {% if packs_utilises %}
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold text-gray-800">
-                    <i class="fas fa-box text-primary mr-2"></i>
-                    Packs utilisés
-                </h3>
-                <a href="{% url 'cabinet:pack_create' %}" 
-                   class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition">
-                    <i class="fas fa-plus mr-2"></i>Nouveau Pack
-                </a>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {% for pack in packs_utilises %}
-                <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition">
-                    <div class="flex justify-between items-start mb-4">
-                        <h4 class="font-semibold text-gray-800">
-                            <i class="fas fa-box text-purple-600 mr-2"></i>{{ pack.nom_pack }}
-                        </h4>
-                        {% if pack.statut == 'actif' %}
-                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Actif</span>
-                        {% elif pack.statut == 'expire' %}
-                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">Expiré</span>
-                        {% else %}
-                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Suspendu</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="flex justify-between text-sm mb-2">
-                            <span class="text-gray-600">Progression</span>
-                            <span class="font-medium">{{ pack.nombre_seances_utilisees }}/{{ pack.nombre_seances_total }}</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-primary h-2 rounded-full transition-all" 
-                                 style="width: {{ pack.pourcentage_utilise }}%"></div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <div class="text-gray-600">Séances restantes</div>
-                            <div class="font-bold text-primary text-lg">{{ pack.seances_restantes }}</div>
-                        </div>
-                        <div>
-                            <div class="text-gray-600">Prix payé</div>
-                            <div class="font-bold text-lg">{{ pack.prix_pack }} DHS</div>
-                        </div>
-                        <div>
-                            <div class="text-gray-600">Acheté le</div>
-                            <div>{{ pack.date_achat|date:"d/m/Y" }}</div>
-                        </div>
-                        <div>
-                            <div class="text-gray-600">Prix/séance</div>
-                            <div>{{ pack.prix_par_seance }} DHS</div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <a href="{% url 'cabinet:pack_detail' pack.id %}" 
-                           class="text-primary hover:text-primary-dark text-sm font-medium">
-                            <i class="fas fa-eye mr-1"></i>Voir détails →
-                        </a>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="text-center py-16">
-                <i class="fas fa-box text-gray-300 text-6xl mb-4"></i>
-                <h3 class="text-2xl font-semibold text-gray-700 mb-2">Aucun pack utilisé</h3>
-                <p class="text-gray-500 mb-6">
-                    Ce patient n'a encore utilisé aucun pack.
-                </p>
-                <a href="{% url 'cabinet:pack_create' %}" 
-                   class="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg transition">
-                    <i class="fas fa-plus mr-2"></i>Créer un pack
-                </a>
-            </div>
-            {% endif %}
-        </div>
-
         <!-- Onglet Fichiers -->
         <div id="content-fichiers" class="tab-content hidden">
             {% if patient.fichiers.all %}
@@ -935,7 +835,7 @@ document.addEventListener('keydown', function(e) {
     
     // Chiffres 1-6 : Changer d'onglet
     if (e.key >= '1' && e.key <= '6') {
-        const tabs = ['info', 'anamnese', 'consultations', 'packs', 'fichiers', 'stats'];
+        const tabs = ['info', 'anamnese', 'consultations', 'fichiers', 'stats'];
         switchTab(tabs[parseInt(e.key) - 1]);
     }
 });
