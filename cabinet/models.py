@@ -164,7 +164,7 @@ class Consultation(TenantModel):  # ← Hérite de TenantModel
     LIEU_CONSULTATION_CHOICES = [
         ('visio', 'Visioconférence'),
         ('bouskoura', 'Cabinet Bouskoura'),
-        ('mind_office', 'Cabinet Mind Office'),
+        ('mind_office', 'Cabinet'),
     ]
     TYPE_CONSULTATION_CHOICES = [
         ('individuelle', 'Consultation individuelle'),
