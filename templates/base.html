@@ -309,7 +309,8 @@
                 .replace(/\{date\}/g, ctx.date || '')
                 .replace(/\{heure\}/g, ctx.heure || '')
                 .replace(/\{lieu\}/g, ctx.lieu || '')
-                .replace(/\{psychologue\}/g, ctx.psychologue || '');
+                .replace(/\{psychologue\}/g, ctx.psychologue || '')
+                .replace(/\{lien_visio\}/g, ctx.lien_visio || '');
         }
 
         function selectTemplate(template) {
@@ -338,13 +339,23 @@
             if (template) selectTemplate(template);
         };
 
-        window.openWhatsAppModal = function(ctx) {
+        function pickInitialTemplate(templates, preferredType) {
+            if (!templates.length) return null;
+            if (preferredType) {
+                const match = templates.find(t => t.type_rappel === preferredType);
+                if (match) return match;
+            }
+            return templates[0];
+        }
+
+        window.openWhatsAppModal = function(ctx, preferredType) {
             currentContext = ctx;
             document.getElementById('whatsapp-modal').classList.remove('hidden');
 
             if (cachedTemplates) {
                 renderTemplatesList(cachedTemplates);
-                if (cachedTemplates.length) selectTemplate(cachedTemplates[0]);
+                const initial = pickInitialTemplate(cachedTemplates, preferredType);
+                if (initial) selectTemplate(initial);
                 return;
             }
 
@@ -353,7 +364,8 @@
                 .then(data => {
                     cachedTemplates = data.templates;
                     renderTemplatesList(cachedTemplates);
-                    if (cachedTemplates.length) selectTemplate(cachedTemplates[0]);
+                    const initial = pickInitialTemplate(cachedTemplates, preferredType);
+                    if (initial) selectTemplate(initial);
                 });
         };
 

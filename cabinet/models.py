@@ -270,6 +270,12 @@ class Consultation(TenantModel):  # ← Hérite de TenantModel
         default='visio',
         verbose_name="Lieu de consultation"
     )
+    visio_room = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        verbose_name="Salle de visioconférence"
+    )
 
     statut_consultation = models.CharField(
         max_length=20,
@@ -306,7 +312,19 @@ class Consultation(TenantModel):  # ← Hérite de TenantModel
     
     def __str__(self):
         return f"Consultation {self.patient} - {self.date_seance.strftime('%d/%m/%Y %H:%M')}"
-    
+
+    def save(self, *args, **kwargs):
+        if self.lieu_consultation == 'visio' and not self.visio_room:
+            import secrets
+            self.visio_room = f"PsySaaS-{secrets.token_urlsafe(12)}".replace('_', '').replace('-', '')
+        super().save(*args, **kwargs)
+
+    @property
+    def lien_visio(self):
+        if self.lieu_consultation == 'visio' and self.visio_room:
+            return f"https://meet.jit.si/{self.visio_room}"
+        return None
+
     @property
     def est_reporte(self):
         return self.statut_consultation == 'reporte'
@@ -474,6 +492,7 @@ class MessageTemplate(TenantModel):
     TYPE_CHOICES = [
         ('j-1', 'Rappel J-1 (veille)'),
         ('h-1', 'Rappel H-1 (1h avant)'),
+        ('visio', 'Rappel visio (avec lien)'),
         ('autre', 'Autre'),
     ]
 
@@ -481,7 +500,7 @@ class MessageTemplate(TenantModel):
     type_rappel = models.CharField(max_length=10, choices=TYPE_CHOICES, default='j-1')
     contenu = models.TextField(
         verbose_name="Contenu du message",
-        help_text="Variables disponibles : {patient}, {date}, {heure}, {psychologue}, {lieu}"
+        help_text="Variables disponibles : {patient}, {date}, {heure}, {psychologue}, {lieu}, {lien_visio}"
     )
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
@@ -501,4 +520,5 @@ class MessageTemplate(TenantModel):
             heure=consultation.date_seance.strftime('%H:%M'),
             psychologue=consultation.organization.name,
             lieu=consultation.get_lieu_consultation_display(),
+            lien_visio=consultation.lien_visio or '',
         )

@@ -35,8 +35,25 @@ class ConsultationCreateTests(ConsultationTestCaseBase):
         })
 
         consultation = Consultation.objects.get(patient=self.patient)
-        self.assertRedirects(response, reverse('cabinet:consultation_detail', kwargs={'consultation_id': consultation.id}))
+        expected_url = reverse('cabinet:consultation_detail', kwargs={'consultation_id': consultation.id}) + '?suggest_visio=1'
+        self.assertRedirects(response, expected_url)
         self.assertEqual(consultation.organization, self.organization)
+        self.assertTrue(consultation.lien_visio)
+
+    def test_creation_non_visio_ne_suggere_pas_le_lien(self):
+        response = self.client.post(reverse('cabinet:consultation_create'), {
+            'patient': self.patient.id,
+            'date_seance': '2024-06-15T10:00',
+            'duree_minutes': 60,
+            'type_consultation': 'individuelle',
+            'lieu_consultation': 'bouskoura',
+            'tarif': '400',
+            'statut_paiement': 'attente',
+        })
+
+        consultation = Consultation.objects.get(patient=self.patient)
+        self.assertRedirects(response, reverse('cabinet:consultation_detail', kwargs={'consultation_id': consultation.id}))
+        self.assertIsNone(consultation.lien_visio)
 
 
 class ConsultationReporterTests(ConsultationTestCaseBase):

@@ -3,6 +3,40 @@
 {% block title %}Consultation - {{ consultation.patient.nom_complet }}{% endblock %}
 
 {% block content %}
+<!-- Suggestion : envoyer le lien de visio après création -->
+{% if consultation.lien_visio %}
+<div id="suggest-visio-banner" class="hidden bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-6 flex items-center justify-between gap-4">
+    <div class="flex items-center text-blue-800">
+        <i class="fas fa-video text-blue-500 text-xl mr-3"></i>
+        <span>Consultation en visio créée — pense à envoyer le lien au patient.</span>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+        <button type="button"
+                onclick='openWhatsAppModal({
+                    patient: "{{ consultation.patient.prenom|escapejs }}",
+                    phone: "{{ consultation.patient.telephone|escapejs }}",
+                    date: "{{ consultation.date_seance|date:"d/m/Y" }}",
+                    heure: "{{ consultation.date_seance|date:"H:i" }}",
+                    lieu: "{{ consultation.get_lieu_consultation_display|escapejs }}",
+                    psychologue: "{{ consultation.organization.name|escapejs }}",
+                    lien_visio: "{{ consultation.lien_visio|escapejs }}"
+                }, "visio")'
+                class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition">
+            <i class="fab fa-whatsapp mr-1"></i>Envoyer le lien
+        </button>
+        <button type="button" onclick="document.getElementById('suggest-visio-banner').remove()"
+                class="text-blue-400 hover:text-blue-600 px-2">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
+<script>
+if (new URLSearchParams(window.location.search).get('suggest_visio') === '1') {
+    document.getElementById('suggest-visio-banner').classList.remove('hidden');
+}
+</script>
+{% endif %}
+
 <!-- Header -->
 <div class="bg-gradient-to-r from-blue-600 to-purple-500 rounded-xl shadow-lg p-8 mb-6 text-white">
     <div class="flex justify-between items-start">
@@ -88,6 +122,12 @@
                                     {% else %}bg-purple-100 text-purple-800{% endif %}">
                                     {{ consultation.get_lieu_consultation_display }}
                                 </span>
+                                {% if consultation.lien_visio %}
+                                <a href="{{ consultation.lien_visio }}" target="_blank" rel="noopener"
+                                   class="ml-2 text-xs text-blue-600 hover:text-blue-800 underline">
+                                    <i class="fas fa-video mr-1"></i>Rejoindre
+                                </a>
+                                {% endif %}
                             </span>
                         </div>
                         <div class="flex justify-between py-2 border-b border-gray-100">
@@ -240,6 +280,12 @@
                    class="block w-full text-center bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition">
                     <i class="fas fa-edit mr-2"></i>Modifier
                 </a>
+                {% if consultation.lien_visio %}
+                <a href="{{ consultation.lien_visio }}" target="_blank" rel="noopener"
+                   class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-video mr-2"></i>Rejoindre la visio
+                </a>
+                {% endif %}
                 <a href="{% url 'cabinet:consultation_invoice' consultation_id=consultation.id %}"
                    class="block w-full text-center bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg transition">
                     <i class="fas fa-file-invoice mr-2"></i>Télécharger la facture
@@ -252,7 +298,8 @@
                             date: "{{ consultation.date_seance|date:"d/m/Y" }}",
                             heure: "{{ consultation.date_seance|date:"H:i" }}",
                             lieu: "{{ consultation.get_lieu_consultation_display|escapejs }}",
-                            psychologue: "{{ consultation.organization.name|escapejs }}"
+                            psychologue: "{{ consultation.organization.name|escapejs }}",
+                            lien_visio: "{{ consultation.lien_visio|default:''|escapejs }}"
                         })'
                         class="block w-full text-center bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition">
                     <i class="fab fa-whatsapp mr-2"></i>Rappel WhatsApp

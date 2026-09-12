@@ -22,17 +22,29 @@ DEFAULT_TEMPLATES = [
             "à {heure} ({lieu}). À tout à l'heure !"
         ),
     },
+    {
+        'nom': "Rappel avec lien visio",
+        'type_rappel': 'visio',
+        'contenu': (
+            "Bonjour {patient}, voici le lien pour notre séance du {date} à {heure} : "
+            "{lien_visio}\nÀ tout à l'heure !"
+        ),
+    },
 ]
+
+
+def ensure_default_templates(organization):
+    """Crée les modèles par défaut manquants (idempotent, par nom)"""
+    existing_noms = set(MessageTemplate.objects.values_list('nom', flat=True))
+    for data in DEFAULT_TEMPLATES:
+        if data['nom'] not in existing_noms:
+            MessageTemplate.objects.create(organization=organization, **data)
 
 
 @login_required
 def message_templates_list(request):
+    ensure_default_templates(request.user.organization)
     templates = MessageTemplate.objects.all()
-
-    if not templates.exists():
-        for data in DEFAULT_TEMPLATES:
-            MessageTemplate.objects.create(organization=request.user.organization, **data)
-        templates = MessageTemplate.objects.all()
 
     return render(request, 'cabinet/message_templates_list.html', {'templates': templates})
 
@@ -40,12 +52,8 @@ def message_templates_list(request):
 @login_required
 def message_templates_json(request):
     """Liste des modèles au format JSON, pour le modal de rappel WhatsApp"""
+    ensure_default_templates(request.user.organization)
     templates = MessageTemplate.objects.all()
-
-    if not templates.exists():
-        for data in DEFAULT_TEMPLATES:
-            MessageTemplate.objects.create(organization=request.user.organization, **data)
-        templates = MessageTemplate.objects.all()
 
     return JsonResponse({
         'templates': [

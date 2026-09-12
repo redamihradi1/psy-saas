@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -55,7 +56,10 @@ def consultation_create(request):
 
             messages.success(request, "Consultation créée!")
 
-            return redirect('cabinet:consultation_detail', consultation_id=consultation.id)
+            url = reverse('cabinet:consultation_detail', kwargs={'consultation_id': consultation.id})
+            if consultation.lien_visio:
+                url += '?suggest_visio=1'
+            return redirect(url)
     else:
         form = ConsultationForm(request=request)
 

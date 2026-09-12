@@ -109,6 +109,13 @@
                     {{ consultation.get_statut_consultation_display }}
                 </span>
 
+                {% if consultation.lien_visio %}
+                <a href="{{ consultation.lien_visio }}" target="_blank" rel="noopener"
+                   class="text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition">
+                    <i class="fas fa-video mr-1"></i>Rejoindre
+                </a>
+                {% endif %}
+
                 {% if consultation.statut_paiement == 'attente' %}
                 <form method="POST" action="{% url 'cabinet:consultation_confirmer_paiement' consultation_id=consultation.id %}">
                     {% csrf_token %}
@@ -126,7 +133,8 @@
                             date: "{{ consultation.date_seance|date:"d/m/Y" }}",
                             heure: "{{ consultation.date_seance|date:"H:i" }}",
                             lieu: "{{ consultation.get_lieu_consultation_display|escapejs }}",
-                            psychologue: "{{ consultation.organization.name|escapejs }}"
+                            psychologue: "{{ consultation.organization.name|escapejs }}",
+                            lien_visio: "{{ consultation.lien_visio|default:''|escapejs }}"
                         })'
                         class="text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition">
                     <i class="fab fa-whatsapp mr-1"></i>Rappel
