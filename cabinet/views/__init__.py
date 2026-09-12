@@ -22,6 +22,8 @@ from .consultations import (
     consultation_edit_ajax,
 )
 from .agenda import agenda, consultations_api
+from .indisponibilites import indisponibilites_api, indisponibilite_create, indisponibilite_delete
+from .tags import tags_list, tag_create, tag_delete, patient_tags_update
 from .search import global_search
 from .backup import backup_page, backup_export
 from .comptabilite import (
@@ -68,6 +70,13 @@ __all__ = [
     'consultation_edit_ajax',
     'agenda',
     'consultations_api',
+    'indisponibilites_api',
+    'indisponibilite_create',
+    'indisponibilite_delete',
+    'tags_list',
+    'tag_create',
+    'tag_delete',
+    'patient_tags_update',
     'global_search',
     'backup_page',
     'backup_export',

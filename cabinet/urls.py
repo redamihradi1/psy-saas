@@ -60,6 +60,15 @@ urlpatterns = [
     # Agenda
     path('agenda/', views.agenda, name='agenda'),
     path('consultations/api/', views.consultations_api, name='consultations_api'),
+    path('indisponibilites/api/', views.indisponibilites_api, name='indisponibilites_api'),
+    path('indisponibilites/create/', views.indisponibilite_create, name='indisponibilite_create'),
+    path('indisponibilites/<int:indisponibilite_id>/delete/', views.indisponibilite_delete, name='indisponibilite_delete'),
+
+    # Tags
+    path('tags/', views.tags_list, name='tags_list'),
+    path('tags/create/', views.tag_create, name='tag_create'),
+    path('tags/<int:tag_id>/delete/', views.tag_delete, name='tag_delete'),
+    path('patients/<int:patient_id>/tags/', views.patient_tags_update, name='patient_tags_update'),
     path('consultations/create-ajax/', views.consultation_create_ajax, name='consultation_create_ajax'),
     path('consultations/<int:pk>/edit-ajax/', views.consultation_edit_ajax, name='consultation_edit_ajax'),
     

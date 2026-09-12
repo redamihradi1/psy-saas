@@ -3,15 +3,20 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta
 from django.http import JsonResponse
-from ..models import Patient, Consultation
+from ..models import Patient, Consultation, Indisponibilite
 
 
 def agenda(request):
     """Vue calendrier des consultations"""
     organization = request.user.organization
     patients = Patient.objects.filter(organization=organization)
+    indisponibilites = Indisponibilite.objects.filter(
+        date_fin__gte=timezone.now()
+    ).order_by('date_debut')
     return render(request, 'cabinet/agenda.html', {
-        'patients': patients
+        'patients': patients,
+        'indisponibilites': indisponibilites,
+        'type_choices': Indisponibilite.TYPE_CHOICES,
     })
 
 
@@ -34,6 +39,7 @@ def consultations_api(request):
             'start': consultation.date_seance.isoformat(),
             'end': end_time.isoformat(),
             'extendedProps': {
+                'event_type': 'consultation',
                 'patient_id': consultation.patient.id,
                 'type': consultation.type_consultation,
                 'statut': consultation.statut_consultation,

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Tags - PsySaaS{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl">
+    <div class="bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl shadow-lg p-8 mb-6 text-white">
+        <h1 class="text-2xl font-bold mb-1"><i class="fas fa-tags mr-2"></i>Tags patients</h1>
+        <p class="text-white text-opacity-90">Crée des étiquettes pour segmenter ta patientèle</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Nouveau tag</h3>
+        <form method="POST" action="{% url 'cabinet:tag_create' %}" class="flex gap-3 items-end">
+            {% csrf_token %}
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                <input type="text" name="nom" required placeholder="ex: Anxiété, Ado, Suivi long"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Couleur</label>
+                <input type="color" name="couleur" value="#e879f9"
+                       class="w-14 h-10 border border-gray-300 rounded-lg cursor-pointer">
+            </div>
+            <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg transition">
+                <i class="fas fa-plus mr-2"></i>Créer
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Tags existants</h3>
+        {% if tags %}
+        <div class="flex flex-wrap gap-2">
+            {% for tag in tags %}
+            <div class="flex items-center gap-2 px-3 py-2 rounded-full text-sm text-white" style="background-color: {{ tag.couleur }}">
+                <span>{{ tag.nom }}</span>
+                <span class="text-xs opacity-75">({{ tag.patients.count }})</span>
+                <form method="POST" action="{% url 'cabinet:tag_delete' tag.id %}" class="inline"
+                      onsubmit="return confirm('Supprimer ce tag ?');">
+                    {% csrf_token %}
+                    <button type="submit" class="hover:opacity-75"><i class="fas fa-times"></i></button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-10 text-gray-400">
+            <i class="fas fa-tags text-4xl mb-2"></i>
+            <p>Aucun tag pour l'instant</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -22,6 +22,7 @@
     .consultation-annulee { background-color: #ef4444; border-color: #dc2626; }
     .consultation-reportee { background-color: #f59e0b; border-color: #d97706; }
     .consultation-terminee { background-color: #6b7280; border-color: #4b5563; }
+    .indisponibilite-event { opacity: 0.85; font-style: italic; }
 </style>
 {% endblock %}
 
@@ -36,10 +37,17 @@
                 </h1>
                 <p class="text-gray-500 mt-1">Gérez vos rendez-vous</p>
             </div>
-            <button onclick="openCreateModal()" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition flex items-center gap-2">
-                <i class="fas fa-plus"></i>
-                Nouvelle consultation
-            </button>
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('indispoModal').classList.remove('hidden')"
+                        class="bg-gray-700 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition flex items-center gap-2">
+                    <i class="fas fa-ban"></i>
+                    Bloquer une période
+                </button>
+                <button onclick="openCreateModal()" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition flex items-center gap-2">
+                    <i class="fas fa-plus"></i>
+                    Nouvelle consultation
+                </button>
+            </div>
         </div>
     </div>
 
@@ -103,6 +111,82 @@
     <!-- Calendrier -->
     <div class="bg-white rounded-xl shadow p-6">
         <div id="calendar"></div>
+    </div>
+
+    <!-- Indisponibilités à venir -->
+    {% if indisponibilites %}
+    <div class="bg-white rounded-xl shadow p-6 mt-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-ban text-gray-500 mr-2"></i>Périodes bloquées à venir
+        </h3>
+        <div class="space-y-2">
+            {% for indispo in indisponibilites %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                    <span class="font-medium text-gray-800">{{ indispo.titre }}</span>
+                    <span class="text-xs text-gray-500 ml-2">{{ indispo.get_type_absence_display }}</span>
+                    <div class="text-sm text-gray-500">
+                        {{ indispo.date_debut|date:"d/m/Y H:i" }} → {{ indispo.date_fin|date:"d/m/Y H:i" }}
+                    </div>
+                </div>
+                <form method="POST" action="{% url 'cabinet:indisponibilite_delete' indispo.id %}"
+                      onsubmit="return confirm('Supprimer ce blocage ?');">
+                    {% csrf_token %}
+                    <button type="submit" class="text-gray-400 hover:text-red-600 px-2">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal Bloquer une période -->
+<div id="indispoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Bloquer une période</h2>
+            <button onclick="document.getElementById('indispoModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form method="POST" action="{% url 'cabinet:indisponibilite_create' %}" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Titre</label>
+                <input type="text" name="titre" required placeholder="ex: Formation TCC, Congé annuel..."
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <select name="type_absence" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    {% for value, label in type_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Début</label>
+                    <input type="datetime-local" name="date_debut" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Fin</label>
+                    <input type="datetime-local" name="date_fin" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Note (optionnel)</label>
+                <textarea name="note" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded-lg transition font-medium">
+                <i class="fas fa-ban mr-2"></i>Bloquer cette période
+            </button>
+        </form>
     </div>
 </div>
 
@@ -293,14 +377,24 @@
                 day: 'Jour'
             },
             height: 'auto',
-            events: '/cabinet/consultations/api/',
+            eventSources: [
+                { id: 'consultations', url: '/cabinet/consultations/api/' },
+                { id: 'indispo', url: '/cabinet/indisponibilites/api/' }
+            ],
             eventClick: function(info) {
-                openEditModal(info.event);
+                if (info.event.extendedProps.event_type === 'indisponibilite') {
+                    openIndispoInfo(info.event);
+                } else {
+                    openEditModal(info.event);
+                }
             },
             dateClick: function(info) {
                 openCreateModal(info.dateStr);
             },
             eventClassNames: function(arg) {
+                if (arg.event.extendedProps.event_type === 'indisponibilite') {
+                    return ['indisponibilite-event'];
+                }
                 return ['consultation-' + arg.event.extendedProps.statut];
             }
         });
@@ -310,25 +404,40 @@
     });
 
     function loadEvents() {
+        // Peuple le cache local (utilisé par le filtre patient), sans toucher au calendrier
         fetch('/cabinet/consultations/api/')
             .then(response => response.json())
             .then(data => {
                 allEvents = data;
-                calendar.removeAllEvents();
-                calendar.addEventSource(allEvents);
             });
+    }
+
+    function openIndispoInfo(event) {
+        const props = event.extendedProps;
+        const detail = `${event.title}\nType : ${props.type_absence}\nDu ${event.start.toLocaleString('fr-FR')} au ${event.end.toLocaleString('fr-FR')}${props.note ? '\nNote : ' + props.note : ''}`;
+        if (confirm(detail + '\n\nSupprimer ce blocage ?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/cabinet/indisponibilites/${props.indisponibilite_id}/delete/`;
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = 'csrfmiddlewaretoken';
+            csrf.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
 
     function filterByPatient() {
         const patientId = document.getElementById('filterPatient').value;
-        calendar.removeAllEvents();
-        
-        if (patientId) {
-            const filtered = allEvents.filter(e => e.extendedProps.patient_id == patientId);
-            calendar.addEventSource(filtered);
-        } else {
-            calendar.addEventSource(allEvents);
-        }
+        const existing = calendar.getEventSourceById('consultations');
+        if (existing) existing.remove();
+
+        const filtered = patientId
+            ? allEvents.filter(e => e.extendedProps.patient_id == patientId)
+            : allEvents;
+        calendar.addEventSource({ id: 'consultations', events: filtered });
     }
 
     function openCreateModal(date = null) {

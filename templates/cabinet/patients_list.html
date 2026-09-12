@@ -19,13 +19,21 @@
 
 <!-- Filtres -->
 <div class="bg-white rounded-xl shadow p-6 mb-6">
-    <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div class="md:col-span-2">
-            <input type="text" 
-                   name="search" 
+            <input type="text"
+                   name="search"
                    value="{{ search_query }}"
                    placeholder="Rechercher par nom, prénom, téléphone..."
                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+        </div>
+        <div>
+            <select name="tag" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                <option value="">Tous les tags</option>
+                {% for tag in all_tags %}
+                <option value="{{ tag.id }}" {% if tag_id == tag.id|stringformat:"s" %}selected{% endif %}>{{ tag.nom }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div>
             <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg font-medium transition">
@@ -90,6 +98,13 @@
                         <div>
                             <div class="font-medium text-gray-900">{{ patient.nom_complet }}</div>
                             <div class="text-sm text-gray-500">{{ patient.date_creation|date:"d/m/Y" }}</div>
+                            {% if patient.tags.all %}
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                {% for tag in patient.tags.all %}
+                                <span class="px-2 py-0.5 rounded-full text-[10px] text-white" style="background-color: {{ tag.couleur }}">{{ tag.nom }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </td>

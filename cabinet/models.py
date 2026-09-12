@@ -36,7 +36,8 @@ class Patient(TenantModel):  # ← Hérite de TenantModel
     )
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
-    
+    tags = models.ManyToManyField('Tag', blank=True, related_name='patients')
+
     class Meta:
         verbose_name = "Patient"
         verbose_name_plural = "Patients"
@@ -552,3 +553,50 @@ class Depense(TenantModel):
 
     def __str__(self):
         return f"{self.get_categorie_display()} - {self.montant} DHS ({self.date_depense})"
+
+
+class Tag(TenantModel):
+    """Étiquette libre pour segmenter/filtrer les patients"""
+
+    nom = models.CharField(max_length=50)
+    couleur = models.CharField(max_length=7, default='#e879f9', verbose_name="Couleur (hex)")
+
+    class Meta:
+        verbose_name = "Tag"
+        verbose_name_plural = "Tags"
+        ordering = ['nom']
+        constraints = [
+            models.UniqueConstraint(fields=['organization', 'nom'], name='unique_tag_par_organisation'),
+        ]
+
+    def __str__(self):
+        return self.nom
+
+
+class Indisponibilite(TenantModel):
+    """Période bloquée dans l'agenda (formation, déplacement, congé...)"""
+
+    TYPE_CHOICES = [
+        ('formation', 'Formation'),
+        ('deplacement', 'Déplacement'),
+        ('conge', 'Congé'),
+        ('autre', 'Autre'),
+    ]
+
+    titre = models.CharField(max_length=150)
+    type_absence = models.CharField(max_length=20, choices=TYPE_CHOICES, default='autre')
+    date_debut = models.DateTimeField()
+    date_fin = models.DateTimeField()
+    note = models.TextField(blank=True)
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Indisponibilité"
+        verbose_name_plural = "Indisponibilités"
+        ordering = ['date_debut']
+        indexes = [
+            models.Index(fields=['organization', 'date_debut']),
+        ]
+
+    def __str__(self):
+        return f"{self.titre} ({self.date_debut.strftime('%d/%m/%Y')} - {self.date_fin.strftime('%d/%m/%Y')})"

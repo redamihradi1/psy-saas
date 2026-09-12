@@ -26,6 +26,15 @@
                     </span>
                     <span><i class="fas fa-clock mr-1"></i>Patient depuis {{ patient.date_creation|date:"d/m/Y" }}</span>
                 </div>
+                <div class="flex items-center gap-2 mt-3 flex-wrap">
+                    {% for tag in patient.tags.all %}
+                    <span class="px-2 py-1 rounded-full text-xs text-white" style="background-color: {{ tag.couleur }}">{{ tag.nom }}</span>
+                    {% endfor %}
+                    <button type="button" onclick="document.getElementById('tags-modal').classList.remove('hidden')"
+                            class="px-2 py-1 rounded-full text-xs bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+                        <i class="fas fa-tags mr-1"></i>Gérer les tags
+                    </button>
+                </div>
             </div>
         </div>
         <div class="flex gap-2">
@@ -1000,5 +1009,39 @@ function openImageModal(imageUrl, imageName) {
     document.body.appendChild(modal);
 }
 </script>
+
+<!-- Modal gestion des tags -->
+<div id="tags-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Tags de {{ patient.prenom }}</h3>
+            <button type="button" onclick="document.getElementById('tags-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form method="POST" action="{% url 'cabinet:patient_tags_update' patient.id %}">
+            {% csrf_token %}
+            {% if all_tags %}
+            <div class="space-y-2 mb-4">
+                {% for tag in all_tags %}
+                <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="tags" value="{{ tag.id }}"
+                           {% if tag in patient.tags.all %}checked{% endif %}
+                           class="rounded text-primary focus:ring-primary">
+                    <span class="px-2 py-0.5 rounded-full text-xs text-white" style="background-color: {{ tag.couleur }}">{{ tag.nom }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500 mb-4">
+                Aucun tag créé. <a href="{% url 'cabinet:tags_list' %}" class="text-primary hover:underline">Créer un tag</a>
+            </p>
+            {% endif %}
+            <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white py-2 rounded-lg transition font-medium">
+                Enregistrer
+            </button>
+        </form>
+    </div>
+</div>
 
 {% endblock %}

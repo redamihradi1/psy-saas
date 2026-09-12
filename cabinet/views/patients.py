@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum
 from django.core.paginator import Paginator
 from django.utils import timezone
-from ..models import Patient, Anamnese
+from ..models import Patient, Anamnese, Tag
 from ..forms import PatientForm
 
 
@@ -27,13 +27,20 @@ def patients_list(request):
             Q(telephone__icontains=search_query)
         )
 
+    # Filtre par tag
+    tag_id = request.GET.get('tag', '')
+    if tag_id:
+        patients = patients.filter(tags__id=tag_id)
+
     # Pagination
-    paginator = Paginator(patients.order_by('nom', 'prenom'), 15)
+    paginator = Paginator(patients.order_by('nom', 'prenom').distinct(), 15)
     page_obj = paginator.get_page(request.GET.get('page'))
 
     context = {
         'page_obj': page_obj,
         'search_query': search_query,
+        'tag_id': tag_id,
+        'all_tags': Tag.objects.all(),
         'total_patients': patients.count(),
     }
 
@@ -110,6 +117,7 @@ def patient_detail(request, patient_id):
         'total_paye': total_paye,
         'derniere_consultation': derniere_consultation,
         'prochaine_consultation': prochaine_consultation,
+        'all_tags': Tag.objects.all(),
     }
 
     return render(request, 'cabinet/patient_detail.html', context)
