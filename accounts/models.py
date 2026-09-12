@@ -45,6 +45,11 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
     license_number = models.CharField(max_length=100, blank=True, verbose_name="Numéro de licence professionnelle")
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    can_export_backup = models.BooleanField(
+        default=False,
+        verbose_name="Autorisé à exporter les sauvegardes",
+        help_text="À cocher uniquement pour les personnes de confiance : exporte toutes les données patients."
+    )
     
     class Meta:
         verbose_name = "Utilisateur"

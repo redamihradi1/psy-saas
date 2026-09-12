@@ -13,7 +13,8 @@ class BackupTestCaseBase(TestCase):
         self.organization = Organization.objects.create(name="Cabinet Test", slug="cabinet-test")
         License.objects.create(organization=self.organization, plan='lifetime', status='active')
         self.user = User.objects.create_user(
-            username="psy", password="test-pass-123", role='psychologist', organization=self.organization
+            username="psy", password="test-pass-123", role='psychologist', organization=self.organization,
+            can_export_backup=True,
         )
         self.patient = Patient.objects.create(
             organization=self.organization, nom="Dupont", prenom="Jean", date_naissance=date(1990, 1, 1)
@@ -26,6 +27,12 @@ class BackupPageTests(BackupTestCaseBase):
     def test_page_saffiche(self):
         response = self.client.get(reverse('cabinet:backup_page'))
         self.assertEqual(response.status_code, 200)
+
+    def test_refuse_sans_permission(self):
+        self.user.can_export_backup = False
+        self.user.save()
+        response = self.client.get(reverse('cabinet:backup_page'))
+        self.assertRedirects(response, reverse('cabinet:dashboard'))
 
 
 class BackupExportTests(BackupTestCaseBase):
@@ -54,3 +61,16 @@ class BackupExportTests(BackupTestCaseBase):
         data = json.loads(response.content)
         noms = [p['fields']['nom'] for p in data['patients']]
         self.assertNotIn('Martin', noms)
+
+    def test_refuse_sans_permission(self):
+        self.user.can_export_backup = False
+        self.user.save()
+        response = self.client.get(reverse('cabinet:backup_export'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_superadmin_peut_exporter_sans_la_case(self):
+        self.user.role = 'superadmin'
+        self.user.can_export_backup = False
+        self.user.save()
+        response = self.client.get(reverse('cabinet:backup_export'))
+        self.assertEqual(response.status_code, 200)

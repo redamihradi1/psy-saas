@@ -21,6 +21,9 @@ class UserAdmin(BaseUserAdmin):
         ('Informations supplémentaires', {
             'fields': ('organization', 'role', 'phone', 'license_number', 'avatar')
         }),
+        ('Permissions spéciales', {
+            'fields': ('can_export_backup',)
+        }),
     )
     
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
