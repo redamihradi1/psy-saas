@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from ..models import Patient, Consultation, Indisponibilite
 
 
+@login_required
 def agenda(request):
     """Vue calendrier des consultations"""
     organization = request.user.organization

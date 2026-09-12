@@ -4,26 +4,26 @@
 
 {% block content %}
 <!-- Header -->
-<div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl shadow-lg p-8 mb-6 text-white">
+<div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl shadow-lg p-5 sm:p-8 mb-6 text-white">
     <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
             <h1 class="text-2xl font-bold mb-1"><i class="fas fa-calculator mr-2"></i>Comptabilité</h1>
             <p class="text-white text-opacity-90">Revenus, dépenses et résultat net</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
             <a href="?annee={{ mois_precedent.0 }}&mois={{ mois_precedent.1 }}"
-               class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-lg flex items-center justify-center transition">
+               class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-lg flex items-center justify-center transition shrink-0">
                 <i class="fas fa-chevron-left"></i>
             </a>
-            <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 font-semibold min-w-[160px] text-center">
+            <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 font-semibold min-w-[140px] text-center">
                 {{ mois_nom }} {{ annee }}
             </div>
             <a href="?annee={{ mois_suivant.0 }}&mois={{ mois_suivant.1 }}"
-               class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-lg flex items-center justify-center transition">
+               class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-lg flex items-center justify-center transition shrink-0">
                 <i class="fas fa-chevron-right"></i>
             </a>
             <a href="{% url 'cabinet:comptabilite_export_csv' %}?annee={{ annee }}&mois={{ mois }}"
-               class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition font-medium ml-2">
+               class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition font-medium sm:ml-2">
                 <i class="fas fa-download mr-2"></i>Export CSV
             </a>
         </div>
@@ -136,8 +136,8 @@
 </div>
 
 <!-- Liste des depenses -->
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-    <div class="flex justify-between items-center mb-4">
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
         <h3 class="text-lg font-semibold text-gray-800">
             <i class="fas fa-receipt text-gray-500 mr-2"></i>Dépenses de {{ mois_nom }} {{ annee }}
         </h3>
@@ -148,7 +148,30 @@
     </div>
 
     {% if depenses_liste %}
-    <div class="overflow-x-auto">
+    <!-- Vue mobile : cartes -->
+    <div class="sm:hidden space-y-2">
+        {% for depense in depenses_liste %}
+        <div class="border border-gray-100 rounded-xl p-3">
+            <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="px-2 py-1 rounded-full text-xs bg-red-50 text-red-700">{{ depense.get_categorie_display }}</span>
+                <span class="text-sm font-semibold text-gray-900">{{ depense.montant }} DHS</span>
+            </div>
+            <div class="text-sm text-gray-600">{{ depense.description|default:"—" }}</div>
+            <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
+                <span class="text-xs text-gray-500">{{ depense.date_depense|date:"d/m/Y" }}</span>
+                <div>
+                    <a href="{% url 'cabinet:depense_edit' depense.id %}?next={{ request.get_full_path|urlencode }}"
+                       class="text-gray-400 hover:text-primary px-2"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'cabinet:depense_delete' depense.id %}?next={{ request.get_full_path|urlencode }}"
+                       class="text-gray-400 hover:text-red-600 px-2"><i class="fas fa-trash"></i></a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Vue desktop : tableau -->
+    <div class="hidden sm:block overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-100">
             <thead>
                 <tr>

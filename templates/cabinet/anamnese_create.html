@@ -6,20 +6,20 @@
 {% block content %}
 <div class="max-w-5xl mx-auto">
     <!-- Header -->
-    <div class="bg-white rounded-xl shadow p-6 mb-6">
-        <div class="flex justify-between items-center">
+    <div class="bg-white rounded-xl shadow p-4 sm:p-6 mb-6">
+        <div class="flex items-center justify-between gap-3">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Anamnèse - {{ patient.nom_complet }}</h1>
-                <p class="text-gray-500 mt-1">Remplissez les informations d'anamnèse</p>
+                <h1 class="text-xl sm:text-3xl font-bold text-gray-800">Anamnèse - {{ patient.nom_complet }}</h1>
+                <p class="text-gray-500 mt-1 text-sm sm:text-base">Remplissez les informations d'anamnèse</p>
             </div>
-            <a href="{% url 'cabinet:patient_detail' patient.id %}" class="text-gray-600 hover:text-gray-800">
+            <a href="{% url 'cabinet:patient_detail' patient.id %}" class="text-gray-600 hover:text-gray-800 shrink-0">
                 <i class="fas fa-arrow-left mr-2"></i>Retour
             </a>
         </div>
     </div>
 
     <!-- Formulaire -->
-    <div class="bg-white rounded-xl shadow p-8">
+    <div class="bg-white rounded-xl shadow p-4 sm:p-8">
         <form method="POST">
             {% csrf_token %}
             

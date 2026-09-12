@@ -5,20 +5,20 @@
 {% block content %}
 <div class="max-w-3xl mx-auto">
     <!-- Header -->
-    <div class="bg-white rounded-xl shadow p-6 mb-6">
-        <div class="flex items-center justify-between">
+    <div class="bg-white rounded-xl shadow p-4 sm:p-6 mb-6">
+        <div class="flex items-center justify-between gap-3">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">{{ title }}</h1>
-                <p class="text-gray-500 mt-1">Remplissez les informations du patient</p>
+                <h1 class="text-xl sm:text-3xl font-bold text-gray-800">{{ title }}</h1>
+                <p class="text-gray-500 mt-1 text-sm sm:text-base">Remplissez les informations du patient</p>
             </div>
-            <a href="{% url 'cabinet:patients_list' %}" class="text-gray-600 hover:text-gray-800">
+            <a href="{% url 'cabinet:patients_list' %}" class="text-gray-600 hover:text-gray-800 shrink-0">
                 <i class="fas fa-arrow-left mr-2"></i>Retour
             </a>
         </div>
     </div>
 
     <!-- Formulaire -->
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-xl shadow p-4 sm:p-6">
         <form method="POST">
             {% csrf_token %}
             

@@ -4,13 +4,13 @@
 
 {% block content %}
 <!-- Header -->
-<div class="bg-white rounded-xl shadow p-6 mb-6">
-    <div class="flex justify-between items-center">
+<div class="bg-white rounded-xl shadow p-4 sm:p-6 mb-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Patients</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Patients</h1>
             <p class="text-gray-500 mt-1">Gestion des dossiers patients</p>
         </div>
-        <a href="{% url 'cabinet:patient_create' %}" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2">
+        <a href="{% url 'cabinet:patient_create' %}" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2">
             <i class="fas fa-user-plus"></i>
             Nouveau Patient
         </a>
@@ -77,7 +77,56 @@
 
 <!-- Liste patients -->
 {% if page_obj.object_list %}
-<div class="bg-white rounded-xl shadow overflow-hidden">
+<!-- Vue mobile : cartes -->
+<div class="md:hidden space-y-3 mb-6">
+    {% for patient in page_obj.object_list %}
+    <div class="bg-white rounded-xl shadow p-4">
+        <div class="flex items-start justify-between gap-3">
+            <a href="{% url 'cabinet:patient_detail' patient.id %}" class="flex items-center min-w-0 flex-1">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-semibold mr-3 shrink-0">
+                    {{ patient.prenom.0 }}{{ patient.nom.0 }}
+                </div>
+                <div class="min-w-0">
+                    <div class="font-medium text-gray-900 truncate">{{ patient.nom_complet }}</div>
+                    <div class="text-sm text-gray-500">{{ patient.age }} ans</div>
+                </div>
+            </a>
+            <div class="flex gap-2 shrink-0">
+                <a href="{% url 'cabinet:patient_detail' patient.id %}"
+                   class="w-9 h-9 flex items-center justify-center bg-primary hover:bg-primary-dark text-white rounded-lg transition">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a href="{% url 'cabinet:patient_edit' patient.id %}"
+                   class="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="{% url 'cabinet:patient_delete' patient.id %}"
+                   class="w-9 h-9 flex items-center justify-center bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition"
+                   onclick="return confirm('Supprimer ce patient ?')">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+        {% if patient.telephone or patient.email %}
+        <div class="mt-3 pt-3 border-t border-gray-100 text-sm text-gray-500 space-y-0.5">
+            {% if patient.telephone %}<div><i class="fas fa-phone w-4 mr-1"></i>{{ patient.telephone }}</div>{% endif %}
+            {% if patient.email %}<div class="truncate"><i class="fas fa-envelope w-4 mr-1"></i>{{ patient.email }}</div>{% endif %}
+        </div>
+        {% endif %}
+        {% if patient.tags.all %}
+        <div class="flex flex-wrap gap-1 mt-2">
+            {% for tag in patient.tags.all %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] text-white" style="background-color: {{ tag.couleur }}">{{ tag.nom }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Vue desktop : tableau -->
+<div class="hidden md:block bg-white rounded-xl shadow overflow-hidden">
+    <div class="overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
@@ -141,31 +190,32 @@
             {% endfor %}
         </tbody>
     </table>
-    
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-    <div class="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="text-sm text-gray-700">
-            Affichage de {{ page_obj.start_index }} à {{ page_obj.end_index }} sur {{ page_obj.paginator.count }} résultats
-        </div>
-        <div class="flex gap-2">
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
-                   class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">
-                    Précédent
-                </a>
-            {% endif %}
-            
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
-                   class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">
-                    Suivant
-                </a>
-            {% endif %}
-        </div>
     </div>
-    {% endif %}
 </div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="bg-white rounded-xl shadow px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 sm:mt-0 sm:rounded-none sm:shadow-none sm:bg-gray-50 sm:border-t sm:border-gray-200">
+    <div class="text-sm text-gray-700">
+        Affichage de {{ page_obj.start_index }} à {{ page_obj.end_index }} sur {{ page_obj.paginator.count }} résultats
+    </div>
+    <div class="flex gap-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">
+                Précédent
+            </a>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+               class="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">
+                Suivant
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 
 {% else %}
 <!-- État vide -->

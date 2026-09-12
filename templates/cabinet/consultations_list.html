@@ -4,14 +4,14 @@
 
 {% block content %}
 <!-- Header -->
-<div class="bg-white rounded-xl shadow p-6 mb-6">
-    <div class="flex justify-between items-center">
+<div class="bg-white rounded-xl shadow p-4 sm:p-6 mb-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Consultations</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Consultations</h1>
             <p class="text-gray-500 mt-1">Gestion des consultations</p>
         </div>
-        <a href="{% url 'cabinet:consultation_create' %}" 
-           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2">
+        <a href="{% url 'cabinet:consultation_create' %}"
+           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2">
             <i class="fas fa-calendar-plus"></i>
             Nouvelle Consultation
         </a>
@@ -53,7 +53,60 @@
 
 <!-- Liste consultations -->
 {% if page_obj.object_list %}
-<div class="bg-white rounded-xl shadow overflow-hidden">
+<!-- Vue mobile : cartes -->
+<div class="md:hidden space-y-3 mb-6">
+    {% for consultation in page_obj.object_list %}
+    <div class="bg-white rounded-xl shadow p-4">
+        <div class="flex items-start justify-between gap-3 mb-2">
+            <a href="{% url 'cabinet:patient_detail' consultation.patient.id %}" class="font-medium text-gray-900 hover:text-primary min-w-0 truncate">
+                {{ consultation.patient.nom_complet }}
+            </a>
+            <span class="px-2 py-1 text-xs rounded-full shrink-0
+                {% if consultation.lieu_consultation == 'visio' %}bg-blue-100 text-blue-800
+                {% elif consultation.lieu_consultation == 'bouskoura' %}bg-green-100 text-green-800
+                {% else %}bg-purple-100 text-purple-800{% endif %}">
+                {{ consultation.get_lieu_consultation_display }}
+            </span>
+        </div>
+        <div class="text-sm text-gray-500 mb-2">
+            <i class="fas fa-clock mr-1"></i>{{ consultation.date_seance|date:"d/m/Y H:i" }}
+            <span class="ml-2 font-medium text-gray-700">{{ consultation.tarif }} DHS</span>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-3">
+            {% if consultation.statut_consultation == 'annulee' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800"><i class="fas fa-times-circle mr-1"></i>Annulée</span>
+            {% elif consultation.statut_consultation == 'reportee' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800"><i class="fas fa-calendar-alt mr-1"></i>Reportée</span>
+            {% elif consultation.statut_consultation == 'terminee' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800"><i class="fas fa-check mr-1"></i>Terminée</span>
+            {% elif consultation.statut_consultation == 'confirmee' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i>Confirmée</span>
+            {% else %}
+                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800"><i class="fas fa-clock mr-1"></i>Prévue</span>
+            {% endif %}
+            {% if consultation.statut_paiement == 'paye' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Payé</span>
+            {% elif consultation.statut_paiement == 'attente' %}
+                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">En attente</span>
+            {% else %}
+                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Annulé</span>
+            {% endif %}
+        </div>
+        <div class="flex gap-4 pt-3 border-t border-gray-100 text-sm">
+            <a href="{% url 'cabinet:consultation_detail' consultation.id %}" class="text-primary hover:text-primary-dark"><i class="fas fa-eye mr-1"></i>Détails</a>
+            {% if consultation.statut_consultation != 'annulee' %}
+            <a href="{% url 'cabinet:consultation_edit' consultation.id %}" class="text-gray-600 hover:text-gray-800"><i class="fas fa-edit mr-1"></i>Modifier</a>
+            <a href="{% url 'cabinet:consultation_reporter' consultation.id %}" class="text-orange-600 hover:text-orange-800"><i class="fas fa-calendar-alt mr-1"></i>Reporter</a>
+            <a href="{% url 'cabinet:consultation_annuler' consultation.id %}" class="text-red-600 hover:text-red-800"><i class="fas fa-times-circle mr-1"></i>Annuler</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Vue desktop : tableau -->
+<div class="hidden md:block bg-white rounded-xl shadow overflow-hidden">
+    <div class="overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
@@ -151,26 +204,27 @@
             {% endfor %}
         </tbody>
     </table>
-    
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-    <div class="bg-gray-50 px-4 py-3 flex items-center justify-between border-t">
-        <div class="text-sm text-gray-700">
-            {{ page_obj.start_index }} - {{ page_obj.end_index }} sur {{ page_obj.paginator.count }}
-        </div>
-        <div class="flex gap-2">
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" 
-                   class="px-3 py-1 bg-white border rounded hover:bg-gray-50">Précédent</a>
-            {% endif %}
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" 
-                   class="px-3 py-1 bg-white border rounded hover:bg-gray-50">Suivant</a>
-            {% endif %}
-        </div>
     </div>
-    {% endif %}
 </div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="bg-white rounded-xl shadow px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 sm:mt-0 sm:rounded-none sm:shadow-none sm:bg-gray-50 sm:border-t">
+    <div class="text-sm text-gray-700">
+        {{ page_obj.start_index }} - {{ page_obj.end_index }} sur {{ page_obj.paginator.count }}
+    </div>
+    <div class="flex gap-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}"
+               class="px-3 py-1 bg-white border rounded hover:bg-gray-50">Précédent</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}"
+               class="px-3 py-1 bg-white border rounded hover:bg-gray-50">Suivant</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 {% else %}
 <div class="bg-white rounded-xl shadow p-12 text-center">
     <i class="fas fa-calendar-times text-gray-400 text-6xl mb-4"></i>

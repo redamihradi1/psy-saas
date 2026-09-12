@@ -23,27 +23,32 @@
     .consultation-reportee { background-color: #f59e0b; border-color: #d97706; }
     .consultation-terminee { background-color: #6b7280; border-color: #4b5563; }
     .indisponibilite-event { opacity: 0.85; font-style: italic; }
+    @media (max-width: 640px) {
+        .fc .fc-toolbar-title { font-size: 1.05rem; }
+        .fc .fc-button { padding: 0.3rem 0.5rem; font-size: 0.8rem; }
+        .fc-daygrid-event, .fc-timegrid-event { font-size: 0.7rem; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto">
     <!-- Header -->
-    <div class="bg-white rounded-xl shadow p-6 mb-6">
-        <div class="flex justify-between items-center">
+    <div class="bg-white rounded-xl shadow p-4 sm:p-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">
+                <h1 class="text-xl sm:text-3xl font-bold text-gray-800">
                     <i class="fas fa-calendar-alt text-primary mr-3"></i>Agenda des Consultations
                 </h1>
                 <p class="text-gray-500 mt-1">Gérez vos rendez-vous</p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2">
                 <button onclick="document.getElementById('indispoModal').classList.remove('hidden')"
-                        class="bg-gray-700 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition flex items-center gap-2">
+                        class="bg-gray-700 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition flex items-center justify-center gap-2">
                     <i class="fas fa-ban"></i>
                     Bloquer une période
                 </button>
-                <button onclick="openCreateModal()" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition flex items-center gap-2">
+                <button onclick="openCreateModal()" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition flex items-center justify-center gap-2">
                     <i class="fas fa-plus"></i>
                     Nouvelle consultation
                 </button>
@@ -63,20 +68,20 @@
                     {% endfor %}
                 </select>
             </div>
-            
-            <div class="flex gap-2">
-                <button onclick="calendar.changeView('dayGridMonth')" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="calendar.changeView('dayGridMonth')" class="flex-1 sm:flex-none px-2 sm:px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition text-xs sm:text-base whitespace-nowrap">
                     <i class="fas fa-calendar"></i> Mois
                 </button>
-                <button onclick="calendar.changeView('timeGridWeek')" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                <button onclick="calendar.changeView('timeGridWeek')" class="flex-1 sm:flex-none px-2 sm:px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition text-xs sm:text-base whitespace-nowrap">
                     <i class="fas fa-calendar-week"></i> Semaine
                 </button>
-                <button onclick="calendar.changeView('timeGridDay')" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                <button onclick="calendar.changeView('timeGridDay')" class="flex-1 sm:flex-none px-2 sm:px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition text-xs sm:text-base whitespace-nowrap">
                     <i class="fas fa-calendar-day"></i> Jour
                 </button>
             </div>
 
-            <button onclick="calendar.today()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition">
+            <button onclick="calendar.today()" class="w-full sm:w-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition">
                 <i class="fas fa-calendar-check"></i> Aujourd'hui
             </button>
         </div>
@@ -84,7 +89,7 @@
 
     <!-- Légende -->
     <div class="bg-white rounded-xl shadow p-4 mb-6">
-        <div class="flex gap-6 flex-wrap">
+        <div class="flex gap-4 sm:gap-6 flex-wrap">
             <div class="flex items-center gap-2">
                 <span class="w-4 h-4 rounded consultation-prevue"></span>
                 <span class="text-sm">Prévue</span>
@@ -109,7 +114,7 @@
     </div>
 
     <!-- Calendrier -->
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-xl shadow p-2 sm:p-6">
         <div id="calendar"></div>
     </div>
 
@@ -121,8 +126,8 @@
         </h3>
         <div class="space-y-2">
             {% for indispo in indisponibilites %}
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
+            <div class="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg">
+                <div class="min-w-0">
                     <span class="font-medium text-gray-800">{{ indispo.titre }}</span>
                     <span class="text-xs text-gray-500 ml-2">{{ indispo.get_type_absence_display }}</span>
                     <div class="text-sm text-gray-500">
@@ -130,7 +135,7 @@
                     </div>
                 </div>
                 <form method="POST" action="{% url 'cabinet:indisponibilite_delete' indispo.id %}"
-                      onsubmit="return confirm('Supprimer ce blocage ?');">
+                      onsubmit="return confirm('Supprimer ce blocage ?');" class="shrink-0">
                     {% csrf_token %}
                     <button type="submit" class="text-gray-400 hover:text-red-600 px-2">
                         <i class="fas fa-trash"></i>
@@ -167,7 +172,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Début</label>
                     <input type="datetime-local" name="date_debut" required
@@ -225,7 +230,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
                             <input type="date" name="date" id="modalDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
@@ -362,14 +367,17 @@
 
         const calendarEl = document.getElementById('calendar');
         
+        const isMobile = window.innerWidth < 640;
+
         calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
+            initialView: isMobile ? 'listWeek' : 'dayGridMonth',
             locale: 'fr',
             headerToolbar: {
                 left: 'prev,next',
                 center: 'title',
                 right: ''
             },
+            windowResizeDelay: 100,
             buttonText: {
                 today: "Aujourd'hui",
                 month: 'Mois',

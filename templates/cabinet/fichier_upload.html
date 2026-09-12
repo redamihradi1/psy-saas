@@ -17,12 +17,12 @@
     </div>
 
     <!-- Formulaire -->
-    <div class="bg-white rounded-xl shadow-lg p-8">
+    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-8">
         <form method="post" enctype="multipart/form-data" id="uploadForm">
             {% csrf_token %}
 
             <!-- Zone de drag & drop -->
-            <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-primary transition cursor-pointer mb-6">
+            <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-12 text-center hover:border-primary transition cursor-pointer mb-6">
                 <i class="fas fa-cloud-upload-alt text-6xl text-gray-300 mb-4"></i>
                 <p class="text-lg text-gray-600 mb-2">Glissez-déposez un fichier ici</p>
                 <p class="text-sm text-gray-500 mb-4">ou</p>
@@ -38,15 +38,15 @@
 
             <!-- Aperçu du fichier sélectionné -->
             <div id="filePreview" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <i id="fileIcon" class="fas fa-file text-3xl text-gray-400 mr-4"></i>
-                        <div>
-                            <p id="fileName" class="font-semibold text-gray-800"></p>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center min-w-0">
+                        <i id="fileIcon" class="fas fa-file text-3xl text-gray-400 mr-4 shrink-0"></i>
+                        <div class="min-w-0">
+                            <p id="fileName" class="font-semibold text-gray-800 truncate"></p>
                             <p id="fileSize" class="text-sm text-gray-500"></p>
                         </div>
                     </div>
-                    <button type="button" onclick="clearFile()" class="text-red-500 hover:text-red-700">
+                    <button type="button" onclick="clearFile()" class="text-red-500 hover:text-red-700 shrink-0">
                         <i class="fas fa-times-circle text-2xl"></i>
                     </button>
                 </div>
@@ -78,11 +78,11 @@
             </div>
 
             <!-- Boutons -->
-            <div class="flex gap-4 pt-4">
+            <div class="flex flex-col sm:flex-row gap-4 pt-4">
                 <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 shadow-lg">
                     <i class="fas fa-upload mr-2"></i>Uploader le fichier
                 </button>
-                <a href="{% url 'cabinet:patient_detail' patient.id %}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">
+                <a href="{% url 'cabinet:patient_detail' patient.id %}" class="text-center bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">
                     <i class="fas fa-times mr-2"></i>Annuler
                 </a>
             </div>
