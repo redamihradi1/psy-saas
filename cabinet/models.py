@@ -205,9 +205,33 @@ class Consultation(TenantModel):  # ← Hérite de TenantModel
         verbose_name="Type de consultation"
     )
     notes_cliniques = models.TextField(
-        blank=True, 
+        blank=True,
         null=True,
-        verbose_name="Notes cliniques"
+        verbose_name="Notes complémentaires (libres)"
+    )
+    note_subjectif = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Subjectif",
+        help_text="Ce que le patient rapporte : ressenti, plaintes, ce qu'il dit"
+    )
+    note_objectif = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Objectif",
+        help_text="Ce que le psychologue observe : comportement, affect, faits"
+    )
+    note_evaluation = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Évaluation",
+        help_text="Analyse clinique, évolution, hypothèses"
+    )
+    note_plan = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Plan",
+        help_text="Prochaines étapes, ajustements du suivi"
     )
     objectifs_seance = models.TextField(
         blank=True, 

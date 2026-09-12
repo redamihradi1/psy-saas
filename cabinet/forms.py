@@ -112,7 +112,9 @@ class ConsultationForm(forms.ModelForm):
         fields = [
             'patient', 'date_seance', 'duree_minutes', 'type_consultation',
             'lieu_consultation', 'tarif',
-            'statut_paiement', 'date_paiement', 'notes_cliniques',
+            'statut_paiement', 'date_paiement',
+            'note_subjectif', 'note_objectif', 'note_evaluation', 'note_plan',
+            'notes_cliniques',
             'objectifs_seance', 'exercices_prevus', 'suivi_progression'
         ]
         widgets = {
@@ -144,9 +146,29 @@ class ConsultationForm(forms.ModelForm):
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
                 'type': 'date'
             }),
+            'note_subjectif': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'rows': 3,
+                'placeholder': 'Ce que le patient rapporte...'
+            }),
+            'note_objectif': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'rows': 3,
+                'placeholder': 'Ce que vous observez...'
+            }),
+            'note_evaluation': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'rows': 3,
+                'placeholder': 'Analyse clinique, évolution...'
+            }),
+            'note_plan': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
+                'rows': 3,
+                'placeholder': 'Prochaines étapes...'
+            }),
             'notes_cliniques': forms.Textarea(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-                'rows': 6
+                'rows': 3
             }),
             'objectifs_seance': forms.Textarea(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
