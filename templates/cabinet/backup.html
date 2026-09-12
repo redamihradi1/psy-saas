@@ -10,6 +10,21 @@
     </div>
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">Sauvegarde automatique</h3>
+        {% if derniere_sauvegarde_auto %}
+        <div class="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 rounded-lg p-3">
+            <i class="fas fa-check-circle"></i>
+            Dernière sauvegarde automatique le {{ derniere_sauvegarde_auto|date:"d/m/Y à H:i" }} (conservées 14 jours glissants sur le serveur).
+        </div>
+        {% else %}
+        <div class="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 rounded-lg p-3">
+            <i class="fas fa-info-circle"></i>
+            Aucune sauvegarde automatique pour l'instant. Vérifie que la tâche planifiée est bien configurée sur le serveur.
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Contenu de la sauvegarde</h3>
         <ul class="space-y-2 text-sm text-gray-600">
             <li><i class="fas fa-check text-emerald-500 mr-2"></i>Tous les patients et leurs informations</li>

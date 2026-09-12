@@ -1,3 +1,5 @@
+import secrets
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -14,6 +16,11 @@ class Organization(models.Model):
     address = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
     is_active = models.BooleanField(default=True, verbose_name="Actif")
+    ics_token = models.CharField(
+        max_length=43, unique=True, blank=True, null=True,
+        verbose_name="Jeton de synchronisation calendrier",
+        help_text="Utilisé dans le lien secret d'abonnement à l'agenda (.ics). Régénérable en cas de fuite.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -24,6 +31,18 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_ics_token(self):
+        """Retourne le jeton de synchronisation calendrier, le génère si absent."""
+        if not self.ics_token:
+            self.ics_token = secrets.token_urlsafe(24)
+            self.save(update_fields=['ics_token'])
+        return self.ics_token
+
+    def regenerate_ics_token(self):
+        self.ics_token = secrets.token_urlsafe(24)
+        self.save(update_fields=['ics_token'])
+        return self.ics_token
 
 
 class User(AbstractUser):

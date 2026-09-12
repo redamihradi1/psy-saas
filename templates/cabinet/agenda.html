@@ -43,6 +43,11 @@
                 <p class="text-gray-500 mt-1">Gérez vos rendez-vous</p>
             </div>
             <div class="flex flex-col sm:flex-row gap-2">
+                <button onclick="document.getElementById('syncModal').classList.remove('hidden')"
+                        class="bg-blue-50 text-blue-700 px-6 py-3 rounded-lg hover:bg-blue-100 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-calendar-plus"></i>
+                    Synchroniser mon agenda
+                </button>
                 <button onclick="document.getElementById('indispoModal').classList.remove('hidden')"
                         class="bg-gray-700 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition flex items-center justify-center gap-2">
                     <i class="fas fa-ban"></i>
@@ -146,6 +151,63 @@
         </div>
     </div>
     {% endif %}
+</div>
+
+<!-- Modal Synchroniser l'agenda -->
+<div id="syncModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">
+                <i class="fas fa-calendar-plus text-blue-600 mr-2"></i>Synchroniser mon agenda
+            </h2>
+            <button onclick="document.getElementById('syncModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <p class="text-sm text-gray-600 mb-4">
+            Ajoute cet agenda à l'app Calendrier de ton téléphone : tes consultations et périodes bloquées
+            se synchronisent automatiquement (mise à jour toutes les 12h environ, selon l'app calendrier).
+        </p>
+
+        <div class="mb-4">
+            <a href="{{ webcal_url }}"
+               class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition font-medium">
+                <i class="fas fa-mobile-alt mr-2"></i>Ajouter au calendrier de mon téléphone
+            </a>
+            <p class="text-xs text-gray-500 mt-2">
+                Sur iPhone : ce bouton ouvre directement "Ajouter un abonnement" dans l'app Calendrier.
+                Sinon (Réglages → Calendrier → Comptes → Ajouter un compte → Autre → Calendrier avec abonnement),
+                colle le lien ci-dessous.
+            </p>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Lien du calendrier (à garder privé)</label>
+            <div class="flex gap-2">
+                <input type="text" readonly value="{{ ics_url }}" id="icsUrlInput"
+                       class="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-xs text-gray-600 bg-gray-50">
+                <button type="button" onclick="copierLienIcs()"
+                        class="shrink-0 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-700 transition">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-3 text-xs text-yellow-800 mb-4">
+            <i class="fas fa-exclamation-triangle mr-1"></i>
+            Ce lien donne accès en lecture à ton agenda (noms des patients, horaires) sans mot de passe.
+            Ne le partage pas. Si tu penses qu'il a fuité, régénère-le ci-dessous.
+        </div>
+
+        <form method="POST" action="{% url 'cabinet:agenda_ics_regenerate' %}"
+              onsubmit="return confirm('Régénérer le lien ? L\'ancien lien cessera de fonctionner immédiatement (à refaire sur tous tes appareils synchronisés).');">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition text-sm">
+                <i class="fas fa-rotate mr-2"></i>Régénérer le lien
+            </button>
+        </form>
+    </div>
 </div>
 
 <!-- Modal Bloquer une période -->
@@ -478,6 +540,17 @@
 
     function closeModal() {
         document.getElementById('consultationModal').classList.add('hidden');
+    }
+
+    function copierLienIcs() {
+        const input = document.getElementById('icsUrlInput');
+        input.select();
+        input.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(input.value).then(function() {
+            alert('Lien copié !');
+        }).catch(function() {
+            document.execCommand('copy');
+        });
     }
 
     document.getElementById('consultationForm').addEventListener('submit', function(e) {

@@ -6,6 +6,7 @@ db.sqlite3
 *.log
 staticfiles/
 media/
+backups/
 .DS_Store
 .env
 d2r_config_data.json

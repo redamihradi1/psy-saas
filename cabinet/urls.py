@@ -59,6 +59,8 @@ urlpatterns = [
 
     # Agenda
     path('agenda/', views.agenda, name='agenda'),
+    path('agenda/feed/<str:token>.ics', views.agenda_ics_feed, name='agenda_ics_feed'),
+    path('agenda/feed/regenerer/', views.agenda_ics_regenerate, name='agenda_ics_regenerate'),
     path('consultations/api/', views.consultations_api, name='consultations_api'),
     path('indisponibilites/api/', views.indisponibilites_api, name='indisponibilites_api'),
     path('indisponibilites/create/', views.indisponibilite_create, name='indisponibilite_create'),
