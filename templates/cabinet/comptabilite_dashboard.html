@@ -37,27 +37,27 @@
     </h3>
     <div class="space-y-2">
         {% for consultation in alertes_paiement %}
-        <div class="flex items-center justify-between bg-white rounded-lg p-3">
-            <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-lg p-3">
+            <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-sm font-medium text-gray-800">{{ consultation.patient.nom_complet }}</span>
-                <span class="text-xs text-gray-500">{{ consultation.date_seance|date:"d/m/Y" }}</span>
+                <span class="text-xs text-gray-500 shrink-0">{{ consultation.date_seance|date:"d/m/Y" }}</span>
                 {% if consultation.statut_paiement == 'attente' %}
-                <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-800">En attente de paiement</span>
+                <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-800 shrink-0">En attente de paiement</span>
                 {% endif %}
                 {% if consultation.tarif == 0 %}
-                <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">Tarif à 0 DHS</span>
+                <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700 shrink-0">Tarif à 0 DHS</span>
                 {% endif %}
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 shrink-0">
                 {% if consultation.statut_paiement == 'attente' %}
                 <form method="POST" action="{% url 'cabinet:consultation_confirmer_paiement' consultation_id=consultation.id %}?next={{ request.get_full_path|urlencode }}">
                     {% csrf_token %}
-                    <button type="submit" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition">
+                    <button type="submit" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition whitespace-nowrap">
                         <i class="fas fa-coins mr-1"></i>Confirmer paiement
                     </button>
                 </form>
                 {% endif %}
-                <a href="{% url 'cabinet:consultation_detail' consultation.id %}" class="text-primary hover:text-primary-dark text-sm">
+                <a href="{% url 'cabinet:consultation_detail' consultation.id %}" class="text-primary hover:text-primary-dark text-sm whitespace-nowrap">
                     Voir <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>
