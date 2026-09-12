@@ -191,7 +191,7 @@ def consultation_confirmer_paiement(request, consultation_id):
         consultation.save()
 
         messages.success(request, f"Paiement de {consultation.tarif} DHS confirmé avec succès!")
-        return redirect('cabinet:consultation_detail', consultation_id=consultation.id)
+        return redirect(request.GET.get('next') or reverse('cabinet:consultation_detail', kwargs={'consultation_id': consultation.id}))
 
     # Si GET, rediriger vers la page de détail
     return redirect('cabinet:consultation_detail', consultation_id=consultation.id)

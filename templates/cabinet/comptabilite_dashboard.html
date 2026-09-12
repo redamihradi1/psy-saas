@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block title %}Comptabilité - PsySaaS{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl shadow-lg p-8 mb-6 text-white">
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold mb-1"><i class="fas fa-calculator mr-2"></i>Comptabilité</h1>
+            <p class="text-white text-opacity-90">Revenus, dépenses et résultat net</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="?annee={{ mois_precedent.0 }}&mois={{ mois_precedent.1 }}"
+               class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-lg flex items-center justify-center transition">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 font-semibold min-w-[160px] text-center">
+                {{ mois_nom }} {{ annee }}
+            </div>
+            <a href="?annee={{ mois_suivant.0 }}&mois={{ mois_suivant.1 }}"
+               class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-lg flex items-center justify-center transition">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            <a href="{% url 'cabinet:comptabilite_export_csv' %}?annee={{ annee }}&mois={{ mois }}"
+               class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition font-medium ml-2">
+                <i class="fas fa-download mr-2"></i>Export CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if alertes_paiement %}
+<div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4 mb-6">
+    <h3 class="text-sm font-semibold text-orange-900 mb-3">
+        <i class="fas fa-triangle-exclamation mr-2"></i>{{ alertes_paiement|length }} consultation{{ alertes_paiement|pluralize }} à régulariser ce mois
+    </h3>
+    <div class="space-y-2">
+        {% for consultation in alertes_paiement %}
+        <div class="flex items-center justify-between bg-white rounded-lg p-3">
+            <div class="flex items-center gap-3">
+                <span class="text-sm font-medium text-gray-800">{{ consultation.patient.nom_complet }}</span>
+                <span class="text-xs text-gray-500">{{ consultation.date_seance|date:"d/m/Y" }}</span>
+                {% if consultation.statut_paiement == 'attente' %}
+                <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-800">En attente de paiement</span>
+                {% endif %}
+                {% if consultation.tarif == 0 %}
+                <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">Tarif à 0 DHS</span>
+                {% endif %}
+            </div>
+            <div class="flex items-center gap-3">
+                {% if consultation.statut_paiement == 'attente' %}
+                <form method="POST" action="{% url 'cabinet:consultation_confirmer_paiement' consultation_id=consultation.id %}?next={{ request.get_full_path|urlencode }}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition">
+                        <i class="fas fa-coins mr-1"></i>Confirmer paiement
+                    </button>
+                </form>
+                {% endif %}
+                <a href="{% url 'cabinet:consultation_detail' consultation.id %}" class="text-primary hover:text-primary-dark text-sm">
+                    Voir <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- KPIs du mois -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center mb-4">
+            <i class="fas fa-arrow-down text-emerald-500 text-xl"></i>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ revenus_mois|floatformat:0 }} DHS</div>
+        <div class="text-sm text-gray-500">Revenus ({{ mois_nom }})</div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mb-4">
+            <i class="fas fa-arrow-up text-red-500 text-xl"></i>
+        </div>
+        <div class="text-3xl font-bold text-gray-800 mb-1">{{ depenses_mois|floatformat:0 }} DHS</div>
+        <div class="text-sm text-gray-500">Dépenses ({{ mois_nom }})</div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="w-12 h-12 {% if resultat_mois >= 0 %}bg-blue-50{% else %}bg-orange-50{% endif %} rounded-xl flex items-center justify-center mb-4">
+            <i class="fas fa-scale-balanced {% if resultat_mois >= 0 %}text-blue-500{% else %}text-orange-500{% endif %} text-xl"></i>
+        </div>
+        <div class="text-3xl font-bold {% if resultat_mois >= 0 %}text-gray-800{% else %}text-orange-600{% endif %} mb-1">
+            {{ resultat_mois|floatformat:0 }} DHS
+        </div>
+        <div class="text-sm text-gray-500">Résultat net ({{ mois_nom }})</div>
+    </div>
+</div>
+
+<!-- Cumul annee -->
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex flex-wrap gap-6 justify-around text-center">
+    <div>
+        <div class="text-xs text-gray-500 uppercase tracking-wide">Revenus {{ annee }}</div>
+        <div class="text-lg font-semibold text-emerald-600">{{ revenus_annee|floatformat:0 }} DHS</div>
+    </div>
+    <div>
+        <div class="text-xs text-gray-500 uppercase tracking-wide">Dépenses {{ annee }}</div>
+        <div class="text-lg font-semibold text-red-600">{{ depenses_annee|floatformat:0 }} DHS</div>
+    </div>
+    <div>
+        <div class="text-xs text-gray-500 uppercase tracking-wide">Résultat net {{ annee }}</div>
+        <div class="text-lg font-semibold {% if resultat_annee >= 0 %}text-blue-600{% else %}text-orange-600{% endif %}">
+            {{ resultat_annee|floatformat:0 }} DHS
+        </div>
+    </div>
+</div>
+
+<!-- Graphiques -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-chart-column text-primary mr-2"></i>Évolution (6 derniers mois)
+        </h3>
+        <canvas id="chart-evolution" height="220"></canvas>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-chart-pie text-red-500 mr-2"></i>Dépenses par catégorie
+        </h3>
+        {% if repartition %}
+        <canvas id="chart-repartition" height="220"></canvas>
+        {% else %}
+        <div class="text-center py-10 text-gray-400">
+            <i class="fas fa-receipt text-4xl mb-2"></i>
+            <p class="text-sm">Aucune dépense ce mois</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Liste des depenses -->
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">
+            <i class="fas fa-receipt text-gray-500 mr-2"></i>Dépenses de {{ mois_nom }} {{ annee }}
+        </h3>
+        <button type="button" onclick="document.getElementById('depense-create-modal').classList.remove('hidden')"
+                class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition text-sm font-medium">
+            <i class="fas fa-plus mr-2"></i>Ajouter une dépense
+        </button>
+    </div>
+
+    {% if depenses_liste %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-100">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Catégorie</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
+                    <th class="px-4 py-2"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                {% for depense in depenses_liste %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-700">{{ depense.date_depense|date:"d/m/Y" }}</td>
+                    <td class="px-4 py-3 text-sm">
+                        <span class="px-2 py-1 rounded-full text-xs bg-red-50 text-red-700">{{ depense.get_categorie_display }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600">{{ depense.description|default:"—" }}</td>
+                    <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">{{ depense.montant }} DHS</td>
+                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                        <a href="{% url 'cabinet:depense_edit' depense.id %}?next={{ request.get_full_path|urlencode }}"
+                           class="text-gray-400 hover:text-primary px-1"><i class="fas fa-edit"></i></a>
+                        <a href="{% url 'cabinet:depense_delete' depense.id %}?next={{ request.get_full_path|urlencode }}"
+                           class="text-gray-400 hover:text-red-600 px-1"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-10 text-gray-400">
+        <i class="fas fa-receipt text-4xl mb-2"></i>
+        <p>Aucune dépense enregistrée pour {{ mois_nom }} {{ annee }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal ajout depense -->
+<div id="depense-create-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Nouvelle dépense</h3>
+            <button type="button" onclick="document.getElementById('depense-create-modal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form method="POST" action="{% url 'cabinet:depense_create' %}" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+                <select name="categorie" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                    {% for value, label in categories %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Montant (DHS)</label>
+                <input type="number" step="0.01" name="montant" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input type="date" name="date_depense" required value="{{ today|date:'Y-m-d' }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description (optionnel)</label>
+                <input type="text" name="description"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+            </div>
+            <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white py-2 rounded-lg transition font-medium">
+                Enregistrer
+            </button>
+        </form>
+    </div>
+</div>
+
+{{ evolution|json_script:"evolution-data" }}
+{{ repartition|json_script:"repartition-data" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const evolution = JSON.parse(document.getElementById('evolution-data').textContent);
+    new Chart(document.getElementById('chart-evolution'), {
+        type: 'bar',
+        data: {
+            labels: evolution.map(e => e.label),
+            datasets: [
+                { label: 'Revenus', data: evolution.map(e => e.revenus), backgroundColor: '#34d399' },
+                { label: 'Dépenses', data: evolution.map(e => e.depenses), backgroundColor: '#f87171' },
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    const repartitionEl = document.getElementById('repartition-data');
+    const repartition = repartitionEl ? JSON.parse(repartitionEl.textContent) : [];
+    const chartRepartitionEl = document.getElementById('chart-repartition');
+    if (repartition.length && chartRepartitionEl) {
+        new Chart(chartRepartitionEl, {
+            type: 'doughnut',
+            data: {
+                labels: repartition.map(r => r.categorie_name),
+                datasets: [{
+                    data: repartition.map(r => r.total),
+                    backgroundColor: ['#e879f9', '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

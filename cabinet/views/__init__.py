@@ -23,6 +23,13 @@ from .consultations import (
 )
 from .agenda import agenda, consultations_api
 from .search import global_search
+from .comptabilite import (
+    comptabilite_dashboard,
+    depense_create,
+    depense_edit,
+    depense_delete,
+    comptabilite_export_csv,
+)
 from .message_templates import (
     message_templates_list,
     message_templates_json,
@@ -61,6 +68,11 @@ __all__ = [
     'agenda',
     'consultations_api',
     'global_search',
+    'comptabilite_dashboard',
+    'depense_create',
+    'depense_edit',
+    'depense_delete',
+    'comptabilite_export_csv',
     'message_templates_list',
     'message_templates_json',
     'message_template_create',

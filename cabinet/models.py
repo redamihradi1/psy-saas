@@ -522,3 +522,33 @@ class MessageTemplate(TenantModel):
             lieu=consultation.get_lieu_consultation_display(),
             lien_visio=consultation.lien_visio or '',
         )
+
+
+class Depense(TenantModel):
+    """Dépense professionnelle du cabinet (loyer, matériel, etc.)"""
+
+    CATEGORIE_CHOICES = [
+        ('loyer', 'Loyer'),
+        ('materiel', 'Matériel'),
+        ('logiciel', 'Logiciels / Abonnements'),
+        ('deplacement', 'Déplacement'),
+        ('formation', 'Formation'),
+        ('autre', 'Autre'),
+    ]
+
+    categorie = models.CharField(max_length=20, choices=CATEGORIE_CHOICES, default='autre')
+    description = models.CharField(max_length=200, blank=True)
+    montant = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Montant (DHS)")
+    date_depense = models.DateField(verbose_name="Date de la dépense")
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Dépense"
+        verbose_name_plural = "Dépenses"
+        ordering = ['-date_depense']
+        indexes = [
+            models.Index(fields=['organization', '-date_depense']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_categorie_display()} - {self.montant} DHS ({self.date_depense})"

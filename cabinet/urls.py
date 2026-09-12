@@ -10,6 +10,13 @@ urlpatterns = [
     # Recherche globale
     path('search/', views.global_search, name='global_search'),
 
+    # Comptabilité
+    path('comptabilite/', views.comptabilite_dashboard, name='comptabilite_dashboard'),
+    path('comptabilite/depenses/create/', views.depense_create, name='depense_create'),
+    path('comptabilite/depenses/<int:depense_id>/edit/', views.depense_edit, name='depense_edit'),
+    path('comptabilite/depenses/<int:depense_id>/delete/', views.depense_delete, name='depense_delete'),
+    path('comptabilite/export/', views.comptabilite_export_csv, name='comptabilite_export_csv'),
+
     # Modèles de messages (rappels WhatsApp)
     path('modeles-messages/', views.message_templates_list, name='message_templates_list'),
     path('modeles-messages/json/', views.message_templates_json, name='message_templates_json'),
