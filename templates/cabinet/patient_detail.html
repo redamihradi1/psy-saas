@@ -130,6 +130,10 @@
                     class="tab-button px-4 py-3 rounded-lg font-medium transition">
                 <i class="fas fa-chart-bar mr-2"></i>Statistiques
             </button>
+            <button onclick="switchTab('journal')" id="tab-journal"
+                    class="tab-button px-4 py-3 rounded-lg font-medium transition">
+                <i class="fas fa-book-medical mr-2"></i>Journal clinique
+            </button>
         </nav>
     </div>
 
@@ -478,27 +482,29 @@
                         {% for consultation in consultations %}
                         <tr class="hover:bg-gray-50 transition">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ consultation.date|date:"d/m/Y" }}</div>
-                                <div class="text-sm text-gray-500">{{ consultation.heure }}</div>
+                                <div class="font-medium text-gray-900">{{ consultation.date_seance|date:"d/m/Y" }}</div>
+                                <div class="text-sm text-gray-500">{{ consultation.date_seance|date:"H:i" }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 {{ consultation.get_type_consultation_display }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {{ consultation.duree|default:"60" }} min
+                                {{ consultation.duree_minutes|default:"60" }} min
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">
                                 {{ consultation.tarif|default:"0" }} DHS
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {% if consultation.statut == 'terminee' %}
+                                {% if consultation.statut_consultation == 'termine' %}
                                 <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Terminée</span>
-                                {% elif consultation.statut == 'confirmee' %}
-                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Confirmée</span>
-                                {% elif consultation.statut == 'annulee' %}
+                                {% elif consultation.statut_consultation == 'reporte' %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Reportée</span>
+                                {% elif consultation.statut_consultation == 'annule' %}
                                 <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Annulée</span>
+                                {% elif consultation.statut_consultation == 'absent' %}
+                                <span class="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">Patient absent</span>
                                 {% else %}
-                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Prévue</span>
+                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Planifiée</span>
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -714,7 +720,7 @@
                                 <i class="fas fa-calendar"></i>
                             </div>
                             <div>
-                                <div class="font-medium text-gray-900">{{ consultation.date|date:"d/m/Y" }}</div>
+                                <div class="font-medium text-gray-900">{{ consultation.date_seance|date:"d/m/Y" }}</div>
                                 <div class="text-sm text-gray-500">{{ consultation.get_type_consultation_display }} - {{ consultation.tarif|default:"0" }} DHS</div>
                             </div>
                         </div>
@@ -725,6 +731,70 @@
                     </div>
                     {% endfor %}
                 </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Onglet Journal clinique -->
+        <div id="content-journal" class="tab-content hidden">
+            {% if journal_consultations %}
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">
+                <i class="fas fa-book-medical text-primary mr-2"></i>
+                Journal clinique — historique des séances
+            </h3>
+            <div class="relative border-l-2 border-gray-200 ml-3 space-y-8">
+                {% for consultation in journal_consultations %}
+                <div class="relative pl-8">
+                    <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary border-2 border-white shadow"></div>
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-gray-900">
+                            {{ consultation.date_seance|date:"l d F Y à H:i" }}
+                            <span class="text-sm font-normal text-gray-500 ml-2">{{ consultation.get_type_consultation_display }}</span>
+                        </div>
+                        <a href="{% url 'cabinet:consultation_detail' consultation.id %}" class="text-primary hover:text-primary-dark text-sm">
+                            <i class="fas fa-eye mr-1"></i>Détails
+                        </a>
+                    </div>
+
+                    {% if consultation.objectifs_seance %}
+                    <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-3 mb-2">
+                        <div class="text-xs font-semibold text-blue-900 mb-1"><i class="fas fa-bullseye mr-1"></i>Objectifs de la séance</div>
+                        <p class="text-sm text-gray-700 whitespace-pre-line">{{ consultation.objectifs_seance }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if consultation.notes_cliniques %}
+                    <div class="bg-gray-50 border-l-4 border-gray-400 rounded-lg p-3 mb-2">
+                        <div class="text-xs font-semibold text-gray-700 mb-1"><i class="fas fa-notes-medical mr-1"></i>Notes cliniques</div>
+                        <p class="text-sm text-gray-700 whitespace-pre-line">{{ consultation.notes_cliniques }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if consultation.exercices_prevus %}
+                    <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-3 mb-2">
+                        <div class="text-xs font-semibold text-green-900 mb-1"><i class="fas fa-tasks mr-1"></i>Exercices prévus</div>
+                        <p class="text-sm text-gray-700 whitespace-pre-line">{{ consultation.exercices_prevus }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if consultation.suivi_progression %}
+                    <div class="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-3">
+                        <div class="text-xs font-semibold text-purple-900 mb-1"><i class="fas fa-chart-line mr-1"></i>Suivi de la progression</div>
+                        <p class="text-sm text-gray-700 whitespace-pre-line">{{ consultation.suivi_progression }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if not consultation.objectifs_seance and not consultation.notes_cliniques and not consultation.exercices_prevus and not consultation.suivi_progression %}
+                    <p class="text-sm text-gray-400 italic">Aucune note enregistrée pour cette séance.</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-16">
+                <i class="fas fa-book-medical text-gray-300 text-6xl mb-4"></i>
+                <h3 class="text-2xl font-semibold text-gray-700 mb-2">Aucune séance enregistrée</h3>
+                <p class="text-gray-500">Le journal clinique se remplit au fil des consultations.</p>
             </div>
             {% endif %}
         </div>
@@ -835,7 +905,7 @@ document.addEventListener('keydown', function(e) {
     
     // Chiffres 1-6 : Changer d'onglet
     if (e.key >= '1' && e.key <= '6') {
-        const tabs = ['info', 'anamnese', 'consultations', 'fichiers', 'stats'];
+        const tabs = ['info', 'anamnese', 'consultations', 'fichiers', 'stats', 'journal'];
         switchTab(tabs[parseInt(e.key) - 1]);
     }
 });

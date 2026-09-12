@@ -30,7 +30,7 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     messages.success(request, 'Déconnexion réussie')
-    return redirect('login')
+    return redirect('accounts:login')
 
 @login_required
 def profile_view(request):
