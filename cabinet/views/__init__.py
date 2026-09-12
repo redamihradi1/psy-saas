@@ -17,10 +17,12 @@ from .consultations import (
     consultation_confirmer_paiement,
     consultation_delete,
     consultation_invoice,
+    consultation_quick_statut,
     consultation_create_ajax,
     consultation_edit_ajax,
 )
 from .agenda import agenda, consultations_api
+from .search import global_search
 from .fichiers import (
     fichier_upload,
     fichier_delete,
@@ -46,10 +48,12 @@ __all__ = [
     'consultation_confirmer_paiement',
     'consultation_delete',
     'consultation_invoice',
+    'consultation_quick_statut',
     'consultation_create_ajax',
     'consultation_edit_ajax',
     'agenda',
     'consultations_api',
+    'global_search',
     'fichier_upload',
     'fichier_delete',
     'fichier_download',

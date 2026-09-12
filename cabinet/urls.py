@@ -6,6 +6,9 @@ app_name = 'cabinet'
 urlpatterns = [
     # Dashboard
     path('dashboard/', views.dashboard_view, name='dashboard'),
+
+    # Recherche globale
+    path('search/', views.global_search, name='global_search'),
     
     # Patients
     path('patients/', views.patients_list, name='patients_list'),
@@ -24,6 +27,7 @@ urlpatterns = [
     path('consultations/<int:consultation_id>/annuler/', views.consultation_annuler, name='consultation_annuler'),
     path('consultations/<int:consultation_id>/confirmer-paiement/', views.consultation_confirmer_paiement, name='consultation_confirmer_paiement'),
     path('consultations/<int:consultation_id>/facture/', views.consultation_invoice, name='consultation_invoice'),
+    path('consultations/<int:consultation_id>/statut-rapide/', views.consultation_quick_statut, name='consultation_quick_statut'),
 
     # Gestion des fichiers patients
     path('patients/<int:patient_id>/fichiers/upload/', views.fichier_upload, name='fichier_upload'),

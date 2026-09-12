@@ -3,17 +3,19 @@
 {% block title %}Dashboard - PsySaaS{% endblock %}
 
 {% block content %}
-<!-- Header avec bienvenue -->
-<div class="bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl shadow-lg p-8 mb-6 text-white">
-    <div class="flex justify-between items-center">
+<!-- Header -->
+<div class="relative overflow-hidden bg-gradient-to-br from-primary via-fuchsia-500 to-primary-dark rounded-2xl shadow-lg p-8 mb-6 text-white">
+    <div class="absolute -right-10 -top-10 w-56 h-56 rounded-full bg-white opacity-10"></div>
+    <div class="absolute right-16 bottom-0 w-24 h-24 rounded-full bg-white opacity-10"></div>
+    <div class="relative flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold mb-2">Bonjour, {{ user.get_full_name|default:user.username }} ! 👋</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold mb-1">Bonjour, {{ user.get_full_name|default:user.username }} 👋</h1>
             <p class="text-white text-opacity-90">{{ user.organization.name }}</p>
-            <p class="text-white text-opacity-75 text-sm mt-1">{{ today|date:"l d F Y" }}</p>
+            <p class="text-white text-opacity-70 text-sm mt-1">{{ today|date:"l d F Y" }}</p>
         </div>
-        <div class="text-right">
-            <div class="text-4xl font-bold">{{ consultations_aujourdhui }}</div>
-            <div class="text-sm text-white text-opacity-90">Consultations aujourd'hui</div>
+        <div class="sm:text-right bg-white bg-opacity-10 rounded-xl px-6 py-4 backdrop-blur-sm">
+            <div class="text-4xl font-bold leading-none">{{ consultations_aujourdhui }}</div>
+            <div class="text-sm text-white text-opacity-90 mt-1">Consultation{{ consultations_aujourdhui|pluralize }} aujourd'hui</div>
         </div>
     </div>
 </div>
@@ -21,72 +23,148 @@
 <!-- KPIs Principaux -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
     <!-- Total Patients -->
-    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
         <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-users text-blue-600 text-xl"></i>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                <i class="fas fa-users text-blue-500 text-xl"></i>
             </div>
-            <span class="text-xs text-gray-500">{{ evolution_patients }}%</span>
+            {% if evolution_patients > 0 %}
+            <span class="flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                <i class="fas fa-arrow-up"></i>{{ evolution_patients }}%
+            </span>
+            {% elif evolution_patients < 0 %}
+            <span class="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                <i class="fas fa-arrow-down"></i>{{ evolution_patients }}%
+            </span>
+            {% else %}
+            <span class="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-full">stable</span>
+            {% endif %}
         </div>
         <div class="text-3xl font-bold text-gray-800 mb-1">{{ total_patients }}</div>
-        <div class="text-sm text-gray-600">Patients actifs</div>
-        <div class="text-xs text-gray-500 mt-2">
-            <i class="fas fa-plus mr-1"></i>{{ nouveaux_patients_mois }} ce mois
+        <div class="text-sm text-gray-500">Patients actifs</div>
+        <div class="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-50">
+            <i class="fas fa-plus mr-1"></i>{{ nouveaux_patients_mois }} nouveau{{ nouveaux_patients_mois|pluralize }} ce mois
         </div>
     </div>
 
     <!-- Consultations du mois -->
-    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
         <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <i class="fas fa-calendar-check text-emerald-500 text-xl"></i>
             </div>
-            <span class="text-xs text-gray-500">Ce mois</span>
+            <span class="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-full">Ce mois</span>
         </div>
         <div class="text-3xl font-bold text-gray-800 mb-1">{{ consultations_mois }}</div>
-        <div class="text-sm text-gray-600">Consultations</div>
-        <div class="text-xs text-gray-500 mt-2">
+        <div class="text-sm text-gray-500">Consultations</div>
+        <div class="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-50">
             <i class="fas fa-clock mr-1"></i>{{ consultations_semaine }} cette semaine
         </div>
     </div>
 
     <!-- Chiffre d'affaires -->
-    <div class="bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
         <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-coins text-purple-600 text-xl"></i>
+            <div class="w-12 h-12 bg-primary-light rounded-xl flex items-center justify-center">
+                <i class="fas fa-coins text-primary-dark text-xl"></i>
             </div>
-            <span class="text-xs text-gray-500">Ce mois</span>
+            <span class="text-xs font-semibold text-gray-500 bg-gray-50 px-2 py-1 rounded-full">{{ taux_paiement }}% payé</span>
         </div>
         <div class="text-3xl font-bold text-gray-800 mb-1">{{ ca_mois|floatformat:0 }} DHS</div>
-        <div class="text-sm text-gray-600">Chiffre d'affaires</div>
-        <div class="text-xs text-gray-500 mt-2">
+        <div class="text-sm text-gray-500">Chiffre d'affaires (ce mois)</div>
+        <div class="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-50">
             <i class="fas fa-chart-line mr-1"></i>{{ ca_semaine|floatformat:0 }} DHS cette semaine
         </div>
     </div>
-
 </div>
 
-<!-- Graphiques et prochains RDV -->
+<!-- Aujourd'hui : vue rapide avec actions -->
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fas fa-list-check text-primary mr-2"></i>
+        Aujourd'hui
+    </h3>
+
+    {% if consultations_du_jour %}
+    <div class="space-y-2" id="today-consultations-list">
+        {% for consultation in consultations_du_jour %}
+        <div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-gray-100"
+             data-consultation-row="{{ consultation.id }}">
+            <div class="flex items-center min-w-0">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3 shrink-0">
+                    {{ consultation.patient.prenom.0 }}{{ consultation.patient.nom.0 }}
+                </div>
+                <div class="min-w-0">
+                    <div class="font-medium text-gray-900 truncate">{{ consultation.patient.nom_complet }}</div>
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-clock mr-1"></i>{{ consultation.date_seance|date:"H:i" }}
+                        <span class="ml-1">{{ consultation.get_type_consultation_display }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap" data-consultation-actions="{{ consultation.id }}">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" data-statut-badge
+                      data-statut="{{ consultation.statut_consultation }}">
+                    {{ consultation.get_statut_consultation_display }}
+                </span>
+
+                {% if consultation.statut_paiement == 'attente' %}
+                <form method="POST" action="{% url 'cabinet:consultation_confirmer_paiement' consultation_id=consultation.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition">
+                        <i class="fas fa-coins mr-1"></i>Confirmer paiement
+                    </button>
+                </form>
+                {% endif %}
+
+                {% if consultation.statut_consultation != 'termine' and consultation.statut_consultation != 'annule' %}
+                <button type="button" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition"
+                        onclick="setConsultationStatut({{ consultation.id }}, 'termine', this)">
+                    <i class="fas fa-check mr-1"></i>Terminée
+                </button>
+                <button type="button" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-orange-50 text-orange-700 hover:bg-orange-100 transition"
+                        onclick="setConsultationStatut({{ consultation.id }}, 'absent', this)">
+                    <i class="fas fa-user-slash mr-1"></i>Absent
+                </button>
+                {% endif %}
+
+                <a href="{% url 'cabinet:consultation_detail' consultation_id=consultation.id %}"
+                   class="w-8 h-8 flex items-center justify-center rounded-full text-primary hover:bg-primary-light transition">
+                    <i class="fas fa-arrow-right text-sm"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-gray-400">
+        <i class="fas fa-mug-hot text-4xl mb-2"></i>
+        <p>Aucune consultation aujourd'hui</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Prochains RDV et Actions -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <!-- Prochaines consultations -->
-    <div class="lg:col-span-2 bg-white rounded-xl shadow p-6">
+    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-gray-800">
                 <i class="fas fa-calendar-day text-primary mr-2"></i>
                 Prochaines consultations
             </h3>
-            <a href="{% url 'cabinet:agenda' %}" class="text-primary hover:text-primary-dark text-sm">
+            <a href="{% url 'cabinet:agenda' %}" class="text-primary hover:text-primary-dark text-sm font-medium">
                 Voir l'agenda →
             </a>
         </div>
-        
+
         {% if prochaines_consultations %}
-        <div class="space-y-3">
+        <div class="space-y-2">
             {% for consultation in prochaines_consultations|slice:":5" %}
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+            <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white text-sm mr-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">
                         {{ consultation.patient.prenom.0 }}{{ consultation.patient.nom.0 }}
                     </div>
                     <div>
@@ -94,23 +172,23 @@
                         <div class="text-sm text-gray-500">
                             <i class="fas fa-clock mr-1"></i>{{ consultation.date_seance|date:"d/m à H:i" }}
                             <span class="ml-2 px-2 py-0.5 rounded text-xs
-                                {% if consultation.lieu_consultation == 'visio' %}bg-blue-100 text-blue-800
-                                {% elif consultation.lieu_consultation == 'bouskoura' %}bg-green-100 text-green-800
-                                {% else %}bg-purple-100 text-purple-800{% endif %}">
+                                {% if consultation.lieu_consultation == 'visio' %}bg-blue-50 text-blue-700
+                                {% elif consultation.lieu_consultation == 'bouskoura' %}bg-emerald-50 text-emerald-700
+                                {% else %}bg-purple-50 text-purple-700{% endif %}">
                                 {{ consultation.get_lieu_consultation_display }}
                             </span>
                         </div>
                     </div>
                 </div>
-                <a href="{% url 'cabinet:consultation_detail' consultation_id=consultation.id %}" 
-                   class="text-primary hover:text-primary-dark">
-                    <i class="fas fa-arrow-right"></i>
+                <a href="{% url 'cabinet:consultation_detail' consultation_id=consultation.id %}"
+                   class="w-8 h-8 flex items-center justify-center rounded-full text-primary hover:bg-primary-light transition">
+                    <i class="fas fa-arrow-right text-sm"></i>
                 </a>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <div class="text-center py-8 text-gray-500">
+        <div class="text-center py-10 text-gray-400">
             <i class="fas fa-calendar-times text-4xl mb-2"></i>
             <p>Aucune consultation prévue</p>
         </div>
@@ -118,67 +196,67 @@
     </div>
 
     <!-- Actions rapides -->
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">
             <i class="fas fa-bolt text-yellow-500 mr-2"></i>
             Actions rapides
         </h3>
-        <div class="space-y-3">
-            <a href="{% url 'cabinet:consultation_create' %}" 
-               class="block w-full text-center bg-primary hover:bg-primary-dark text-white px-4 py-3 rounded-lg transition">
-                <i class="fas fa-calendar-plus mr-2"></i>Nouvelle consultation
+        <div class="space-y-2">
+            <a href="{% url 'cabinet:consultation_create' %}"
+               class="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-dark text-white px-4 py-3 rounded-xl transition font-medium">
+                <i class="fas fa-calendar-plus"></i>Nouvelle consultation
             </a>
-            <a href="{% url 'cabinet:patient_create' %}" 
-               class="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg transition">
-                <i class="fas fa-user-plus mr-2"></i>Nouveau patient
+            <a href="{% url 'cabinet:patient_create' %}"
+               class="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-xl transition font-medium">
+                <i class="fas fa-user-plus"></i>Nouveau patient
             </a>
             <a href="{% url 'cabinet:agenda' %}"
-               class="block w-full text-center bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg transition">
-                <i class="fas fa-calendar-alt mr-2"></i>Voir l'agenda
+               class="flex items-center justify-center gap-2 w-full bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-xl transition font-medium">
+                <i class="fas fa-calendar-alt"></i>Voir l'agenda
             </a>
         </div>
 
         <!-- Mini stats -->
-        <div class="mt-6 pt-6 border-t border-gray-200">
+        <div class="mt-6 pt-6 border-t border-gray-100">
             <h4 class="text-sm font-semibold text-gray-700 mb-3">Statistiques rapides</h4>
             <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Taux de remplissage</span>
-                    <span class="font-medium">{{ taux_remplissage }}%</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500">Taux de paiement (mois)</span>
+                    <span class="font-semibold text-gray-800">{{ taux_paiement }}%</span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Tarif moyen</span>
-                    <span class="font-medium">{{ tarif_moyen|floatformat:0 }} DHS</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500">Tarif moyen</span>
+                    <span class="font-semibold text-gray-800">{{ tarif_moyen|floatformat:0 }} DHS</span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Durée moyenne</span>
-                    <span class="font-medium">{{ duree_moyenne|floatformat:0 }} min</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500">Durée moyenne</span>
+                    <span class="font-semibold text-gray-800">{{ duree_moyenne|floatformat:0 }} min</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Patients récents et Activité -->
+<!-- Patients récents et Répartition -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Patients récents -->
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-user-friends text-blue-600 mr-2"></i>
+                <i class="fas fa-user-friends text-blue-500 mr-2"></i>
                 Patients récents
             </h3>
-            <a href="{% url 'cabinet:patients_list' %}" class="text-primary hover:text-primary-dark text-sm">
+            <a href="{% url 'cabinet:patients_list' %}" class="text-primary hover:text-primary-dark text-sm font-medium">
                 Voir tous →
             </a>
         </div>
-        
+
         {% if patients_recents %}
-        <div class="space-y-3">
+        <div class="space-y-2">
             {% for patient in patients_recents|slice:":5" %}
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+            <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-sm mr-3">
+                    <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 text-sm font-semibold mr-3">
                         {{ patient.prenom.0 }}{{ patient.nom.0 }}
                     </div>
                     <div>
@@ -188,15 +266,15 @@
                         </div>
                     </div>
                 </div>
-                <a href="{% url 'cabinet:patient_detail' patient_id=patient.id %}" 
-                   class="text-primary hover:text-primary-dark">
-                    <i class="fas fa-arrow-right"></i>
+                <a href="{% url 'cabinet:patient_detail' patient_id=patient.id %}"
+                   class="w-8 h-8 flex items-center justify-center rounded-full text-primary hover:bg-primary-light transition">
+                    <i class="fas fa-arrow-right text-sm"></i>
                 </a>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <div class="text-center py-8 text-gray-500">
+        <div class="text-center py-10 text-gray-400">
             <i class="fas fa-user-slash text-4xl mb-2"></i>
             <p>Aucun patient</p>
         </div>
@@ -204,65 +282,134 @@
     </div>
 
     <!-- Répartition des consultations -->
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">
-            <i class="fas fa-chart-pie text-green-600 mr-2"></i>
+            <i class="fas fa-chart-pie text-emerald-500 mr-2"></i>
             Répartition ce mois
         </h3>
-        
-        <div class="space-y-4">
-            <!-- Par lieu -->
-            <div>
-                <h4 class="text-sm font-medium text-gray-700 mb-2">Par lieu</h4>
-                {% for stat in stats_lieu %}
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center flex-1">
-                        <span class="text-sm text-gray-600 w-32">{{ stat.lieu_name }}</span>
-                        <div class="flex-1 mx-3 bg-gray-200 rounded-full h-2">
-                            <div class="bg-primary h-2 rounded-full" style="width: {{ stat.pourcentage }}%"></div>
-                        </div>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900">{{ stat.count }}</span>
-                </div>
-                {% empty %}
-                <p class="text-sm text-gray-500">Aucune donnée</p>
-                {% endfor %}
-            </div>
 
-            <!-- Par type -->
-            <div class="pt-4 border-t">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">Par type</h4>
-                {% for stat in stats_type %}
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center flex-1">
-                        <span class="text-sm text-gray-600 w-32">{{ stat.type_name }}</span>
-                        <div class="flex-1 mx-3 bg-gray-200 rounded-full h-2">
-                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ stat.pourcentage }}%"></div>
-                        </div>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900">{{ stat.count }}</span>
-                </div>
-                {% empty %}
-                <p class="text-sm text-gray-500">Aucune donnée</p>
-                {% endfor %}
+        {% if stats_lieu or stats_type %}
+        <div class="grid grid-cols-2 gap-4 mb-2">
+            <div class="relative">
+                <canvas id="chart-lieu" height="140"></canvas>
+                <p class="text-center text-xs text-gray-500 mt-2 font-medium">Par lieu</p>
+            </div>
+            <div class="relative">
+                <canvas id="chart-type" height="140"></canvas>
+                <p class="text-center text-xs text-gray-500 mt-2 font-medium">Par type</p>
             </div>
         </div>
+        {% else %}
+        <div class="text-center py-10 text-gray-400">
+            <i class="fas fa-chart-pie text-4xl mb-2"></i>
+            <p>Aucune donnée ce mois-ci</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 
+{{ stats_lieu|json_script:"stats-lieu-data" }}
+{{ stats_type|json_script:"stats-type-data" }}
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.bg-white');
+    const cards = document.querySelectorAll('.rounded-2xl');
     cards.forEach((card, index) => {
         card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        
+        card.style.transform = 'translateY(16px)';
+
         setTimeout(() => {
-            card.style.transition = 'all 0.5s ease';
+            card.style.transition = 'all 0.4s ease';
             card.style.opacity = '1';
             card.style.transform = 'translateY(0)';
-        }, index * 50);
+        }, index * 40);
     });
+
+    const palette = ['#e879f9', '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa'];
+
+    function renderDonut(canvasId, dataElementId) {
+        const el = document.getElementById(dataElementId);
+        const canvas = document.getElementById(canvasId);
+        if (!el || !canvas) return;
+        const stats = JSON.parse(el.textContent);
+        if (!stats.length) return;
+
+        const labelKey = stats[0].lieu_name !== undefined ? 'lieu_name' : 'type_name';
+        new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+                labels: stats.map(s => s[labelKey]),
+                datasets: [{
+                    data: stats.map(s => s.count),
+                    backgroundColor: palette,
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 10, font: { size: 11 }, padding: 10 }
+                    }
+                }
+            }
+        });
+    }
+
+    renderDonut('chart-lieu', 'stats-lieu-data');
+    renderDonut('chart-type', 'stats-type-data');
+
+    const statutBadgeStyles = {
+        planifie: 'bg-blue-50 text-blue-700',
+        termine: 'bg-emerald-50 text-emerald-700',
+        absent: 'bg-orange-50 text-orange-700',
+        reporte: 'bg-yellow-50 text-yellow-700',
+        annule: 'bg-red-50 text-red-700',
+    };
+
+    function applyBadgeStyle(badge) {
+        Object.values(statutBadgeStyles).forEach(cls => {
+            cls.split(' ').forEach(c => badge.classList.remove(c));
+        });
+        const style = statutBadgeStyles[badge.dataset.statut] || 'bg-gray-100 text-gray-700';
+        style.split(' ').forEach(c => badge.classList.add(c));
+    }
+
+    document.querySelectorAll('[data-statut-badge]').forEach(applyBadgeStyle);
+
+    function getCsrfToken() {
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
+
+    window.setConsultationStatut = function(consultationId, statut, buttonEl) {
+        const row = document.querySelector(`[data-consultation-row="${consultationId}"]`);
+        if (!row) return;
+
+        fetch(`/cabinet/consultations/${consultationId}/statut-rapide/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `statut=${statut}`,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) return;
+            const badge = row.querySelector('[data-statut-badge]');
+            badge.dataset.statut = data.statut;
+            badge.textContent = data.statut_display;
+            applyBadgeStyle(badge);
+
+            const actions = row.querySelector(`[data-consultation-actions="${consultationId}"]`);
+            const quickButtons = actions.querySelectorAll('button[onclick]');
+            quickButtons.forEach(btn => btn.remove());
+        });
+    };
 });
 </script>
 

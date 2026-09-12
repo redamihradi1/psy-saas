@@ -212,6 +212,29 @@ def consultation_delete(request, consultation_id):
 
 
 @login_required
+@require_http_methods(["POST"])
+def consultation_quick_statut(request, consultation_id):
+    """Change rapidement le statut d'une consultation (vue 'Aujourd'hui' du dashboard)"""
+    if request.user.is_superadmin():
+        consultation = get_object_or_404(Consultation.all_objects, id=consultation_id)
+    else:
+        consultation = get_object_or_404(Consultation, id=consultation_id)
+
+    statut = request.POST.get('statut')
+    if statut not in ('termine', 'absent'):
+        return JsonResponse({'success': False, 'error': 'Statut invalide'}, status=400)
+
+    consultation.statut_consultation = statut
+    consultation.save()
+
+    return JsonResponse({
+        'success': True,
+        'statut': consultation.statut_consultation,
+        'statut_display': consultation.get_statut_consultation_display(),
+    })
+
+
+@login_required
 def consultation_invoice(request, consultation_id):
     """Génère la facture PDF d'une consultation"""
 

@@ -18,6 +18,7 @@ def dashboard_view(request):
     # Début du mois et de la semaine
     debut_mois = today.replace(day=1)
     debut_semaine = today - timedelta(days=today.weekday())
+    debut_mois_dernier = (debut_mois - timedelta(days=1)).replace(day=1)
 
     # --- PATIENTS ---
     total_patients = Patient.objects.filter(organization=organization).count()
@@ -25,6 +26,20 @@ def dashboard_view(request):
         organization=organization,
         date_creation__gte=debut_mois
     ).count()
+    nouveaux_patients_mois_dernier = Patient.objects.filter(
+        organization=organization,
+        date_creation__gte=debut_mois_dernier,
+        date_creation__lt=debut_mois
+    ).count()
+
+    if nouveaux_patients_mois_dernier > 0:
+        evolution_patients = round(
+            (nouveaux_patients_mois - nouveaux_patients_mois_dernier) / nouveaux_patients_mois_dernier * 100
+        )
+    elif nouveaux_patients_mois > 0:
+        evolution_patients = 100
+    else:
+        evolution_patients = 0
 
     patients_recents = Patient.objects.filter(
         organization=organization
@@ -52,6 +67,12 @@ def dashboard_view(request):
         date_seance__gte=timezone.now()
     ).select_related('patient').order_by('date_seance')[:10]
 
+    # Consultations du jour (vue "aujourd'hui" avec actions rapides)
+    consultations_du_jour = Consultation.objects.filter(
+        organization=organization,
+        date_seance__date=today
+    ).select_related('patient').order_by('date_seance')
+
     # --- CHIFFRE D'AFFAIRES ---
     ca_mois = Consultation.objects.filter(
         organization=organization,
@@ -71,6 +92,16 @@ def dashboard_view(request):
     ).aggregate(
         tarif_moyen=Avg('tarif'),
         duree_moyenne=Avg('duree_minutes')
+    )
+
+    # --- TAUX DE PAIEMENT (consultations payées ce mois) ---
+    consultations_mois_qs = Consultation.objects.filter(
+        organization=organization,
+        date_seance__gte=debut_mois
+    )
+    consultations_payees_mois = consultations_mois_qs.filter(statut_paiement='paye').count()
+    taux_paiement = round(
+        (consultations_payees_mois / consultations_mois * 100) if consultations_mois > 0 else 0
     )
 
     # --- RÉPARTITION PAR LIEU ---
@@ -111,17 +142,18 @@ def dashboard_view(request):
         'today': today,
         'total_patients': total_patients,
         'nouveaux_patients_mois': nouveaux_patients_mois,
-        'evolution_patients': 0,  # À calculer si nécessaire
+        'evolution_patients': evolution_patients,
         'consultations_aujourdhui': consultations_aujourdhui,
         'consultations_mois': consultations_mois,
         'consultations_semaine': consultations_semaine,
         'ca_mois': ca_mois,
         'ca_semaine': ca_semaine,
         'prochaines_consultations': prochaines_consultations,
+        'consultations_du_jour': consultations_du_jour,
         'patients_recents': patients_recents,
         'tarif_moyen': stats_moyennes['tarif_moyen'] or 0,
         'duree_moyenne': stats_moyennes['duree_moyenne'] or 60,
-        'taux_remplissage': 75,  # À calculer selon ta logique
+        'taux_paiement': taux_paiement,
         'stats_lieu': stats_lieu_formatted,
         'stats_type': stats_type_formatted,
     }

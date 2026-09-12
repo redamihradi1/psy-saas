@@ -45,6 +45,19 @@
         </div>
       </div>
 
+      {% if user.is_authenticated %}
+      <div class="px-4 pt-4 relative" id="global-search-wrapper">
+        <div class="relative">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <input type="text" id="global-search-input" autocomplete="off"
+                 placeholder="Rechercher un patient..."
+                 class="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition">
+        </div>
+        <div id="global-search-results"
+             class="hidden absolute left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50"></div>
+      </div>
+      {% endif %}
+
       <ul class="py-4 flex-1 overflow-y-auto">
         <li>
           <a href="{% url 'cabinet:dashboard' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
@@ -147,7 +160,7 @@
               <span class="text-sm">Paramètres</span>
             </a>
             <div class="border-t border-gray-200"></div>
-            <form method="post" action="{% url 'admin:logout' %}">
+            <form method="post" action="{% url 'accounts:logout' %}">
               {% csrf_token %}
               <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition text-left">
                 <i class="fas fa-sign-out-alt w-5"></i>
@@ -176,6 +189,71 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
     
+    {% if user.is_authenticated %}
+    <script>
+    (function() {
+        const input = document.getElementById('global-search-input');
+        const results = document.getElementById('global-search-results');
+        if (!input || !results) return;
+
+        let debounceTimer = null;
+
+        function renderSection(title, items) {
+            if (!items.length) return '';
+            const rows = items.map(item => `
+                <a href="${item.url}" class="block px-4 py-2 hover:bg-primary-light transition">
+                    <div class="text-sm font-medium text-gray-800">${item.label}</div>
+                    ${item.sublabel ? `<div class="text-xs text-gray-500">${item.sublabel}</div>` : ''}
+                </a>
+            `).join('');
+            return `<div class="py-2">
+                <div class="px-4 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">${title}</div>
+                ${rows}
+            </div>`;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        input.addEventListener('input', function() {
+            const query = input.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (query.length < 2) {
+                results.classList.add('hidden');
+                results.innerHTML = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(function() {
+                fetch(`{% url 'cabinet:global_search' %}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const patients = data.patients.map(p => ({...p, label: escapeHtml(p.label), sublabel: escapeHtml(p.sublabel)}));
+                        const consultations = data.consultations.map(c => ({...c, label: escapeHtml(c.label), sublabel: escapeHtml(c.sublabel)}));
+
+                        if (!patients.length && !consultations.length) {
+                            results.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400">Aucun résultat</div>';
+                        } else {
+                            results.innerHTML = renderSection('Patients', patients) + renderSection('Consultations', consultations);
+                        }
+                        results.classList.remove('hidden');
+                    });
+            }, 250);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!document.getElementById('global-search-wrapper').contains(e.target)) {
+                results.classList.add('hidden');
+            }
+        });
+    })();
+    </script>
+    {% endif %}
+
     {% block extra_js %}{% endblock %}
   </body>
 </html>
