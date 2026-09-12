@@ -89,6 +89,12 @@
             <span class="ml-3">Comptabilité</span>
           </a>
         </li>
+        <li>
+          <a href="{% url 'cabinet:backup_page' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-database w-5"></i>
+            <span class="ml-3">Sauvegarde</span>
+          </a>
+        </li>
 
         <!-- Menu Tests Psychométriques - Affiché uniquement si au moins 1 test disponible -->
         {% if user.organization.license.has_d2r or user.organization.license.has_vineland or user.organization.license.has_pep3 %}

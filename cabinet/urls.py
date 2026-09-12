@@ -10,6 +10,10 @@ urlpatterns = [
     # Recherche globale
     path('search/', views.global_search, name='global_search'),
 
+    # Sauvegarde
+    path('sauvegarde/', views.backup_page, name='backup_page'),
+    path('sauvegarde/export/', views.backup_export, name='backup_export'),
+
     # Comptabilité
     path('comptabilite/', views.comptabilite_dashboard, name='comptabilite_dashboard'),
     path('comptabilite/depenses/create/', views.depense_create, name='depense_create'),

@@ -23,6 +23,7 @@ from .consultations import (
 )
 from .agenda import agenda, consultations_api
 from .search import global_search
+from .backup import backup_page, backup_export
 from .comptabilite import (
     comptabilite_dashboard,
     depense_create,
@@ -68,6 +69,8 @@ __all__ = [
     'agenda',
     'consultations_api',
     'global_search',
+    'backup_page',
+    'backup_export',
     'comptabilite_dashboard',
     'depense_create',
     'depense_edit',
