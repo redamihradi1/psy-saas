@@ -44,7 +44,7 @@
   <body class="bg-gray-50">
     <!-- Mobile top bar -->
     {% if user.is_authenticated %}
-    <header class="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 z-40 flex items-center justify-between px-4">
+    <header class="md:hidden fixed top-0 left-0 right-0 h-[calc(3.5rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] bg-white border-b border-gray-200 z-40 flex items-center justify-between px-4">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center text-white shadow">
           <i class="fas fa-brain text-sm"></i>
@@ -61,7 +61,7 @@
 
     <!-- Sidebar -->
     <nav id="sidebar" class="fixed top-0 left-0 h-screen w-72 max-w-[85vw] md:w-64 bg-white border-r border-gray-200 z-50 flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-200">
-      <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+      <div class="p-6 pt-[calc(1.5rem+env(safe-area-inset-top))] border-b border-gray-100 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white shadow-lg">
             <i class="fas fa-brain text-2xl"></i>
@@ -186,7 +186,7 @@
 
       <!-- User Profile Section -->
       {% if user.is_authenticated %}
-      <div class="border-t border-gray-200 bg-white">
+      <div class="border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)]">
         <div class="relative group">
           <div class="p-4 cursor-pointer hover:bg-gray-50 transition">
             <div class="flex items-center gap-3">
@@ -259,7 +259,7 @@
     {% endif %}
 
     <!-- Main Content -->
-    <main class="md:ml-64 min-h-screen p-4 pt-20 md:p-8">
+    <main class="md:ml-64 min-h-screen p-4 pt-[calc(5rem+env(safe-area-inset-top))] md:p-8 pb-[env(safe-area-inset-bottom)] md:pb-8">
       {% if messages %} 
       {% for message in messages %}
       <div class="mb-6 p-4 rounded-lg border-l-4 {% if message.tags == 'error' %}bg-red-50 border-red-500 text-red-700{% elif message.tags == 'success' %}bg-green-50 border-green-500 text-green-700{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-500 text-yellow-700{% else %}bg-blue-50 border-blue-500 text-blue-700{% endif %}">
