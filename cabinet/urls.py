@@ -66,6 +66,11 @@ urlpatterns = [
     path('indisponibilites/create/', views.indisponibilite_create, name='indisponibilite_create'),
     path('indisponibilites/<int:indisponibilite_id>/delete/', views.indisponibilite_delete, name='indisponibilite_delete'),
 
+    # Notifications push
+    path('push/subscribe/', views.push_subscribe, name='push_subscribe'),
+    path('push/unsubscribe/', views.push_unsubscribe, name='push_unsubscribe'),
+    path('push/cron/<str:token>/', views.push_cron_trigger, name='push_cron_trigger'),
+
     # Tags
     path('tags/', views.tags_list, name='tags_list'),
     path('tags/create/', views.tag_create, name='tag_create'),

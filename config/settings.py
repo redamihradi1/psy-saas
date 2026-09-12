@@ -11,6 +11,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+# Notifications push (rappels de consultation) — voir scripts/generate_vapid_keys.py
+VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', '')
+VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY', '')
+VAPID_ADMIN_EMAIL = os.environ.get('VAPID_ADMIN_EMAIL', '')
+
+# Jeton secret pour déclencher l'envoi des rappels push depuis un cron externe
+# (utile si le plan d'hébergement ne permet pas de tâche planifiée fréquente)
+CRON_SECRET_TOKEN = os.environ.get('CRON_SECRET_TOKEN', '')
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
@@ -64,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.vapid_public_key',
             ],
         },
     },

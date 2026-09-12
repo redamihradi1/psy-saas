@@ -46,6 +46,7 @@ from .fichiers import (
     fichier_download,
     fichier_preview,
 )
+from .push import push_subscribe, push_unsubscribe, push_cron_trigger
 
 __all__ = [
     'dashboard_view',
@@ -96,4 +97,7 @@ __all__ = [
     'fichier_delete',
     'fichier_download',
     'fichier_preview',
+    'push_subscribe',
+    'push_unsubscribe',
+    'push_cron_trigger',
 ]

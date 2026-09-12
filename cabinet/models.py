@@ -600,3 +600,52 @@ class Indisponibilite(TenantModel):
 
     def __str__(self):
         return f"{self.titre} ({self.date_debut.strftime('%d/%m/%Y')} - {self.date_fin.strftime('%d/%m/%Y')})"
+
+
+class PushSubscription(models.Model):
+    """Abonnement navigateur/téléphone aux notifications push (Web Push API).
+
+    Un même utilisateur peut avoir plusieurs abonnements (plusieurs appareils).
+    Rattaché à l'utilisateur (pas TenantModel) : on ne l'interroge jamais
+    directement via le manager scopé par tenant, toujours via user.push_subscriptions.
+    """
+    user = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='push_subscriptions',
+    )
+    endpoint = models.URLField(max_length=500, unique=True)
+    p256dh = models.CharField(max_length=255)
+    auth = models.CharField(max_length=255)
+    user_agent = models.CharField(max_length=255, blank=True)
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Abonnement notification push"
+        verbose_name_plural = "Abonnements notifications push"
+
+    def __str__(self):
+        return f"Abonnement push de {self.user} ({self.date_creation.strftime('%d/%m/%Y')})"
+
+    def as_subscription_info(self):
+        return {
+            'endpoint': self.endpoint,
+            'keys': {
+                'p256dh': self.p256dh,
+                'auth': self.auth,
+            },
+        }
+
+
+class RappelEnvoye(models.Model):
+    """Verrou anti-doublon : empêche de renvoyer deux fois le même rappel push."""
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, related_name='rappels_envoyes')
+    type_rappel = models.CharField(max_length=20, default='1h_avant')
+    date_envoi = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Rappel push envoyé"
+        verbose_name_plural = "Rappels push envoyés"
+        constraints = [
+            models.UniqueConstraint(fields=['consultation', 'type_rappel'], name='unique_rappel_par_consultation'),
+        ]
