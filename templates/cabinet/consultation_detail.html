@@ -208,6 +208,20 @@
                    class="block w-full text-center bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg transition">
                     <i class="fas fa-file-invoice mr-2"></i>Télécharger la facture
                 </a>
+                {% if consultation.patient.telephone %}
+                <button type="button"
+                        onclick='openWhatsAppModal({
+                            patient: "{{ consultation.patient.prenom|escapejs }}",
+                            phone: "{{ consultation.patient.telephone|escapejs }}",
+                            date: "{{ consultation.date_seance|date:"d/m/Y" }}",
+                            heure: "{{ consultation.date_seance|date:"H:i" }}",
+                            lieu: "{{ consultation.get_lieu_consultation_display|escapejs }}",
+                            psychologue: "{{ consultation.organization.name|escapejs }}"
+                        })'
+                        class="block w-full text-center bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition">
+                    <i class="fab fa-whatsapp mr-2"></i>Rappel WhatsApp
+                </button>
+                {% endif %}
                 {% if consultation.statut_paiement == 'attente' %}
                 <form method="POST" action="{% url 'cabinet:consultation_confirmer_paiement' consultation_id=consultation.id %}" 
                     onsubmit="return confirm('Confirmer le paiement de {{ consultation.tarif }} DHS ?');">

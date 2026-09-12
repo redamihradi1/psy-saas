@@ -118,6 +118,21 @@
                 </form>
                 {% endif %}
 
+                {% if consultation.patient.telephone %}
+                <button type="button"
+                        onclick='openWhatsAppModal({
+                            patient: "{{ consultation.patient.prenom|escapejs }}",
+                            phone: "{{ consultation.patient.telephone|escapejs }}",
+                            date: "{{ consultation.date_seance|date:"d/m/Y" }}",
+                            heure: "{{ consultation.date_seance|date:"H:i" }}",
+                            lieu: "{{ consultation.get_lieu_consultation_display|escapejs }}",
+                            psychologue: "{{ consultation.organization.name|escapejs }}"
+                        })'
+                        class="text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition">
+                    <i class="fab fa-whatsapp mr-1"></i>Rappel
+                </button>
+                {% endif %}
+
                 {% if consultation.statut_consultation != 'termine' and consultation.statut_consultation != 'annule' %}
                 <button type="button" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition"
                         onclick="setConsultationStatut({{ consultation.id }}, 'termine', this)">

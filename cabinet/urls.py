@@ -9,6 +9,13 @@ urlpatterns = [
 
     # Recherche globale
     path('search/', views.global_search, name='global_search'),
+
+    # Modèles de messages (rappels WhatsApp)
+    path('modeles-messages/', views.message_templates_list, name='message_templates_list'),
+    path('modeles-messages/json/', views.message_templates_json, name='message_templates_json'),
+    path('modeles-messages/create/', views.message_template_create, name='message_template_create'),
+    path('modeles-messages/<int:template_id>/edit/', views.message_template_edit, name='message_template_edit'),
+    path('modeles-messages/<int:template_id>/delete/', views.message_template_delete, name='message_template_delete'),
     
     # Patients
     path('patients/', views.patients_list, name='patients_list'),

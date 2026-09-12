@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Modèles de messages - PsySaaS{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl shadow-lg p-8 mb-6 text-white">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold mb-1"><i class="fab fa-whatsapp mr-2"></i>Modèles de rappels WhatsApp</h1>
+            <p class="text-white text-opacity-90">Personnalisez vos messages de rappel patient</p>
+        </div>
+        <a href="{% url 'cabinet:message_template_create' %}"
+           class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition font-medium">
+            <i class="fas fa-plus mr-2"></i>Nouveau modèle
+        </a>
+    </div>
+</div>
+
+<div class="space-y-4">
+    {% for template in templates %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex justify-between items-start mb-3">
+            <div>
+                <span class="text-xs font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                    {{ template.get_type_rappel_display }}
+                </span>
+                <h3 class="text-lg font-semibold text-gray-800 mt-2">{{ template.nom }}</h3>
+            </div>
+            <div class="flex gap-2">
+                <a href="{% url 'cabinet:message_template_edit' template.id %}"
+                   class="text-gray-500 hover:text-primary transition px-2 py-1">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="{% url 'cabinet:message_template_delete' template.id %}"
+                   class="text-gray-500 hover:text-red-600 transition px-2 py-1">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+        <p class="text-gray-600 text-sm whitespace-pre-line bg-gray-50 rounded-lg p-3">{{ template.contenu }}</p>
+    </div>
+    {% empty %}
+    <div class="text-center py-16 text-gray-400">
+        <i class="fab fa-whatsapp text-6xl mb-4"></i>
+        <p>Aucun modèle pour l'instant</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="mt-6 text-sm text-gray-500 bg-gray-50 rounded-xl p-4">
+    <i class="fas fa-info-circle mr-1"></i>
+    Variables disponibles dans un modèle : <code class="bg-white px-1 rounded">{patient}</code>,
+    <code class="bg-white px-1 rounded">{date}</code>, <code class="bg-white px-1 rounded">{heure}</code>,
+    <code class="bg-white px-1 rounded">{psychologue}</code>, <code class="bg-white px-1 rounded">{lieu}</code>
+</div>
+{% endblock %}

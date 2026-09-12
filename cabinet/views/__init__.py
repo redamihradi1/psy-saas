@@ -23,6 +23,13 @@ from .consultations import (
 )
 from .agenda import agenda, consultations_api
 from .search import global_search
+from .message_templates import (
+    message_templates_list,
+    message_templates_json,
+    message_template_create,
+    message_template_edit,
+    message_template_delete,
+)
 from .fichiers import (
     fichier_upload,
     fichier_delete,
@@ -54,6 +61,11 @@ __all__ = [
     'agenda',
     'consultations_api',
     'global_search',
+    'message_templates_list',
+    'message_templates_json',
+    'message_template_create',
+    'message_template_edit',
+    'message_template_delete',
     'fichier_upload',
     'fichier_delete',
     'fichier_download',

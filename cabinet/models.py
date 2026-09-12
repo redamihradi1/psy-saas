@@ -442,3 +442,39 @@ class PatientFichier(TenantModel):  # ← Hérite de TenantModel
     @property
     def est_pdf(self):
         return self.extension == 'pdf'
+
+
+class MessageTemplate(TenantModel):
+    """Modèle de message de rappel (WhatsApp), personnalisable par le psychologue"""
+
+    TYPE_CHOICES = [
+        ('j-1', 'Rappel J-1 (veille)'),
+        ('h-1', 'Rappel H-1 (1h avant)'),
+        ('autre', 'Autre'),
+    ]
+
+    nom = models.CharField(max_length=100, verbose_name="Nom du modèle")
+    type_rappel = models.CharField(max_length=10, choices=TYPE_CHOICES, default='j-1')
+    contenu = models.TextField(
+        verbose_name="Contenu du message",
+        help_text="Variables disponibles : {patient}, {date}, {heure}, {psychologue}, {lieu}"
+    )
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Modèle de message"
+        verbose_name_plural = "Modèles de messages"
+        ordering = ['type_rappel', 'nom']
+
+    def __str__(self):
+        return self.nom
+
+    def render(self, consultation):
+        return self.contenu.format(
+            patient=consultation.patient.prenom,
+            date=consultation.date_seance.strftime('%d/%m/%Y'),
+            heure=consultation.date_seance.strftime('%H:%M'),
+            psychologue=consultation.organization.name,
+            lieu=consultation.get_lieu_consultation_display(),
+        )
