@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import require_module_access
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -42,6 +43,7 @@ def ensure_default_templates(organization):
 
 
 @login_required
+@require_module_access('consultations')
 def message_templates_list(request):
     ensure_default_templates(request.user.organization)
     templates = MessageTemplate.objects.all()
@@ -50,6 +52,7 @@ def message_templates_list(request):
 
 
 @login_required
+@require_module_access('consultations')
 def message_templates_json(request):
     """Liste des modèles au format JSON, pour le modal de rappel WhatsApp"""
     ensure_default_templates(request.user.organization)
@@ -70,6 +73,7 @@ def message_templates_json(request):
 
 
 @login_required
+@require_module_access('consultations')
 def message_template_create(request):
     if request.method == 'POST':
         MessageTemplate.objects.create(
@@ -88,6 +92,7 @@ def message_template_create(request):
 
 
 @login_required
+@require_module_access('consultations')
 def message_template_edit(request, template_id):
     template = get_object_or_404(MessageTemplate, id=template_id)
 
@@ -107,6 +112,7 @@ def message_template_edit(request, template_id):
 
 
 @login_required
+@require_module_access('consultations')
 def message_template_delete(request, template_id):
     template = get_object_or_404(MessageTemplate, id=template_id)
 

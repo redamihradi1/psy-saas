@@ -14,13 +14,17 @@ def global_search(request):
     if len(query) < 2:
         return JsonResponse({'patients': [], 'consultations': []})
 
-    patients = Patient.objects.filter(
-        Q(nom__icontains=query) | Q(prenom__icontains=query) | Q(telephone__icontains=query)
-    ).order_by('nom', 'prenom')[:5]
+    patients = []
+    if request.user.has_module_access('patients'):
+        patients = Patient.objects.filter(
+            Q(nom__icontains=query) | Q(prenom__icontains=query) | Q(telephone__icontains=query)
+        ).order_by('nom', 'prenom')[:5]
 
-    consultations = Consultation.objects.select_related('patient').filter(
-        Q(patient__nom__icontains=query) | Q(patient__prenom__icontains=query)
-    ).order_by('-date_seance')[:5]
+    consultations = []
+    if request.user.has_module_access('consultations'):
+        consultations = Consultation.objects.select_related('patient').filter(
+            Q(patient__nom__icontains=query) | Q(patient__prenom__icontains=query)
+        ).order_by('-date_seance')[:5]
 
     return JsonResponse({
         'patients': [

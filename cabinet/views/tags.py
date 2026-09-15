@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import require_module_access
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 
@@ -7,12 +8,14 @@ from ..models import Tag, Patient
 
 
 @login_required
+@require_module_access('tags')
 def tags_list(request):
     tags = Tag.objects.all()
     return render(request, 'cabinet/tags_list.html', {'tags': tags})
 
 
 @login_required
+@require_module_access('tags')
 @require_http_methods(["POST"])
 def tag_create(request):
     nom = request.POST.get('nom', '').strip()
@@ -28,6 +31,7 @@ def tag_create(request):
 
 
 @login_required
+@require_module_access('tags')
 @require_http_methods(["POST"])
 def tag_delete(request, tag_id):
     tag = get_object_or_404(Tag, id=tag_id)
@@ -37,6 +41,7 @@ def tag_delete(request, tag_id):
 
 
 @login_required
+@require_module_access('tags')
 @require_http_methods(["POST"])
 def patient_tags_update(request, patient_id):
     """Met à jour les tags assignés à un patient (depuis la fiche patient)"""

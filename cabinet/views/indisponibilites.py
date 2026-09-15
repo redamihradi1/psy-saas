@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import require_module_access
 from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.utils import timezone
@@ -16,6 +17,7 @@ TYPE_COLORS = {
 
 
 @login_required
+@require_module_access('agenda')
 def indisponibilites_api(request):
     """API JSON pour FullCalendar (agenda)"""
     indisponibilites = Indisponibilite.objects.all()
@@ -41,6 +43,7 @@ def indisponibilites_api(request):
 
 
 @login_required
+@require_module_access('agenda')
 @require_http_methods(["POST"])
 def indisponibilite_create(request):
     date_debut = request.POST.get('date_debut')
@@ -63,6 +66,7 @@ def indisponibilite_create(request):
 
 
 @login_required
+@require_module_access('agenda')
 @require_http_methods(["POST"])
 def indisponibilite_delete(request, indisponibilite_id):
     indisponibilite = get_object_or_404(Indisponibilite, id=indisponibilite_id)

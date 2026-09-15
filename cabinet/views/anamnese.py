@@ -1,10 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import require_module_access
 from ..models import Patient, Anamnese
 
 
 @login_required
+@require_module_access('patients')
 def anamnese_edit(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id, organization=request.user.organization)
     anamnese = get_object_or_404(Anamnese, patient=patient)
@@ -36,6 +38,7 @@ def anamnese_edit(request, patient_id):
 
 
 @login_required
+@require_module_access('patients')
 def anamnese_create(request, patient_id):
     """Créer une anamnèse"""
     if request.user.is_superadmin():

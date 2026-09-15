@@ -3,6 +3,7 @@ from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import require_module_access
 from django.db.models import Sum, Count, Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -36,6 +37,7 @@ def _mois_suivant(annee, mois):
 
 
 @login_required
+@require_module_access('comptabilite')
 def comptabilite_dashboard(request):
     organization = request.user.organization
     annee, mois = _parse_periode(request)
@@ -124,6 +126,7 @@ def comptabilite_dashboard(request):
 
 
 @login_required
+@require_module_access('comptabilite')
 def depense_create(request):
     if request.method == 'POST':
         Depense.objects.create(
@@ -139,6 +142,7 @@ def depense_create(request):
 
 
 @login_required
+@require_module_access('comptabilite')
 def depense_edit(request, depense_id):
     depense = get_object_or_404(Depense, id=depense_id)
 
@@ -159,6 +163,7 @@ def depense_edit(request, depense_id):
 
 
 @login_required
+@require_module_access('comptabilite')
 def depense_delete(request, depense_id):
     depense = get_object_or_404(Depense, id=depense_id)
 
@@ -171,6 +176,7 @@ def depense_delete(request, depense_id):
 
 
 @login_required
+@require_module_access('comptabilite')
 def comptabilite_export_csv(request):
     organization = request.user.organization
     annee, mois = _parse_periode(request)

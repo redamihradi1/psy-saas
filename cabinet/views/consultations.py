@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import require_module_access
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -13,6 +14,7 @@ from ..invoices import generate_invoice_pdf
 
 
 @login_required
+@require_module_access('consultations')
 def consultations_list(request):
     """Liste des consultations"""
 
@@ -44,6 +46,7 @@ def consultations_list(request):
 
 
 @login_required
+@require_module_access('consultations')
 def consultation_create(request):
     """Créer une consultation"""
 
@@ -72,6 +75,7 @@ def consultation_create(request):
 
 
 @login_required
+@require_module_access('consultations')
 def consultation_detail(request, consultation_id):
     """Détails d'une consultation"""
 
@@ -91,6 +95,7 @@ def consultation_detail(request, consultation_id):
 
 
 @login_required
+@require_module_access('consultations')
 def consultation_edit(request, consultation_id):
     """Modifier une consultation"""
 
@@ -118,6 +123,7 @@ def consultation_edit(request, consultation_id):
 
 
 @login_required
+@require_module_access('consultations')
 def consultation_reporter(request, consultation_id):
     """Reporter une consultation"""
     consultation = get_object_or_404(
@@ -149,6 +155,7 @@ def consultation_reporter(request, consultation_id):
 
 
 @login_required
+@require_module_access('consultations')
 def consultation_annuler(request, consultation_id):
     """Annuler une consultation"""
     consultation = get_object_or_404(
@@ -173,6 +180,7 @@ def consultation_annuler(request, consultation_id):
 
 
 @login_required
+@require_module_access('consultations')
 def consultation_confirmer_paiement(request, consultation_id):
     """Confirmer le paiement d'une consultation"""
 
@@ -198,6 +206,7 @@ def consultation_confirmer_paiement(request, consultation_id):
 
 
 @login_required
+@require_module_access('consultations')
 def consultation_delete(request, consultation_id):
     """Supprimer une consultation"""
 
@@ -216,6 +225,7 @@ def consultation_delete(request, consultation_id):
 
 
 @login_required
+@require_module_access('consultations')
 @require_http_methods(["POST"])
 def consultation_quick_statut(request, consultation_id):
     """Change rapidement le statut d'une consultation (vue 'Aujourd'hui' du dashboard)"""
@@ -239,6 +249,7 @@ def consultation_quick_statut(request, consultation_id):
 
 
 @login_required
+@require_module_access('consultations')
 def consultation_invoice(request, consultation_id):
     """Génère la facture PDF d'une consultation"""
 
@@ -260,6 +271,7 @@ def consultation_invoice(request, consultation_id):
 
 
 @login_required
+@require_module_access('consultations')
 @require_http_methods(["POST"])
 def consultation_create_ajax(request):
     """Création de consultation via AJAX"""
@@ -292,6 +304,7 @@ def consultation_create_ajax(request):
 
 
 @login_required
+@require_module_access('consultations')
 @require_http_methods(["POST"])
 def consultation_edit_ajax(request, pk):
     """Modification de consultation via AJAX"""

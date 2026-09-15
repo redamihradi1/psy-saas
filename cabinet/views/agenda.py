@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import require_module_access
 from django.utils import timezone
 from datetime import timedelta
 from django.http import JsonResponse, HttpResponse, Http404
@@ -11,6 +12,7 @@ from core.middleware import set_current_tenant
 
 
 @login_required
+@require_module_access('agenda')
 def agenda(request):
     """Vue calendrier des consultations"""
     organization = request.user.organization
@@ -51,6 +53,7 @@ def agenda_ics_feed(request, token):
 
 
 @login_required
+@require_module_access('agenda')
 def agenda_ics_regenerate(request):
     """Régénère le jeton de synchronisation (révoque l'ancien lien)."""
     if request.method == 'POST':
@@ -60,6 +63,7 @@ def agenda_ics_regenerate(request):
 
 
 @login_required
+@require_module_access('agenda')
 def consultations_api(request):
     """API JSON pour FullCalendar"""
     if request.user.is_superadmin():

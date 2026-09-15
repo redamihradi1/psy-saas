@@ -2,12 +2,14 @@ import os
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import require_module_access
 from django.http import FileResponse, Http404
 from ..models import Patient, PatientFichier
 from ..forms import PatientFichierForm
 
 
 @login_required
+@require_module_access('patients')
 def fichier_upload(request, patient_id):
     """Upload un fichier pour un patient"""
     patient = get_object_or_404(Patient, id=patient_id, organization=request.user.organization)
@@ -36,6 +38,7 @@ def fichier_upload(request, patient_id):
 
 
 @login_required
+@require_module_access('patients')
 def fichier_delete(request, patient_id, fichier_id):
     """Supprimer un fichier"""
     patient = get_object_or_404(Patient, id=patient_id, organization=request.user.organization)
@@ -60,6 +63,7 @@ def fichier_delete(request, patient_id, fichier_id):
 
 
 @login_required
+@require_module_access('patients')
 def fichier_download(request, patient_id, fichier_id):
     """Télécharger un fichier"""
     patient = get_object_or_404(Patient, id=patient_id, organization=request.user.organization)
@@ -75,6 +79,7 @@ def fichier_download(request, patient_id, fichier_id):
 
 
 @login_required
+@require_module_access('patients')
 def fichier_preview(request, patient_id, fichier_id):
     """Prévisualiser un fichier (images et PDF)"""
     patient = get_object_or_404(Patient, id=patient_id, organization=request.user.organization)
