@@ -1,5 +1,6 @@
 from django.urls import path
 from tests_psy.views import d2r, vineland , beck , stai
+from tests_psy.views.vineland import public as vineland_public
 
 app_name = 'tests_psy'
 
@@ -30,7 +31,18 @@ urlpatterns = [
     path('vineland/<int:test_id>/pdf/', vineland.vineland_pdf, name='vineland_pdf'),
     path('vineland/<int:test_id>/comparaisons/', vineland.vineland_comparaisons, name='vineland_comparaisons'),
 
-        
+    # Nouveau test Vineland - modes "notes importées" et "lien public"
+    path('vineland/<int:test_id>/notes-importees/', vineland.vineland_notes_importees, name='vineland_notes_importees'),
+    path('vineland/<int:test_id>/lien/genere/', vineland.vineland_lien_genere, name='vineland_lien_genere'),
+    path('vineland/<int:test_id>/lien/reouvrir/', vineland.vineland_reouvrir_lien, name='vineland_reouvrir_lien'),
+    path('vineland/<int:test_id>/supprimer/', vineland.vineland_delete, name='vineland_delete'),
+
+    # Lien public Vineland - AUCUNE authentification (jeton secret dans l'URL), destiné aux
+    # parents pour une passation à distance. Voir tests_psy/views/vineland/public.py.
+    path('vineland/public/<str:token>/', vineland_public.vineland_public_questionnaire, name='vineland_public_questionnaire'),
+    path('vineland/public/<str:token>/merci/', vineland_public.vineland_public_merci, name='vineland_public_merci'),
+
+
     # ========== BECK ==========
     path('beck/', beck.beck_liste, name='beck_liste'),
     path('beck/nouveau/', beck.beck_nouveau, name='beck_nouveau'),

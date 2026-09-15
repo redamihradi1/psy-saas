@@ -103,15 +103,8 @@ def is_checked(initial_data, question_and_value):
         question_key, expected_value = question_and_value.split(':')
         current_value = str(initial_data.get(question_key, ''))
         expected_value = str(expected_value)
-        
-        result = current_value == expected_value
-        
-        # DEBUG : afficher les 3 premières comparaisons
-        if question_key in ['question_1_1', 'question_1_2', 'question_1_3']:
-            print(f"🔍 {question_key}: '{current_value}' == '{expected_value}' → {result}")
-        
-        return result
-    except:
+        return current_value == expected_value
+    except (ValueError, AttributeError):
         return False
 
 @register.filter

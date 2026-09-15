@@ -12,6 +12,7 @@ from .d2r import (
 from .vineland import (
     TestVineland,
     ReponseVineland,
+    NoteBruteImporteeVineland,
     PlageItemVineland,
     QuestionVineland,
     EchelleVMapping,
@@ -57,6 +58,7 @@ __all__ = [
     # Vineland
     'TestVineland',
     'ReponseVineland',
+    'NoteBruteImporteeVineland',
     'PlageItemVineland',
     'QuestionVineland',
     'EchelleVMapping',

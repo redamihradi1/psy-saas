@@ -27,6 +27,7 @@ from .pdf import (
 from .views import (
     vineland_liste, vineland_nouveau, vineland_questionnaire, vineland_scores,
     vineland_echelle_v, vineland_resultats, vineland_pdf, vineland_comparaisons,
+    vineland_notes_importees, vineland_lien_genere, vineland_reouvrir_lien, vineland_delete,
 )
 
 __all__ = [
@@ -41,4 +42,5 @@ __all__ = [
     'create_interdomain_comparison_table', 'get_comparison_table_style',
     'vineland_liste', 'vineland_nouveau', 'vineland_questionnaire', 'vineland_scores',
     'vineland_echelle_v', 'vineland_resultats', 'vineland_pdf', 'vineland_comparaisons',
+    'vineland_notes_importees', 'vineland_lien_genere', 'vineland_reouvrir_lien', 'vineland_delete',
 ]

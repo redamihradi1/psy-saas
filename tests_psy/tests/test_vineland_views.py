@@ -35,12 +35,31 @@ class VinelandNouveauTests(VinelandTestCaseBase):
 
     def test_creation_redirige_vers_le_questionnaire(self):
         url = reverse('tests_psy:vineland_nouveau')
-        response = self.client.post(url, {'patient': self.patient.id})
+        response = self.client.post(url, {'patient': self.patient.id, 'mode': 'cabinet'})
 
         test = TestVineland.objects.get(patient=self.patient)
         self.assertRedirects(response, reverse('tests_psy:vineland_questionnaire', kwargs={'test_id': test.id}))
         self.assertEqual(test.organization, self.organization)
         self.assertEqual(test.psychologue, self.user)
+        self.assertEqual(test.mode, 'cabinet')
+
+    def test_mode_importe_redirige_vers_notes_importees(self):
+        url = reverse('tests_psy:vineland_nouveau')
+        response = self.client.post(url, {'patient': self.patient.id, 'mode': 'importe'})
+
+        test = TestVineland.objects.get(patient=self.patient)
+        self.assertEqual(test.mode, 'importe')
+        self.assertRedirects(response, reverse('tests_psy:vineland_notes_importees', kwargs={'test_id': test.id}))
+
+    def test_mode_lien_public_genere_token_et_redirige_vers_page_lien(self):
+        url = reverse('tests_psy:vineland_nouveau')
+        response = self.client.post(url, {'patient': self.patient.id, 'mode': 'lien_public', 'duree_jours': 7})
+
+        test = TestVineland.objects.get(patient=self.patient)
+        self.assertEqual(test.mode, 'lien_public')
+        self.assertIsNotNone(test.lien_token)
+        self.assertIsNotNone(test.lien_expire_le)
+        self.assertRedirects(response, reverse('tests_psy:vineland_lien_genere', kwargs={'test_id': test.id}))
 
     def test_quota_atteint_bloque_la_creation(self):
         license = self.organization.license
@@ -49,10 +68,31 @@ class VinelandNouveauTests(VinelandTestCaseBase):
         TestVineland.objects.create(organization=self.organization, patient=self.patient, psychologue=self.user)
 
         url = reverse('tests_psy:vineland_nouveau')
-        response = self.client.post(url, {'patient': self.patient.id}, follow=True)
+        response = self.client.post(url, {'patient': self.patient.id, 'mode': 'cabinet'}, follow=True)
 
         self.assertRedirects(response, reverse('tests_psy:vineland_liste'))
         self.assertEqual(TestVineland.objects.count(), 1)  # pas de 2e test créé
+
+    def test_quota_atteint_bloque_aussi_le_mode_importe_et_lien_public(self):
+        license = self.organization.license
+        license.max_tests_vineland = 1
+        license.save()
+        TestVineland.objects.create(organization=self.organization, patient=self.patient, psychologue=self.user)
+
+        url = reverse('tests_psy:vineland_nouveau')
+        for mode in ('importe', 'lien_public'):
+            response = self.client.post(
+                url, {'patient': self.patient.id, 'mode': mode, 'duree_jours': 7}, follow=True,
+            )
+            self.assertRedirects(response, reverse('tests_psy:vineland_liste'))
+        self.assertEqual(TestVineland.objects.count(), 1)
+
+    def test_edit_url_pointe_vers_le_questionnaire_pour_un_test_cabinet(self):
+        test = TestVineland.objects.create(organization=self.organization, patient=self.patient, mode='cabinet')
+
+        response = self.client.get(reverse('tests_psy:vineland_liste'))
+
+        self.assertContains(response, reverse('tests_psy:vineland_questionnaire', kwargs={'test_id': test.id}))
 
     def test_liste_ne_plante_pas_si_aucun_psychologue_assigne(self):
         """
@@ -276,3 +316,34 @@ class VinelandFullPipelineTests(VinelandTestCaseBase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/pdf')
         self.assertTrue(response.content.startswith(b'%PDF'))
+
+
+class VinelandDeleteTests(VinelandTestCaseBase):
+
+    def setUp(self):
+        super().setUp()
+        self.test_vineland = TestVineland.objects.create(organization=self.organization, patient=self.patient)
+
+    def test_get_affiche_la_confirmation_sans_supprimer(self):
+        url = reverse('tests_psy:vineland_delete', kwargs={'test_id': self.test_vineland.id})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(TestVineland.objects.filter(id=self.test_vineland.id).exists())
+
+    def test_post_supprime_le_test(self):
+        url = reverse('tests_psy:vineland_delete', kwargs={'test_id': self.test_vineland.id})
+        response = self.client.post(url)
+
+        self.assertRedirects(response, reverse('tests_psy:vineland_liste'))
+        self.assertFalse(TestVineland.objects.filter(id=self.test_vineland.id).exists())
+
+    def test_superadmin_peut_supprimer_un_test_dune_autre_organisation(self):
+        superadmin = User.objects.create_user(username='super', password='motdepasse123', role='superadmin')
+        self.client.force_login(superadmin)
+
+        url = reverse('tests_psy:vineland_delete', kwargs={'test_id': self.test_vineland.id})
+        response = self.client.post(url)
+
+        self.assertRedirects(response, reverse('tests_psy:vineland_liste'))
+        self.assertFalse(TestVineland.objects.filter(id=self.test_vineland.id).exists())

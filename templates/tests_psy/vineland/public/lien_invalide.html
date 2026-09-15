@@ -1,0 +1,14 @@
+{% extends 'base_public.html' %}
+
+{% block title %}Lien invalide{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-6 sm:p-10 text-center">
+    <i class="fas fa-circle-exclamation text-4xl text-gray-400 mb-4"></i>
+    <h1 class="text-xl font-bold text-gray-800 mb-2">Ce lien n'est pas valide</h1>
+    <p class="text-gray-600">
+        Vérifiez que vous avez bien copié le lien envoyé par le cabinet, ou contactez-le
+        directement si le problème persiste.
+    </p>
+</div>
+{% endblock %}

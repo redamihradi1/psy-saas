@@ -1,13 +1,24 @@
+import secrets
+from datetime import timedelta
+
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from core.models import TenantModel
+from tests_psy.models.common import SousDomain
 
 
 # ========== MODÈLES AVEC ORGANISATION (MULTI-TENANT) ==========
 
 class TestVineland(TenantModel):
     """Test Vineland pour un patient - MULTI-TENANT"""
+
+    MODE_CHOICES = [
+        ('cabinet', 'Passation en cabinet'),
+        ('importe', 'Notes importées'),
+        ('lien_public', 'Lien envoyé aux parents'),
+    ]
+
     patient = models.ForeignKey(
         'cabinet.Patient',
         on_delete=models.CASCADE,
@@ -29,23 +40,63 @@ class TestVineland(TenantModel):
         blank=True,
         verbose_name="Notes du psychologue"
     )
+    mode = models.CharField(
+        max_length=15, choices=MODE_CHOICES, default='cabinet',
+        verbose_name="Mode de passation"
+    )
+    # Lien public (mode='lien_public') : jeton secret envoyé aux parents pour remplir le
+    # questionnaire à distance, sans compte. Même principe que Organization.ics_token.
+    lien_token = models.CharField(
+        max_length=43, unique=True, null=True, blank=True,
+        verbose_name="Jeton du lien public"
+    )
+    lien_expire_le = models.DateTimeField(null=True, blank=True, verbose_name="Expiration du lien")
+    lien_soumis_le = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name="Soumis par le parent le",
+        help_text="Non vide = lien verrouillé (le parent ne peut plus modifier)."
+    )
+    lien_duree_jours = models.PositiveIntegerField(
+        null=True, blank=True,
+        verbose_name="Durée choisie du lien (jours)",
+        help_text="Réutilisée si le psychologue réouvre le lien plus tard."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         verbose_name = "Test Vineland"
         verbose_name_plural = "Tests Vineland"
         ordering = ['-date_passation']
-    
+
     def __str__(self):
         return f"Vineland - {self.patient.nom_complet} - {self.date_passation.strftime('%d/%m/%Y')}"
-    
+
     @property
     def is_complete(self):
-        """Vérifie si toutes les questions ont une réponse"""
+        """Vérifie si le test est terminé, selon son mode de passation."""
+        if self.mode == 'importe':
+            return self.notes_brutes_importees.count() >= SousDomain.objects.count()
+        if self.mode == 'lien_public':
+            return self.lien_soumis_le is not None
         total_questions = QuestionVineland.objects.count()
         total_reponses = self.reponses_vineland.count()
         return total_reponses >= total_questions
+
+    def generate_lien_public(self, duree_jours):
+        """Passe le test en mode lien public et (re)génère son jeton secret."""
+        self.mode = 'lien_public'
+        self.lien_token = secrets.token_urlsafe(24)
+        self.lien_duree_jours = duree_jours
+        self.lien_expire_le = timezone.now() + timedelta(days=duree_jours)
+        self.lien_soumis_le = None
+        self.save()
+
+    def reouvrir_lien(self):
+        """Déverrouille un lien déjà soumis (ou expiré) - le jeton reste le même."""
+        self.lien_soumis_le = None
+        self.lien_expire_le = timezone.now() + timedelta(days=self.lien_duree_jours or 7)
+        self.save()
 
 
 class ReponseVineland(TenantModel):
@@ -90,6 +141,38 @@ class ReponseVineland(TenantModel):
         from django.core.exceptions import ValidationError
         if self.reponse == 'NA' and not self.question.permet_na:
             raise ValidationError("La réponse 'Non applicable' n'est pas autorisée pour cette question.")
+
+
+class NoteBruteImporteeVineland(TenantModel):
+    """Note brute saisie manuellement par sous-domaine (mode='importe') - MULTI-TENANT.
+
+    Utilisée quand le psychologue a déjà scoré le test sur papier : pas de réponses item
+    par item (ReponseVineland), juste la note finale par sous-domaine. Le pipeline de
+    scoring en aval (échelle-V, scores de domaine, comparaisons) ne lit que note_brute,
+    donc il fonctionne à l'identique quelle que soit l'origine de cette note.
+    """
+    test_vineland = models.ForeignKey(
+        TestVineland,
+        on_delete=models.CASCADE,
+        related_name='notes_brutes_importees',
+        verbose_name="Test Vineland"
+    )
+    sous_domaine = models.ForeignKey(
+        'tests_psy.SousDomain',
+        on_delete=models.CASCADE,
+        related_name='notes_brutes_importees'
+    )
+    note_brute = models.PositiveIntegerField(verbose_name="Note brute")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Note brute importée (Vineland)"
+        verbose_name_plural = "Notes brutes importées (Vineland)"
+        unique_together = ['test_vineland', 'sous_domaine']
+
+    def __str__(self):
+        return f"{self.sous_domaine.name} = {self.note_brute} (test {self.test_vineland_id})"
 
 
 # ========== MODÈLES DE CONFIGURATION (PARTAGÉS - SANS ORGANISATION) ==========

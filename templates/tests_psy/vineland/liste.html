@@ -64,26 +64,70 @@
                         {% if test.psychologue %}{{ test.psychologue.get_full_name|default:test.psychologue.username }}{% else %}—{% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Complété
-                        </span>
+                        {% if test.mode == 'importe' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                Notes importées
+                            </span>
+                        {% elif test.mode == 'lien_public' %}
+                            {% if test.lien_soumis_le %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Complété</span>
+                            {% elif test.lien_expire_le and test.lien_expire_le < now %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Lien expiré</span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">En attente</span>
+                            {% endif %}
+                        {% else %}
+                            {% if test.is_complete %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Complété</span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">En cours</span>
+                            {% endif %}
+                        {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div class="flex justify-end gap-2">
-                            <a href="{% url 'tests_psy:vineland_resultats' test.id %}" 
-                               class="text-blue-600 hover:text-blue-900" 
-                               title="Voir les résultats">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{% url 'tests_psy:vineland_comparaisons' test.id %}?niveau_significativite=.05" 
-                            class="text-green-600 hover:text-green-800"
-                            title="Voir les comparaisons par paires">
-                                <i class="fas fa-exchange-alt mr-1"></i>
-                            </a>
-                            <a href="{% url 'tests_psy:vineland_pdf' test.id %}" 
-                               class="text-purple-600 hover:text-purple-900" 
-                               title="Télécharger PDF">
-                                <i class="fas fa-file-pdf"></i>
+                        <div class="flex justify-end items-center gap-2">
+                            {% if test.mode == 'lien_public' and not test.lien_soumis_le %}
+                                <a href="{% url 'tests_psy:vineland_lien_genere' test.id %}"
+                                   class="text-gray-600 hover:text-gray-900"
+                                   title="Copier / renvoyer le lien">
+                                    <i class="fas fa-link"></i>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'tests_psy:vineland_resultats' test.id %}"
+                                   class="text-blue-600 hover:text-blue-900"
+                                   title="Voir les résultats">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'tests_psy:vineland_comparaisons' test.id %}?niveau_significativite=.05"
+                                class="text-green-600 hover:text-green-800"
+                                title="Voir les comparaisons par paires">
+                                    <i class="fas fa-exchange-alt mr-1"></i>
+                                </a>
+                                <a href="{% url 'tests_psy:vineland_pdf' test.id %}"
+                                   class="text-purple-600 hover:text-purple-900"
+                                   title="Télécharger PDF">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                {% if test.edit_url %}
+                                <a href="{{ test.edit_url }}"
+                                   class="text-amber-600 hover:text-amber-800"
+                                   title="{% if test.mode == 'importe' %}Modifier les notes importées{% else %}Modifier les réponses{% endif %}">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                {% endif %}
+                                {% if test.mode == 'lien_public' and test.lien_soumis_le %}
+                                <form method="post" action="{% url 'tests_psy:vineland_reouvrir_lien' test.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-gray-600 hover:text-gray-900" title="Réouvrir le lien pour le parent">
+                                        <i class="fas fa-unlock"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            {% endif %}
+                            <a href="{% url 'tests_psy:vineland_delete' test.id %}"
+                               class="text-red-600 hover:text-red-800"
+                               title="Supprimer ce test">
+                                <i class="fas fa-trash"></i>
                             </a>
                         </div>
                     </td>

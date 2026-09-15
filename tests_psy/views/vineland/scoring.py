@@ -8,9 +8,9 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 
 from tests_psy.models import (
-    Domain, SousDomain, ReponseVineland, EchelleVMapping, NoteDomaineVMapping,
-    IntervaleConfianceSousDomaine, IntervaleConfianceDomaine, NiveauAdaptatif,
-    AgeEquivalentSousDomaine,
+    Domain, SousDomain, ReponseVineland, NoteBruteImporteeVineland, EchelleVMapping,
+    NoteDomaineVMapping, IntervaleConfianceSousDomaine, IntervaleConfianceDomaine,
+    NiveauAdaptatif, AgeEquivalentSousDomaine,
 )
 
 
@@ -100,6 +100,9 @@ def calculate_all_scores(test_vineland):
     Calcule tous les scores bruts pour un test Vineland.
     Utilise la VRAIE logique Vineland avec item plancher.
     """
+    if test_vineland.mode == 'importe':
+        return _calculate_all_scores_importe(test_vineland)
+
     # Récupérer toutes les réponses du test, triées par numéro d'item
     reponses = ReponseVineland.objects.filter(
         test_vineland=test_vineland
@@ -167,6 +170,33 @@ def calculate_all_scores(test_vineland):
             }
 
     return scores
+
+
+def _calculate_all_scores_importe(test_vineland):
+    """Même forme de retour que calculate_all_scores, mais à partir des notes brutes
+    saisies manuellement (mode='importe') plutôt que des réponses item par item -
+    pas d'item plancher/NSP/NA/items puisqu'il n'y a pas de réponses individuelles."""
+    notes_par_sous_domaine = {
+        note.sous_domaine_id: note.note_brute
+        for note in NoteBruteImporteeVineland.objects.filter(test_vineland=test_vineland)
+    }
+
+    scores = {}
+    domains = Domain.objects.prefetch_related('sous_domaines').all()
+    for domain in domains:
+        scores[domain.name] = {}
+        for sous_domaine in domain.sous_domaines.all():
+            scores[domain.name][sous_domaine.name] = {
+                'note_brute': notes_par_sous_domaine.get(sous_domaine.id, 0),
+                'item_plancher': None,
+                'nsp_count': 0,
+                'na_count': 0,
+                'sum_1_2': None,
+                'a_refaire': False,
+                'items': [],
+            }
+    return scores
+
 
 def _age_apres_ou_egal_au_debut(mapping, age_years, age_months, age_days):
     """

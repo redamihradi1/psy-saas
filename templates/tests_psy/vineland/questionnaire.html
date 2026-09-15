@@ -1,14 +1,14 @@
-{% extends 'base.html' %}
+{% extends is_public|yesno:'base_public.html,base.html' %}
 {% load static %}
 {% load custom_filters %}
 
 {% block title %}Questionnaire Vineland{% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-xl shadow-lg p-8">
+<div class="bg-white rounded-xl shadow-lg p-4 sm:p-8">
     <!-- En-tête -->
     <div class="mb-6 pb-6 border-b border-gray-200">
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
             <i class="fas fa-clipboard-list text-primary mr-2"></i>
             {% if is_edit %}
                 Modifier le questionnaire Vineland-II
@@ -16,7 +16,7 @@
                 Questionnaire Vineland-II
             {% endif %}
         </h2>
-        <div class="flex items-center gap-4 text-sm text-gray-600">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
             <div>
                 <i class="fas fa-user mr-1"></i>
                 <strong>Patient :</strong> {{ patient.nom_complet }}
@@ -33,7 +33,7 @@
         
         <!-- Pagination info -->
         <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center">
                     <i class="fas fa-info-circle text-blue-500 mr-2"></i>
                     <span class="text-sm font-medium text-blue-800">
@@ -49,21 +49,21 @@
         <!-- Légende des réponses -->
         <div class="mb-6 bg-gray-50 rounded-lg p-4">
             <h3 class="font-semibold text-gray-900 mb-3">Légende des réponses :</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-sm">
                 <div class="flex items-center">
-                    <span class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">2</span>
+                    <span class="w-10 h-10 shrink-0 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">2</span>
                     <span class="text-gray-700">Oui, habituellement</span>
                 </div>
                 <div class="flex items-center">
-                    <span class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">1</span>
+                    <span class="w-10 h-10 shrink-0 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">1</span>
                     <span class="text-gray-700">Quelquefois/Partiellement</span>
                 </div>
                 <div class="flex items-center">
-                    <span class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">0</span>
+                    <span class="w-10 h-10 shrink-0 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">0</span>
                     <span class="text-gray-700">Non, jamais</span>
                 </div>
                 <div class="flex items-center">
-                    <span class="w-14 h-10 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">NSP</span>
+                    <span class="w-14 h-10 shrink-0 flex items-center justify-center border border-gray-300 rounded mr-2 font-semibold">NSP</span>
                     <span class="text-gray-700">Ne sait pas</span>
                 </div>
             </div>
@@ -93,7 +93,7 @@
                 
                     <!-- Questions -->
                     {% for question in sousdomain.list %}
-                        <div class="question-block flex flex-col lg:flex-row lg:items-start lg:justify-between border-b border-gray-200 pb-6 mb-6 hover:bg-gray-50 transition p-4 rounded-lg">
+                        <div class="question-block flex flex-col lg:flex-row lg:items-start lg:justify-between border-b border-gray-200 pb-6 mb-6 hover:bg-gray-50 transition p-3 sm:p-4 rounded-lg">
                             <div class="lg:w-2/3 mb-4 lg:mb-0">
                                 <!-- Plage d'âge -->
                                 {% with current_plage=question.plage_age %}
@@ -139,11 +139,11 @@
                             </div>
 
                             <!-- Choix de réponses -->
-                            <div class="response-group flex gap-2 lg:gap-3 justify-end" 
+                            <div class="response-group flex flex-wrap gap-2 lg:gap-3 justify-start lg:justify-end"
                                 id="group_{{ question.sous_domaine.id }}_{{ question.numero_item }}">
                                 <!-- Boutons 0, 1, 2 -->
                                 {% for value in "012"|make_list %}
-                                    {% with question_key='question_'|add:question.sous_domaine.id|stringformat:"s"|add:'_'|add:question.numero_item|stringformat:"s" %}
+                                    {% with question_key='question_'|add:question.unique_id %}
                                     {% with check_key=question_key|add:':'|add:value %}
                                     <label class="w-12 h-12 flex items-center justify-center border-2 cursor-pointer hover:bg-gray-50 hover:border-primary transition rounded-lg radio-label
                                                 {% if initial_data|is_checked:check_key %}bg-primary border-primary text-white{% else %}border-gray-300{% endif %}"
@@ -161,7 +161,7 @@
                                 {% endfor %}
                                 
                                 <!-- NSP -->
-                                {% with question_key='question_'|add:question.sous_domaine.id|stringformat:"s"|add:'_'|add:question.numero_item|stringformat:"s" %}
+                                {% with question_key='question_'|add:question.unique_id %}
                                 {% with check_key=question_key|add:':NSP' %}
                                 <label class="w-16 h-12 flex items-center justify-center border-2 cursor-pointer hover:bg-gray-50 hover:border-primary transition rounded-lg radio-label
                                             {% if initial_data|is_checked:check_key %}bg-primary border-primary text-white{% else %}border-gray-300{% endif %}"
@@ -179,7 +179,7 @@
                                 
                                 <!-- N/A si permis -->
                                 {% if question.permet_na %}
-                                    {% with question_key='question_'|add:question.sous_domaine.id|stringformat:"s"|add:'_'|add:question.numero_item|stringformat:"s" %}
+                                    {% with question_key='question_'|add:question.unique_id %}
                                     {% with check_key=question_key|add:':NA' %}
                                     <label class="w-16 h-12 flex items-center justify-center border-2 cursor-pointer hover:bg-gray-50 hover:border-primary transition rounded-lg radio-label
                                                 {% if initial_data|is_checked:check_key %}bg-primary border-primary text-white{% else %}border-gray-300{% endif %}"
@@ -203,46 +203,48 @@
         {% endfor %}
         
         <!-- Pagination -->
-        <div class="flex justify-between items-center mt-8 pt-6 border-t-2 border-gray-200">
-            <button type="submit" 
-                    name="action" 
-                    value="previous" 
-                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-                    {% if not page_obj.has_previous %}disabled{% endif %}>
-                <i class="fas fa-arrow-left mr-2"></i>Précédent
-            </button>
-        
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-600">
+        <div class="mt-8 pt-6 border-t-2 border-gray-200">
+            <!-- Indicateur de progression -->
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <span class="text-sm font-medium text-gray-600 whitespace-nowrap">
                     Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
                 </span>
-                <!-- Indicateur de progression -->
-                <div class="w-48 bg-gray-200 rounded-full h-2 ml-4">
-                    <div class="bg-primary h-2 rounded-full transition-all duration-300" 
+                <div class="flex-1 max-w-xs bg-gray-200 rounded-full h-2">
+                    <div class="bg-primary h-2 rounded-full transition-all duration-300"
                          style="width: {% widthratio page_obj.number page_obj.paginator.num_pages 100 %}%">
                     </div>
                 </div>
             </div>
-        
-            <button type="submit" 
-                    name="action" 
-                    value="{% if page_obj.has_next %}next{% else %}submit{% endif %}" 
-                    class="{% if page_obj.has_next %}bg-primary hover:bg-primary-dark{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white px-6 py-3 rounded-lg font-semibold transition flex items-center shadow-lg transform hover:scale-105">
-                {% if page_obj.has_next %}
-                    Suivant<i class="fas fa-arrow-right ml-2"></i>
-                {% else %}
-                    <i class="fas fa-check mr-2"></i>Terminer
-                {% endif %}
-            </button>
+
+            <div class="flex gap-3">
+                <button type="submit"
+                        name="action"
+                        value="previous"
+                        class="flex-1 sm:flex-none bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                        {% if not page_obj.has_previous %}disabled{% endif %}>
+                    <i class="fas fa-arrow-left mr-2"></i>Précédent
+                </button>
+
+                <button type="submit"
+                        name="action"
+                        value="{% if page_obj.has_next %}next{% else %}submit{% endif %}"
+                        class="flex-1 sm:flex-none sm:ml-auto {% if page_obj.has_next %}bg-primary hover:bg-primary-dark{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white px-6 py-3 rounded-lg font-semibold transition flex items-center justify-center shadow-lg sm:transform sm:hover:scale-105">
+                    {% if page_obj.has_next %}
+                        Suivant<i class="fas fa-arrow-right ml-2"></i>
+                    {% else %}
+                        <i class="fas fa-check mr-2"></i>Terminer
+                    {% endif %}
+                </button>
+            </div>
         </div>
     </form>
 </div>
 
 <!-- Messages d'alerte pour questions non répondues -->
 {% if messages %}
-<div class="fixed bottom-4 right-4 z-50 space-y-2">
+<div class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-50 space-y-2">
     {% for message in messages %}
-    <div class="bg-{% if message.tags == 'error' %}red{% elif message.tags == 'warning' %}yellow{% elif message.tags == 'info' %}blue{% else %}green{% endif %}-100 border-l-4 border-{% if message.tags == 'error' %}red{% elif message.tags == 'warning' %}yellow{% elif message.tags == 'info' %}blue{% else %}green{% endif %}-500 text-{% if message.tags == 'error' %}red{% elif message.tags == 'warning' %}yellow{% elif message.tags == 'info' %}blue{% else %}green{% endif %}-900 p-4 rounded shadow-lg max-w-md">
+    <div class="bg-{% if message.tags == 'error' %}red{% elif message.tags == 'warning' %}yellow{% elif message.tags == 'info' %}blue{% else %}green{% endif %}-100 border-l-4 border-{% if message.tags == 'error' %}red{% elif message.tags == 'warning' %}yellow{% elif message.tags == 'info' %}blue{% else %}green{% endif %}-500 text-{% if message.tags == 'error' %}red{% elif message.tags == 'warning' %}yellow{% elif message.tags == 'info' %}blue{% else %}green{% endif %}-900 p-4 rounded shadow-lg sm:max-w-md">
         <div class="flex items-start">
             <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% elif message.tags == 'info' %}info-circle{% else %}check-circle{% endif %} mr-2 mt-1"></i>
             <p class="text-sm">{{ message }}</p>

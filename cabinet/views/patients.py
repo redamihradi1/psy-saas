@@ -1,14 +1,70 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+from accounts.decorators import require_module_access
 from django.db.models import Q, Sum
 from django.core.paginator import Paginator
 from django.utils import timezone
 from ..models import Patient, Anamnese, Tag
 from ..forms import PatientForm
 
+# (label affiché, clé de permission/licence, modèle, vue résultats, vue passation/édition)
+_TEST_SOURCES = [
+    ('Vineland', 'vineland', 'tests_psy:vineland_resultats', 'tests_psy:vineland_questionnaire'),
+    ('Beck', 'beck', 'tests_psy:beck_resultats', 'tests_psy:beck_passation'),
+    ('STAI', 'stai', 'tests_psy:stai_resultats', 'tests_psy:stai_passation'),
+    ('D2R', 'd2r', 'tests_psy:d2r_resultats', 'tests_psy:d2r_passation'),
+]
+
+
+def _patient_tests_par_categorie(user, patient):
+    """Tests psychométriques de ce patient, groupés par catégorie - uniquement celles que
+    l'utilisateur peut voir (licence de l'organisation ET permission utilisateur sur le test),
+    pour que le psychologue (ou l'assistant(e) autorisé(e)) retrouve l'historique directement
+    depuis la fiche patient, comme sur la vue d'ensemble du super admin."""
+    from tests_psy.models import TestVineland, TestBeck, TestSTAI, TestD2R
+    models_by_key = {'vineland': TestVineland, 'beck': TestBeck, 'stai': TestSTAI, 'd2r': TestD2R}
+
+    organization = patient.organization
+    license = getattr(organization, 'license', None)
+
+    categories = []
+    for label, key, resultats_name, edit_name in _TEST_SOURCES:
+        if not (license and getattr(license, f'has_{key}', False)):
+            continue
+        if not user.has_test_permission(key):
+            continue
+
+        model = models_by_key[key]
+        if user.is_superadmin():
+            queryset = model.all_objects.filter(organization=organization, patient=patient)
+        else:
+            queryset = model.objects.filter(patient=patient)
+
+        tests = []
+        for test in queryset.order_by('-date_passation'):
+            # Vineland "notes importées" n'a pas de réponses item par item à éditer (édition
+            # dédiée), et un lien public pas encore soumis par le parent n'a rien à éditer.
+            if key == 'vineland' and getattr(test, 'mode', 'cabinet') == 'importe':
+                edit_url = reverse('tests_psy:vineland_notes_importees', kwargs={'test_id': test.id})
+            elif key == 'vineland' and getattr(test, 'mode', 'cabinet') == 'lien_public' and not test.lien_soumis_le:
+                edit_url = None
+            else:
+                edit_url = reverse(edit_name, kwargs={'test_id': test.id})
+
+            tests.append({
+                'date': test.date_passation,
+                'resultats_url': reverse(resultats_name, kwargs={'test_id': test.id}),
+                'edit_url': edit_url,
+            })
+        categories.append({'label': label, 'tests': tests})
+
+    return categories
+
 
 @login_required
+@require_module_access('patients')
 def patients_list(request):
     """Liste des patients"""
 
@@ -48,6 +104,7 @@ def patients_list(request):
 
 
 @login_required
+@require_module_access('patients')
 def patient_create(request):
     """Créer un patient"""
 
@@ -86,30 +143,51 @@ def patient_create(request):
 
 
 @login_required
+@require_module_access('patients')
 def patient_detail(request, patient_id):
     if request.user.is_superadmin():
         patient = get_object_or_404(Patient.all_objects, id=patient_id)
     else:
         patient = get_object_or_404(Patient, id=patient_id)
 
-    try:
-        anamnese = patient.anamnese
-    except Anamnese.DoesNotExist:
-        anamnese = None
+    # Anamnèse, consultations, fichiers, statistiques et journal clinique sont du suivi
+    # clinique - réservés au module Consultations, pas juste Patients (identité/contact).
+    # Si l'utilisateur n'y a pas accès, on ne calcule/n'expose même pas ces données dans le
+    # contexte : les masquer seulement côté template laisserait ces infos (dont les montants
+    # payés) visibles dans le source HTML.
+    can_consultations = request.user.has_module_access('consultations')
 
-    consultations = patient.consultation_set.order_by('-date_seance')[:10]
-    journal_consultations = patient.consultation_set.order_by('-date_seance')
+    anamnese = None
+    consultations = []
+    journal_consultations = []
+    total_consultations = 0
+    total_paye = 0
+    derniere_consultation = None
+    prochaine_consultation = None
 
-    total_consultations = patient.consultation_set.count()
-    total_paye = patient.consultation_set.aggregate(total=Sum('tarif'))['total'] or 0
+    if can_consultations:
+        try:
+            anamnese = patient.anamnese
+        except Anamnese.DoesNotExist:
+            anamnese = None
 
-    derniere_consultation = patient.consultation_set.order_by('-date_seance').first()
-    prochaine_consultation = patient.consultation_set.filter(
-        date_seance__gte=timezone.now().date()
-    ).order_by('date_seance').first()
+        consultations = patient.consultation_set.order_by('-date_seance')[:10]
+        journal_consultations = patient.consultation_set.order_by('-date_seance')
+
+        total_consultations = patient.consultation_set.count()
+        total_paye = patient.consultation_set.aggregate(total=Sum('tarif'))['total'] or 0
+
+        derniere_consultation = patient.consultation_set.order_by('-date_seance').first()
+        prochaine_consultation = patient.consultation_set.filter(
+            date_seance__gte=timezone.now().date()
+        ).order_by('date_seance').first()
+
+    tests_categories = _patient_tests_par_categorie(request.user, patient)
 
     context = {
         'patient': patient,
+        'can_consultations': can_consultations,
+        'can_tags': request.user.has_module_access('tags'),
         'anamnese': anamnese,
         'consultations': consultations,
         'journal_consultations': journal_consultations,
@@ -118,12 +196,14 @@ def patient_detail(request, patient_id):
         'derniere_consultation': derniere_consultation,
         'prochaine_consultation': prochaine_consultation,
         'all_tags': Tag.objects.all(),
+        'tests_categories': tests_categories,
     }
 
     return render(request, 'cabinet/patient_detail.html', context)
 
 
 @login_required
+@require_module_access('patients')
 def patient_edit(request, patient_id):
     """Modifier un patient"""
 
@@ -151,6 +231,7 @@ def patient_edit(request, patient_id):
 
 
 @login_required
+@require_module_access('patients')
 def patient_delete(request, patient_id):
     """Supprimer un patient"""
 

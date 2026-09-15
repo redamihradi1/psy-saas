@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Lien public généré - Vineland{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-4 sm:p-8 max-w-2xl mx-auto">
+    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+        <i class="fas fa-link text-primary mr-2"></i>Lien public généré
+    </h2>
+    <p class="text-sm text-gray-600 mb-6">
+        Envoie ce lien aux parents de <strong>{{ patient.nom_complet }}</strong> pour qu'ils remplissent
+        le questionnaire Vineland-II à distance. Le lien expire le
+        <strong>{{ test.lien_expire_le|date:"d/m/Y à H:i" }}</strong>. Ils ne verront jamais les
+        résultats, et le lien se verrouille automatiquement une fois soumis.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-2 mb-6">
+        <input type="text" id="lien-url" readonly value="{{ lien_url }}"
+               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700">
+        <button type="button" id="copier-lien"
+                class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition">
+            <i class="fas fa-copy mr-1"></i>Copier
+        </button>
+    </div>
+
+    <button type="button" id="envoyer-whatsapp"
+            class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition w-full sm:w-auto">
+        <i class="fab fa-whatsapp mr-2"></i>Envoyer par WhatsApp
+    </button>
+
+    <div class="mt-8 pt-6 border-t border-gray-200">
+        <a href="{% url 'tests_psy:vineland_liste' %}" class="text-gray-600 hover:text-primary">
+            <i class="fas fa-arrow-left mr-2"></i>Retour à la liste des tests
+        </a>
+    </div>
+</div>
+
+<script>
+document.getElementById('copier-lien').addEventListener('click', function() {
+    const input = document.getElementById('lien-url');
+    navigator.clipboard.writeText(input.value).then(function() {
+        const btn = document.getElementById('copier-lien');
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check mr-1"></i>Copié !';
+        setTimeout(function() { btn.innerHTML = original; }, 2000);
+    });
+});
+
+document.getElementById('envoyer-whatsapp').addEventListener('click', function() {
+    const lien = document.getElementById('lien-url').value;
+    const message = "Bonjour, merci de compléter ce questionnaire pour {{ patient.prenom|escapejs }} avant le {{ test.lien_expire_le|date:'d/m/Y'|escapejs }} : " + lien;
+
+    let digits = "{{ patient.telephone|default:''|escapejs }}".replace(/\D/g, '');
+    if (digits.startsWith('0')) {
+        digits = '212' + digits.slice(1);
+    } else if (digits && !digits.startsWith('212')) {
+        digits = '212' + digits;
+    }
+
+    const url = digits
+        ? `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+        : `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+});
+</script>
+{% endblock %}
