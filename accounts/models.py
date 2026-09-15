@@ -69,7 +69,41 @@ class User(AbstractUser):
         verbose_name="Autorisé à exporter les sauvegardes",
         help_text="À cocher uniquement pour les personnes de confiance : exporte toutes les données patients."
     )
-    
+
+    # Accès par module (onglets de la sidebar), pour psychologue ET assistant(e) - réglé
+    # explicitement par le super admin à la création/édition du cabinet ou de l'assistant(e)
+    # (voir accounts/forms.py::ClientCreateForm/ClientEditForm/AssistantCreateForm, qui
+    # définissent leurs propres valeurs par défaut à l'affichage du formulaire). Le default=True
+    # ici n'est qu'un filet de sécurité pour tout compte créé hors de ces formulaires (tests,
+    # `manage.py shell`, création rapide dans Django admin) : accès complet par défaut.
+    can_access_patients = models.BooleanField(default=True, verbose_name="Accès à l'onglet Patients")
+    can_access_consultations = models.BooleanField(default=True, verbose_name="Accès à l'onglet Consultations")
+    can_access_agenda = models.BooleanField(default=True, verbose_name="Accès à l'onglet Agenda")
+    can_access_comptabilite = models.BooleanField(default=True, verbose_name="Accès à l'onglet Comptabilité")
+    can_access_tags = models.BooleanField(default=True, verbose_name="Accès à l'onglet Tags")
+
+    # Accès par test psychométrique - s'ajoute au flag has_xxx de la licence
+    # (les deux doivent être vrais pour que l'utilisateur voie le test).
+    can_access_vineland = models.BooleanField(default=True, verbose_name="Accès au test Vineland")
+    can_access_beck = models.BooleanField(default=True, verbose_name="Accès au test Beck")
+    can_access_stai = models.BooleanField(default=True, verbose_name="Accès au test STAI")
+    can_access_d2r = models.BooleanField(default=True, verbose_name="Accès au test D2R")
+
+    MODULE_PERMISSIONS = [
+        ('can_access_patients', 'Patients'),
+        ('can_access_consultations', 'Consultations'),
+        ('can_access_agenda', 'Agenda'),
+        ('can_access_comptabilite', 'Comptabilité'),
+        ('can_access_tags', 'Tags'),
+        ('can_export_backup', 'Sauvegarde'),
+    ]
+    TEST_PERMISSIONS = [
+        ('can_access_vineland', 'Test Vineland'),
+        ('can_access_beck', 'Test Beck'),
+        ('can_access_stai', 'Test STAI'),
+        ('can_access_d2r', 'Test D2R'),
+    ]
+
     class Meta:
         verbose_name = "Utilisateur"
         verbose_name_plural = "Utilisateurs"
@@ -82,6 +116,23 @@ class User(AbstractUser):
 
     def is_psychologist(self):
         return self.role == 'psychologist'
+
+    def has_module_access(self, module_name):
+        """Vérifie l'accès à un module (patients, consultations, agenda, comptabilite, tags).
+
+        S'applique au psychologue comme à l'assistant(e) : c'est le super admin de la
+        plateforme qui règle can_access_* pour chacun (à la création/édition du cabinet).
+        """
+        if self.is_superadmin():
+            return True
+        return getattr(self, f'can_access_{module_name}', False)
+
+    def has_test_permission(self, test_name):
+        """Vérifie l'accès *utilisateur* à un test (indépendant du flag de licence de l'organisation),
+        avec le même principe que has_module_access."""
+        if self.is_superadmin():
+            return True
+        return getattr(self, f'can_access_{test_name}', False)
 
 
 class License(models.Model):

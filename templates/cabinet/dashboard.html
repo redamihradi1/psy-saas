@@ -13,15 +13,26 @@
             <p class="text-white text-opacity-90">{{ user.organization.name }}</p>
             <p class="text-white text-opacity-70 text-sm mt-1">{{ today|date:"l d F Y" }}</p>
         </div>
+        {% if can_consultations %}
         <div class="sm:text-right bg-white bg-opacity-10 rounded-xl px-6 py-4 backdrop-blur-sm">
             <div class="text-4xl font-bold leading-none">{{ consultations_aujourdhui }}</div>
             <div class="text-sm text-white text-opacity-90 mt-1">Consultation{{ consultations_aujourdhui|pluralize }} aujourd'hui</div>
         </div>
+        {% endif %}
     </div>
 </div>
 
+{% if not can_patients and not can_consultations and not can_comptabilite and not can_agenda %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
+    <i class="fas fa-info-circle text-4xl mb-3"></i>
+    <p>Aucun module accessible sur ce compte pour l'instant.</p>
+</div>
+{% endif %}
+
 <!-- KPIs Principaux -->
+{% if can_patients or can_consultations or can_comptabilite %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+    {% if can_patients %}
     <!-- Total Patients -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
         <div class="flex items-center justify-between mb-4">
@@ -46,7 +57,9 @@
             <i class="fas fa-plus mr-1"></i>{{ nouveaux_patients_mois }} nouveau{{ nouveaux_patients_mois|pluralize }} ce mois
         </div>
     </div>
+    {% endif %}
 
+    {% if can_consultations %}
     <!-- Consultations du mois -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
         <div class="flex items-center justify-between mb-4">
@@ -61,7 +74,9 @@
             <i class="fas fa-clock mr-1"></i>{{ consultations_semaine }} cette semaine
         </div>
     </div>
+    {% endif %}
 
+    {% if can_comptabilite %}
     <!-- Chiffre d'affaires -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
         <div class="flex items-center justify-between mb-4">
@@ -76,9 +91,12 @@
             <i class="fas fa-chart-line mr-1"></i>{{ ca_semaine|floatformat:0 }} DHS cette semaine
         </div>
     </div>
+    {% endif %}
 </div>
+{% endif %}
 
 <!-- Aujourd'hui : vue rapide avec actions -->
+{% if can_consultations %}
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">
         <i class="fas fa-list-check text-primary mr-2"></i>
@@ -167,9 +185,12 @@
     </div>
     {% endif %}
 </div>
+{% endif %}
 
 <!-- Prochains RDV et Actions -->
+{% if can_consultations or can_patients or can_agenda %}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    {% if can_consultations %}
     <!-- Prochaines consultations -->
     <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex justify-between items-center mb-4">
@@ -177,9 +198,11 @@
                 <i class="fas fa-calendar-day text-primary mr-2"></i>
                 Prochaines consultations
             </h3>
+            {% if can_agenda %}
             <a href="{% url 'cabinet:agenda' %}" class="text-primary hover:text-primary-dark text-sm font-medium">
                 Voir l'agenda →
             </a>
+            {% endif %}
         </div>
 
         {% if prochaines_consultations %}
@@ -217,6 +240,7 @@
         </div>
         {% endif %}
     </div>
+    {% endif %}
 
     <!-- Actions rapides -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -225,20 +249,27 @@
             Actions rapides
         </h3>
         <div class="space-y-2">
+            {% if can_consultations %}
             <a href="{% url 'cabinet:consultation_create' %}"
                class="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-dark text-white px-4 py-3 rounded-xl transition font-medium">
                 <i class="fas fa-calendar-plus"></i>Nouvelle consultation
             </a>
+            {% endif %}
+            {% if can_patients %}
             <a href="{% url 'cabinet:patient_create' %}"
                class="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-xl transition font-medium">
                 <i class="fas fa-user-plus"></i>Nouveau patient
             </a>
+            {% endif %}
+            {% if can_agenda %}
             <a href="{% url 'cabinet:agenda' %}"
                class="flex items-center justify-center gap-2 w-full bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-xl transition font-medium">
                 <i class="fas fa-calendar-alt"></i>Voir l'agenda
             </a>
+            {% endif %}
         </div>
 
+        {% if can_comptabilite %}
         <!-- Mini stats -->
         <div class="mt-6 pt-6 border-t border-gray-100">
             <h4 class="text-sm font-semibold text-gray-700 mb-3">Statistiques rapides</h4>
@@ -257,11 +288,15 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
+{% endif %}
 
 <!-- Patients récents et Répartition -->
+{% if can_patients or can_consultations %}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {% if can_patients %}
     <!-- Patients récents -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex justify-between items-center mb-4">
@@ -303,7 +338,9 @@
         </div>
         {% endif %}
     </div>
+    {% endif %}
 
+    {% if can_consultations %}
     <!-- Répartition des consultations -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">
@@ -329,7 +366,9 @@
         </div>
         {% endif %}
     </div>
+    {% endif %}
 </div>
+{% endif %}
 
 {{ stats_lieu|json_script:"stats-lieu-data" }}
 {{ stats_type|json_script:"stats-type-data" }}

@@ -96,6 +96,93 @@ class PatientDetailTests(CabinetTestCaseBase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.context['anamnese'])
 
+    def test_assistant_patients_uniquement_ne_voit_pas_le_suivi_clinique(self):
+        """Régression : anamnèse/consultations/fichiers/statistiques/journal clinique sont du
+        suivi clinique (module Consultations), pas juste de l'identité patient (module Patients).
+        Les montants payés ne doivent même pas apparaître dans le HTML (pas juste être cachés en CSS/JS)."""
+        from accounts.models import User
+        from cabinet.models import Consultation
+
+        Consultation.objects.create(
+            organization=self.organization, patient=self.patient,
+            date_seance='2026-01-15T10:00:00Z', tarif=500, statut_paiement='paye',
+        )
+        assistant = User.objects.create_user(
+            username='assist', password='motdepasse123', role='assistant', organization=self.organization,
+            can_access_patients=True, can_access_consultations=False, can_access_tags=False,
+        )
+        self.client.force_login(assistant)
+
+        response = self.client.get(reverse('cabinet:patient_detail', kwargs={'patient_id': self.patient.id}))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context['can_consultations'])
+        self.assertEqual(response.context['total_consultations'], 0)
+        self.assertEqual(response.context['total_paye'], 0)
+
+        content = response.content.decode()
+        self.assertNotIn('DHS', content)
+        self.assertNotIn('Anamnèse', content)
+        self.assertNotIn('Journal clinique', content)
+        self.assertNotIn('Gérer les tags', content)
+
+    def test_avec_acces_consultations_voit_le_suivi_clinique(self):
+        from accounts.models import User
+        from cabinet.models import Consultation
+
+        Consultation.objects.create(
+            organization=self.organization, patient=self.patient,
+            date_seance='2026-01-15T10:00:00Z', tarif=500, statut_paiement='paye',
+        )
+        assistant = User.objects.create_user(
+            username='assist', password='motdepasse123', role='assistant', organization=self.organization,
+            can_access_patients=True, can_access_consultations=True,
+        )
+        self.client.force_login(assistant)
+
+        response = self.client.get(reverse('cabinet:patient_detail', kwargs={'patient_id': self.patient.id}))
+        self.assertTrue(response.context['can_consultations'])
+        self.assertEqual(response.context['total_consultations'], 1)
+        self.assertContains(response, 'DHS')
+        self.assertContains(response, 'Journal clinique')
+
+    def test_onglet_tests_visible_si_licence_et_permission_ok(self):
+        """La fiche patient doit permettre au psychologue de revoir l'historique de tests
+        directement, comme sur la vue d'ensemble du super admin (groupée par catégorie)."""
+        from tests_psy.models import TestVineland
+
+        self.license.has_vineland = True
+        self.license.save()
+        test = TestVineland.objects.create(
+            organization=self.organization, patient=self.patient, psychologue=self.user,
+        )
+
+        response = self.client.get(reverse('cabinet:patient_detail', kwargs={'patient_id': self.patient.id}))
+        self.assertContains(response, 'Tests psychométriques')
+        categories = {cat['label']: cat['tests'] for cat in response.context['tests_categories']}
+        self.assertIn('Vineland', categories)
+        self.assertEqual(categories['Vineland'][0]['resultats_url'], reverse('tests_psy:vineland_resultats', args=[test.id]))
+        self.assertEqual(categories['Vineland'][0]['edit_url'], reverse('tests_psy:vineland_questionnaire', args=[test.id]))
+
+    def test_onglet_tests_absent_si_licence_desactivee(self):
+        response = self.client.get(reverse('cabinet:patient_detail', kwargs={'patient_id': self.patient.id}))
+        self.assertEqual(response.context['tests_categories'], [])
+        self.assertNotContains(response, 'Tests psychométriques')
+
+    def test_onglet_tests_absent_pour_assistant_sans_permission_test(self):
+        from accounts.models import User
+
+        self.license.has_vineland = True
+        self.license.save()
+        assistant = User.objects.create_user(
+            username='assist', password='motdepasse123', role='assistant', organization=self.organization,
+            can_access_patients=True, can_access_vineland=False,
+        )
+        self.client.force_login(assistant)
+
+        response = self.client.get(reverse('cabinet:patient_detail', kwargs={'patient_id': self.patient.id}))
+        self.assertEqual(response.context['tests_categories'], [])
+        self.assertNotContains(response, 'Tests psychométriques')
+
 
 class PatientDeleteTests(CabinetTestCaseBase):
 

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Clients - PsySaaS{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="bg-white rounded-xl shadow p-4 sm:p-6 mb-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Clients (cabinets)</h1>
+            <p class="text-gray-500 mt-1">Chaque client = un cabinet : une organisation, une licence, un compte psychologue.</p>
+        </div>
+        <a href="{% url 'accounts:client_create' %}" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2">
+            <i class="fas fa-plus"></i>
+            Nouveau client
+        </a>
+    </div>
+</div>
+
+<!-- Vue d'ensemble plateforme -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-2xl font-bold text-gray-800">{{ total_clients }}</div>
+        <div class="text-xs text-gray-500 mt-1"><i class="fas fa-building mr-1"></i>Clients</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-2xl font-bold text-gray-800">{{ licences_actives }}</div>
+        <div class="text-xs text-gray-500 mt-1"><i class="fas fa-check-circle mr-1"></i>Licences actives</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-2xl font-bold text-gray-800">{{ total_patients }}</div>
+        <div class="text-xs text-gray-500 mt-1"><i class="fas fa-users mr-1"></i>Patients (tous clients)</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-2xl font-bold text-gray-800">{{ total_consultations }}</div>
+        <div class="text-xs text-gray-500 mt-1"><i class="fas fa-calendar-check mr-1"></i>Consultations (tous clients)</div>
+    </div>
+</div>
+
+{% if organizations %}
+<div class="space-y-4">
+    {% for org in organizations %}
+    <div class="bg-white rounded-xl shadow p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-medium text-gray-900">{{ org.name }}</span>
+                    {% if org.license %}
+                        {% if org.license.is_active %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">{{ org.license.get_plan_display }}</span>
+                        {% else %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">Licence inactive</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 font-medium">Sans licence</span>
+                    {% endif %}
+                </div>
+                <div class="text-sm text-gray-500 mt-0.5">
+                    {% for u in org.users.all %}
+                        {% if u.role == 'psychologist' %}
+                            <i class="fas fa-user-md text-gray-400"></i> {{ u.get_full_name|default:u.username }} (@{{ u.username }})
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% if org.license %}
+                <div class="flex flex-wrap gap-1.5 mt-3">
+                    <span class="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{{ org.license.max_patients }} patients max</span>
+                    {% if org.license.has_vineland %}<span class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">Vineland</span>{% endif %}
+                    {% if org.license.has_beck %}<span class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">Beck</span>{% endif %}
+                    {% if org.license.has_stai %}<span class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">STAI</span>{% endif %}
+                    {% if org.license.has_d2r %}<span class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">D2R</span>{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="flex flex-col items-end gap-2 shrink-0">
+                <div class="flex gap-2">
+                    <a href="{% url 'accounts:client_patients' org.id %}"
+                       class="text-sm px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
+                        <i class="fas fa-history mr-1"></i>Patients &amp; tests
+                    </a>
+                    <a href="{% url 'accounts:client_edit' org.id %}"
+                       class="text-sm px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
+                        <i class="fas fa-sliders-h mr-1"></i>Modifier
+                    </a>
+                </div>
+                <div class="text-xs text-gray-400">Créé le {{ org.created_at|date:"d/m/Y" }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow p-12 text-center">
+    <i class="fas fa-building text-gray-400 text-6xl mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucun client pour l'instant</h3>
+    <p class="text-gray-500 mb-6">Crée le premier cabinet : organisation, licence et compte psychologue en une fois.</p>
+    <a href="{% url 'accounts:client_create' %}" class="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition">
+        <i class="fas fa-plus mr-2"></i>Nouveau client
+    </a>
+</div>
+{% endif %}
+{% endblock %}

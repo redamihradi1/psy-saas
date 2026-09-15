@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+{% load account_extras %}
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -68,7 +69,7 @@
           </div>
           <div>
             <h1 class="text-xl font-semibold text-gray-800">PsySaaS</h1>
-            <p class="text-xs text-gray-500">{{ user.organization.name }}</p>
+            <p class="text-xs text-gray-500">{% if user.is_superadmin %}Administration{% else %}{{ user.organization.name }}{% endif %}</p>
           </div>
         </div>
         <button type="button" id="mobile-menu-close" class="md:hidden w-9 h-9 flex items-center justify-center text-gray-400" aria-label="Fermer le menu">
@@ -90,42 +91,53 @@
       {% endif %}
 
       <ul class="py-4 flex-1 overflow-y-auto">
+        {% if not user.is_superadmin %}
         <li>
           <a href="{% url 'cabinet:dashboard' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-home w-5"></i>
             <span class="ml-3">Dashboard</span>
           </a>
         </li>
+        {% if user|has_module:'patients' %}
         <li>
           <a href="{% url 'cabinet:patients_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-users w-5"></i>
             <span class="ml-3">Patients</span>
           </a>
         </li>
+        {% endif %}
+        {% if user|has_module:'consultations' %}
         <li>
           <a href="{% url 'cabinet:consultations_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-calendar-check w-5"></i>
             <span class="ml-3">Consultations</span>
           </a>
         </li>
+        {% endif %}
+        {% if user|has_module:'agenda' %}
         <li>
           <a href="{% url 'cabinet:agenda' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-calendar-alt w-5"></i>
             <span class="ml-3">Agenda</span>
           </a>
         </li>
+        {% endif %}
+        {% if user|has_module:'comptabilite' %}
         <li>
           <a href="{% url 'cabinet:comptabilite_dashboard' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-calculator w-5"></i>
             <span class="ml-3">Comptabilité</span>
           </a>
         </li>
+        {% endif %}
+        {% if user|has_module:'tags' %}
         <li>
           <a href="{% url 'cabinet:tags_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-tags w-5"></i>
             <span class="ml-3">Tags</span>
           </a>
         </li>
+        {% endif %}
         {% if user.is_superadmin or user.can_export_backup %}
         <li>
           <a href="{% url 'cabinet:backup_page' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
@@ -135,14 +147,14 @@
         </li>
         {% endif %}
 
-        <!-- Menu Tests Psychométriques - Affiché uniquement si au moins 1 test disponible -->
-        {% if user.organization.license.has_d2r or user.organization.license.has_vineland or user.organization.license.has_pep3 %}
+        <!-- Menu Tests Psychométriques - Affiché uniquement si au moins 1 test disponible et autorisé pour cet utilisateur -->
+        {% if user.organization.license.has_d2r and user|has_test:'d2r' or user.organization.license.has_vineland and user|has_test:'vineland' or user.organization.license.has_beck and user|has_test:'beck' or user.organization.license.has_stai and user|has_test:'stai' %}
         <li class="mt-4 px-6">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tests</p>
         </li>
-        
+
         <!-- Test D2R - Affiché uniquement si accès autorisé -->
-        {% if user.organization.license.has_d2r %}
+        {% if user.organization.license.has_d2r and user|has_test:'d2r' %}
         <li>
           <a href="{% url 'tests_psy:d2r_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-chart-line w-5"></i>
@@ -150,9 +162,9 @@
           </a>
         </li>
         {% endif %}
-        
+
         <!-- Test Vineland - Affiché uniquement si accès autorisé -->
-        {% if user.organization.license.has_vineland %}
+        {% if user.organization.license.has_vineland and user|has_test:'vineland' %}
         <li>
           <a href="{% url 'tests_psy:vineland_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-child w-5"></i>
@@ -162,7 +174,7 @@
         {% endif %}
 
         <!-- Test Beck - Affiché uniquement si accès autorisé -->
-        {% if user.organization.license.has_beck %}
+        {% if user.organization.license.has_beck and user|has_test:'beck' %}
         <li>
           <a href="{% url 'tests_psy:beck_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-brain w-5"></i>
@@ -172,7 +184,7 @@
         {% endif %}
 
         <!-- Test STAI - Affiché uniquement si accès autorisé -->
-        {% if user.organization.license.has_stai %} 
+        {% if user.organization.license.has_stai and user|has_test:'stai' %}
         <li>
           <a href="{% url 'tests_psy:stai_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-heartbeat w-5"></i>
@@ -180,7 +192,27 @@
           </a>
         </li>
         {% endif %}
-        
+
+        {% endif %}
+        {% endif %}
+
+        <!-- Administration plateforme - super admin uniquement (seule chose visible pour lui) -->
+        {% if user.is_superadmin %}
+        <li class="px-6">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Administration</p>
+        </li>
+        <li>
+          <a href="{% url 'accounts:clients_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-building w-5"></i>
+            <span class="ml-3">Clients (cabinets)</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'accounts:assistants_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-user-shield w-5"></i>
+            <span class="ml-3">Assistant(e)s</span>
+          </a>
+        </li>
         {% endif %}
       </ul>
 

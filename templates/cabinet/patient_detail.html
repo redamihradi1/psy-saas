@@ -30,19 +30,23 @@
                     {% for tag in patient.tags.all %}
                     <span class="px-2 py-1 rounded-full text-xs text-white" style="background-color: {{ tag.couleur }}">{{ tag.nom }}</span>
                     {% endfor %}
+                    {% if can_tags %}
                     <button type="button" onclick="document.getElementById('tags-modal').classList.remove('hidden')"
                             class="px-2 py-1 rounded-full text-xs bg-white bg-opacity-20 hover:bg-opacity-30 transition">
                         <i class="fas fa-tags mr-1"></i>Gérer les tags
                     </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
         <div class="flex flex-col sm:flex-row gap-2 sm:shrink-0">
+            {% if can_consultations %}
             <a href="{% url 'cabinet:consultation_create' %}?patient_id={{ patient.id }}"
                class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg transition flex items-center justify-center gap-2">
                 <i class="fas fa-calendar-plus"></i>
                 Nouvelle Consultation
             </a>
+            {% endif %}
             <a href="{% url 'cabinet:patient_edit' patient.id %}"
                class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition flex items-center justify-center gap-2">
                 <i class="fas fa-edit"></i>
@@ -52,6 +56,7 @@
     </div>
 </div>
 
+{% if can_consultations %}
 <!-- Statistiques -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
     <div class="bg-white rounded-xl shadow p-4 sm:p-6 hover:shadow-lg transition">
@@ -65,7 +70,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="bg-white rounded-xl shadow p-4 sm:p-6 hover:shadow-lg transition">
         <div class="flex items-center">
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
@@ -95,6 +100,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <!-- Alerte prochaine consultation -->
 {% if prochaine_consultation %}
@@ -119,6 +125,7 @@
                     class="tab-button active px-4 py-3 rounded-lg font-medium transition shrink-0">
                 <i class="fas fa-user mr-2"></i>Informations
             </button>
+            {% if can_consultations %}
             <button onclick="switchTab('anamnese')" id="tab-anamnese"
                     class="tab-button px-4 py-3 rounded-lg font-medium transition shrink-0">
                 <i class="fas fa-file-medical mr-2"></i>
@@ -143,6 +150,13 @@
                     class="tab-button px-4 py-3 rounded-lg font-medium transition shrink-0">
                 <i class="fas fa-book-medical mr-2"></i>Journal clinique
             </button>
+            {% endif %}
+            {% if tests_categories %}
+            <button onclick="switchTab('tests')" id="tab-tests"
+                    class="tab-button px-4 py-3 rounded-lg font-medium transition shrink-0">
+                <i class="fas fa-vial mr-2"></i>Tests psychométriques
+            </button>
+            {% endif %}
         </nav>
     </div>
 
@@ -229,6 +243,7 @@
             </div>
         </div>
 
+        {% if can_consultations %}
         <!-- Onglet Anamnèse -->
         <div id="content-anamnese" class="tab-content hidden">
             {% if anamnese %}
@@ -868,22 +883,63 @@
             </div>
             {% endif %}
         </div>
+        {% endif %}
+
+        {% if tests_categories %}
+        <!-- Onglet Tests psychométriques -->
+        <div id="content-tests" class="tab-content hidden">
+            <div class="space-y-4">
+                {% for cat in tests_categories %}
+                <div class="border border-gray-100 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <i class="fas fa-vial mr-1"></i>{{ cat.label }} ({{ cat.tests|length }})
+                        </h3>
+                    </div>
+                    {% if cat.tests %}
+                    <div class="flex flex-wrap gap-2">
+                        {% for test in cat.tests %}
+                        <div class="inline-flex items-center gap-1 rounded-lg bg-purple-50 pl-3 pr-1 py-1">
+                            <span class="text-xs text-purple-700">{{ test.date|date:"d/m/Y" }}</span>
+                            <a href="{{ test.resultats_url }}" title="Voir les résultats"
+                               class="text-xs px-2 py-1 rounded-md text-purple-700 hover:bg-purple-100 transition">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if test.edit_url %}
+                            <a href="{{ test.edit_url }}" title="Modifier les réponses et relancer le calcul"
+                               class="text-xs px-2 py-1 rounded-md text-purple-700 hover:bg-purple-100 transition">
+                                <i class="fas fa-pen"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-sm text-gray-400">Aucun test {{ cat.label }} passé pour ce patient.</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <!-- Boutons d'action flottants -->
 <div class="fixed bottom-8 right-8 flex flex-col gap-3 z-50">
-    <a href="{% url 'cabinet:consultation_create' %}?patient_id={{ patient.id }}" 
+    {% if can_consultations %}
+    <a href="{% url 'cabinet:consultation_create' %}?patient_id={{ patient.id }}"
        class="w-14 h-14 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center transition transform hover:scale-110"
        title="Nouvelle consultation">
         <i class="fas fa-calendar-plus text-xl"></i>
     </a>
     {% if not anamnese %}
-    <a href="{% url 'cabinet:anamnese_create' patient.id %}" 
+    <a href="{% url 'cabinet:anamnese_create' patient.id %}"
        class="w-14 h-14 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full shadow-lg flex items-center justify-center transition transform hover:scale-110"
        title="Créer anamnèse">
         <i class="fas fa-file-medical-alt text-xl"></i>
     </a>
+    {% endif %}
     {% endif %}
 </div>
 

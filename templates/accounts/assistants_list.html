@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load account_extras %}
+
+{% block title %}Assistant(e)s - PsySaaS{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="bg-white rounded-xl shadow p-4 sm:p-6 mb-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Assistant(e)s</h1>
+            <p class="text-gray-500 mt-1">Comptes assistant(e) de tous les cabinets, avec leurs accès.</p>
+        </div>
+        <a href="{% url 'accounts:assistant_create' %}" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2">
+            <i class="fas fa-user-plus"></i>
+            Ajouter un(e) assistant(e)
+        </a>
+    </div>
+</div>
+
+{% if assistants %}
+<div class="space-y-4">
+    {% for assistant in assistants %}
+    <div class="bg-white rounded-xl shadow p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div class="flex items-start gap-3 min-w-0">
+                <div class="w-11 h-11 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-semibold shrink-0">
+                    {{ assistant.username|slice:":2"|upper }}
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-medium text-gray-900">{{ assistant.get_full_name|default:assistant.username }}</span>
+                        {% if assistant.is_active %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">Actif</span>
+                        {% else %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 font-medium">Désactivé</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-sm text-gray-500 mt-0.5">
+                        @{{ assistant.username }}{% if assistant.email %} · {{ assistant.email }}{% endif %}
+                        · <i class="fas fa-building text-gray-400"></i> {{ assistant.organization.name }}
+                    </div>
+
+                    <div class="flex flex-wrap gap-1.5 mt-3">
+                        {% for field, label in assistant.MODULE_PERMISSIONS %}
+                        <span class="text-[11px] px-2 py-0.5 rounded-full {% if assistant|attr:field %}bg-blue-50 text-blue-700{% else %}bg-gray-50 text-gray-400 line-through{% endif %}">{{ label }}</span>
+                        {% endfor %}
+                        {% for field, label in assistant.TEST_PERMISSIONS %}
+                        <span class="text-[11px] px-2 py-0.5 rounded-full {% if assistant|attr:field %}bg-purple-50 text-purple-700{% else %}bg-gray-50 text-gray-400 line-through{% endif %}">{{ label }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2 shrink-0">
+                <a href="{% url 'accounts:assistant_edit' assistant.id %}"
+                   class="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition" title="Modifier les accès">
+                    <i class="fas fa-sliders-h"></i>
+                </a>
+                <button type="button" onclick="document.getElementById('reset-password-modal-{{ assistant.id }}').classList.remove('hidden')"
+                        class="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition" title="Réinitialiser le mot de passe">
+                    <i class="fas fa-key"></i>
+                </button>
+                <form method="POST" action="{% url 'accounts:assistant_toggle_active' assistant.id %}" class="inline"
+                      onsubmit="return confirm('{% if assistant.is_active %}Désactiver{% else %}Réactiver{% endif %} le compte de {{ assistant.username }} ?');">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-9 h-9 flex items-center justify-center {% if assistant.is_active %}bg-red-100 hover:bg-red-200 text-red-700{% else %}bg-green-100 hover:bg-green-200 text-green-700{% endif %} rounded-lg transition"
+                            title="{% if assistant.is_active %}Désactiver{% else %}Réactiver{% endif %} le compte">
+                        <i class="fas {% if assistant.is_active %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal réinitialisation mot de passe -->
+    <div id="reset-password-modal-{{ assistant.id }}" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Réinitialiser le mot de passe de {{ assistant.username }}</h3>
+                <button type="button" onclick="document.getElementById('reset-password-modal-{{ assistant.id }}').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form method="POST" action="{% url 'accounts:assistant_reset_password' assistant.id %}" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ set_password_form.password1.label }}</label>
+                    {{ set_password_form.password1 }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ set_password_form.password2.label }}</label>
+                    {{ set_password_form.password2 }}
+                </div>
+                <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white py-2 rounded-lg transition font-medium">
+                    Réinitialiser
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow p-12 text-center">
+    <i class="fas fa-user-shield text-gray-400 text-6xl mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucun(e) assistant(e) pour l'instant</h3>
+    <p class="text-gray-500 mb-6">Crée un compte assistant(e), attaché à un cabinet, avec exactement les accès voulus.</p>
+    <a href="{% url 'accounts:assistant_create' %}" class="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium transition">
+        <i class="fas fa-user-plus mr-2"></i>Ajouter un(e) assistant(e)
+    </a>
+</div>
+{% endif %}
+{% endblock %}
