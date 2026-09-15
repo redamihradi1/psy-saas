@@ -85,7 +85,10 @@ def beck_nouveau(request, patient_id=None):
 @require_test_access('beck')
 def beck_passation(request, test_id):
     """Interface de passation du test Beck"""
-    test = get_object_or_404(TestBeck, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestBeck.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestBeck, id=test_id, organization=request.user.organization)
     
     if request.method == 'POST':
         # Traiter la soumission
@@ -118,7 +121,10 @@ def beck_submit(request, test_id):
     if request.method != 'POST':
         return redirect('tests_psy:beck_passation', test_id=test_id)
     
-    test = get_object_or_404(TestBeck, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestBeck.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestBeck, id=test_id, organization=request.user.organization)
     
     # Utiliser une transaction pour garantir la cohérence
     with transaction.atomic():
@@ -137,7 +143,7 @@ def beck_submit(request, test_id):
                 reponse = ReponseItemBeck.objects.create(
                     test=test,
                     item=item,
-                    organization=request.user.organization
+                    organization=test.organization
                 )
                 
                 # Ajouter les phrases cochées
@@ -167,7 +173,10 @@ def beck_submit(request, test_id):
 @require_test_access('beck')
 def beck_resultats(request, test_id):
     """Afficher les résultats du test Beck"""
-    test = get_object_or_404(TestBeck, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestBeck.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestBeck, id=test_id, organization=request.user.organization)
     
     # Récupérer toutes les réponses avec les items
     reponses = test.reponses.select_related('item').prefetch_related('phrases_cochees').order_by('item__numero')
@@ -182,9 +191,9 @@ def beck_resultats(request, test_id):
         }
     
     # Récupérer les tests Beck précédents du patient pour le graphique d'évolution
-    tests_precedents = TestBeck.objects.filter(
+    tests_precedents = TestBeck.all_objects.filter(
         patient=test.patient,
-        organization=request.user.organization
+        organization=test.organization
     ).order_by('date_passation')
     
     # Données pour le graphique
@@ -251,7 +260,10 @@ def beck_pdf(request, test_id):
     from reportlab.lib.enums import TA_CENTER, TA_LEFT
     from io import BytesIO
     
-    test = get_object_or_404(TestBeck, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestBeck.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestBeck, id=test_id, organization=request.user.organization)
     
     # Récupérer toutes les réponses
     reponses = test.reponses.select_related('item').prefetch_related('phrases_cochees').order_by('item__numero')

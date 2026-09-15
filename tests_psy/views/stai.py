@@ -172,7 +172,10 @@ def stai_passation(request, test_id):
 
     """Interface de passation du test STAI"""
 
-    test = get_object_or_404(TestSTAI, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestSTAI.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestSTAI, id=test_id, organization=request.user.organization)
 
  
 
@@ -240,7 +243,10 @@ def stai_submit(request, test_id):
 
  
 
-    test = get_object_or_404(TestSTAI, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestSTAI.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestSTAI, id=test_id, organization=request.user.organization)
 
  
 
@@ -286,7 +292,7 @@ def stai_submit(request, test_id):
 
                     valeur_choisie=valeur_choisie,
 
-                    organization=request.user.organization
+                    organization=test.organization
 
                 )
 
@@ -342,7 +348,10 @@ def stai_resultats(request, test_id):
 
     """Afficher les résultats du test STAI"""
 
-    test = get_object_or_404(TestSTAI, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestSTAI.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestSTAI, id=test_id, organization=request.user.organization)
 
  
 
@@ -362,11 +371,11 @@ def stai_resultats(request, test_id):
 
     # Récupérer les tests STAI précédents du patient pour le graphique d'évolution
 
-    tests_precedents = TestSTAI.objects.filter(
+    tests_precedents = TestSTAI.all_objects.filter(
 
         patient=test.patient,
 
-        organization=request.user.organization
+        organization=test.organization
 
     ).order_by('date_passation')
 
@@ -516,7 +525,10 @@ def stai_pdf(request, test_id):
 
  
 
-    test = get_object_or_404(TestSTAI, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestSTAI.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestSTAI, id=test_id, organization=request.user.organization)
 
  
 

@@ -77,7 +77,10 @@ def d2r_nouveau(request, patient_id=None):
 @require_test_access('d2r')
 def d2r_instructions(request, test_id):
     """Page d'instructions et exercices avant le test"""
-    test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestD2R.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
     
     # Générer des symboles d'exercice
     exercise1_symbols = [
@@ -154,7 +157,10 @@ def d2r_instructions(request, test_id):
 @require_test_access('d2r')
 def d2r_passation(request, test_id):
     """Interface de passation du test D2R"""
-    test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestD2R.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
     
     # Plus de filtre par organization - les symboles sont partagés
     symbols = SymboleReference.objects.filter(page=1).order_by('ligne', 'position')
@@ -183,7 +189,10 @@ def d2r_submit(request, test_id):
     if request.method != 'POST':
         return redirect('tests_psy:d2r_passation', test_id=test_id)
     
-    test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestD2R.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
     
     # Récupérer les symboles sélectionnés
     selected_symbols_str = request.POST.get('selected_symbols', '')
@@ -245,7 +254,10 @@ def d2r_submit(request, test_id):
 @require_test_access('d2r')
 def d2r_resultats(request, test_id):
     """Afficher les résultats du test D2R"""
-    test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestD2R.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
     
     # Calculs
     cct = test.reponses_correctes
@@ -323,7 +335,10 @@ def d2r_liste(request):
 @require_test_access('d2r')
 def d2r_pdf(request, test_id):
     """Générer un rapport PDF du test D2R"""
-    test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestD2R.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
     
     # Calculs (même logique que d2r_resultats)
     cct = test.reponses_correctes
