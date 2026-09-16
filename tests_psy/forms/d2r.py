@@ -18,7 +18,9 @@ class TestD2RForm(forms.ModelForm):
         ]
         widgets = {
             'patient': forms.Select(attrs={
-                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent'
+                'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent',
+                'data-searchable': '1',
+                'data-placeholder': 'Rechercher un patient...',
             }),
             'code': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent',

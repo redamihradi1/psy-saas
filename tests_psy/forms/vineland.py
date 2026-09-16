@@ -19,7 +19,11 @@ class TestVinelandModeForm(forms.Form):
     patient = forms.ModelChoiceField(
         queryset=Patient.objects.none(),
         empty_label="Sélectionnez un patient",
-        widget=forms.Select(attrs={'class': TEXT_INPUT_CLASS}),
+        widget=forms.Select(attrs={
+            'class': TEXT_INPUT_CLASS,
+            'data-searchable': '1',
+            'data-placeholder': 'Rechercher un patient...',
+        }),
     )
     mode = forms.ChoiceField(
         choices=TestVineland.MODE_CHOICES,

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Nouveau Test Vineland{% endblock %}
 
@@ -93,6 +94,7 @@
     </div>
 </div>
 
+<script src="{% static 'js/searchable-select.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('vineland-nouveau-form');
