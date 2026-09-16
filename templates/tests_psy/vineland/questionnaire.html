@@ -93,7 +93,8 @@
                 
                     <!-- Questions -->
                     {% for question in sousdomain.list %}
-                        <div class="question-block flex flex-col lg:flex-row lg:items-start lg:justify-between border-b border-gray-200 pb-6 mb-6 hover:bg-gray-50 transition p-3 sm:p-4 rounded-lg">
+                        <div class="question-block flex flex-col lg:flex-row lg:items-start lg:justify-between border-b border-gray-200 pb-6 mb-6 hover:bg-gray-50 transition p-3 sm:p-4 rounded-lg"
+                             data-question="{{ question.sous_domaine.id }}_{{ question.numero_item }}">
                             <div class="lg:w-2/3 mb-4 lg:mb-0">
                                 <!-- Plage d'âge -->
                                 {% with current_plage=question.plage_age %}
@@ -119,6 +120,9 @@
                                         {{ question.numero_item }}
                                     </span>
                                     <span class="font-medium">{{ question.texte }}</span>
+                                    <span class="unanswered-badge ml-2 inline-flex items-center gap-1 text-amber-700 text-xs font-medium hidden">
+                                        À répondre
+                                    </span>
                                 </div>
 
                                 <!-- Notes si présentes -->
@@ -216,6 +220,11 @@
                 </div>
             </div>
 
+            <div id="unansweredCounter" class="hidden mb-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 text-sm font-medium px-4 py-2 rounded flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                <span id="unansweredCounterText"></span>
+            </div>
+
             <div class="flex gap-3">
                 <button type="submit"
                         name="action"
@@ -226,6 +235,7 @@
                 </button>
 
                 <button type="submit"
+                        id="nextSubmitBtn"
                         name="action"
                         value="{% if page_obj.has_next %}next{% else %}submit{% endif %}"
                         class="flex-1 sm:flex-none sm:ml-auto {% if page_obj.has_next %}bg-primary hover:bg-primary-dark{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white px-6 py-3 rounded-lg font-semibold transition flex items-center justify-center shadow-lg sm:transform sm:hover:scale-105">
@@ -256,12 +266,29 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const counter = document.getElementById('unansweredCounter');
+    const counterText = document.getElementById('unansweredCounterText');
+    const questionBlocks = document.querySelectorAll('.question-block[data-question]');
+
+    function isAnswered(block) {
+        return !!block.querySelector('.response-group input[type="radio"]:checked');
+    }
+
+    function clearHint(block) {
+        block.classList.remove('question-unanswered');
+        const badge = block.querySelector('.unanswered-badge');
+        if (badge) badge.classList.add('hidden');
+    }
+
+    function getUnansweredBlocks() {
+        return Array.from(questionBlocks).filter(function(block) { return !isAnswered(block); });
+    }
+
     // Gérer les clics sur les labels
     document.querySelectorAll('.radio-label').forEach(label => {
         label.addEventListener('click', function() {
             const questionId = this.dataset.question;
-            const value = this.dataset.value;
-            
+
             // Mettre à jour le style visuel
             document.querySelectorAll(`#group_${questionId} .radio-label`).forEach(l => {
                 l.classList.remove('bg-primary', 'border-primary', 'text-white');
@@ -269,6 +296,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             this.classList.remove('border-gray-300');
             this.classList.add('bg-primary', 'border-primary', 'text-white');
+
+            // Une fois répondue, une question qui était signalée redevient normale.
+            const block = this.closest('.question-block');
+            if (block) setTimeout(function() { clearHint(block); }, 0);
+
+            const remaining = getUnansweredBlocks().length;
+            if (remaining === 0) counter.classList.add('hidden');
         });
     });
 
@@ -276,7 +310,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('vinelandForm');
     form.addEventListener('submit', function(e) {
         const action = e.submitter.value;
-        
+
+        if (action === 'next' || action === 'submit') {
+            const unansweredBlocks = getUnansweredBlocks();
+            if (unansweredBlocks.length > 0) {
+                e.preventDefault();
+
+                unansweredBlocks.forEach(function(block) {
+                    block.classList.add('question-unanswered');
+                    const badge = block.querySelector('.unanswered-badge');
+                    if (badge) badge.classList.remove('hidden');
+                });
+
+                counterText.textContent = unansweredBlocks.length === 1
+                    ? 'Il reste 1 question à compléter sur cette page avant de continuer.'
+                    : 'Il reste ' + unansweredBlocks.length + ' questions à compléter sur cette page avant de continuer.';
+                counter.classList.remove('hidden');
+
+                unansweredBlocks[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+        }
+
         // Confirmation si on termine le test
         if (action === 'submit') {
             if (!confirm('Êtes-vous sûr de vouloir terminer le questionnaire ?')) {
@@ -301,6 +356,15 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Améliorer la lisibilité des questions */
 .question-block:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Question à compléter : signalée seulement après une tentative de passage à la suite,
+   ton doux (ambre) plutôt qu'alarmant (rouge) pour ne pas inquiéter le patient/parent
+   qui peut avoir la page sous les yeux. */
+.question-block.question-unanswered {
+    background-color: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 </style>
 {% endblock %}
