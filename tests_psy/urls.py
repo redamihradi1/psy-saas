@@ -18,6 +18,7 @@ urlpatterns = [
     # D2R - Résultats
     path('d2r/<int:test_id>/resultats/', d2r.d2r_resultats, name='d2r_resultats'),
     path('d2r/<int:test_id>/pdf/', d2r.d2r_pdf, name='d2r_pdf'),
+    path('d2r/<int:test_id>/supprimer/', d2r.d2r_delete, name='d2r_delete'),
 
 
     # ========== VINELAND ==========

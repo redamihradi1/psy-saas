@@ -202,7 +202,9 @@ def d2r_submit(request, test_id):
     total_incorrectes = 0 
     total_omises = 0
 
-    # Pour chaque ligne (de 2 à 13)
+    # Le patient passe toutes les lignes (1 à 14), mais lignes 1 et 14 (échauffement/
+    # fatigue) sont volontairement exclues du calcul du score - seules les lignes 2 à 13
+    # comptent, comme dans le protocole D2R standard.
     for line_number in range(2, 14):
         # Plus de filtre par organization - les symboles sont partagés
         line_symbols = SymboleReference.objects.filter(
@@ -329,6 +331,27 @@ def d2r_liste(request):
     }
     
     return render(request, 'tests_psy/d2r/liste.html', context)
+
+
+@login_required
+@require_test_access('d2r')
+def d2r_delete(request, test_id):
+    """Supprimer un test D2R (avec confirmation)."""
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestD2R.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
+
+    if request.method == 'POST':
+        patient_nom = test.patient.nom_complet
+        test.delete()
+        messages.success(request, f"Test D2R de {patient_nom} supprimé.")
+        return redirect('tests_psy:d2r_liste')
+
+    return render(request, 'tests_psy/d2r/delete.html', {
+        'test': test,
+        'patient': test.patient,
+    })
 
 
 @login_required
