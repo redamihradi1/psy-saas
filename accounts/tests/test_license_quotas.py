@@ -51,6 +51,98 @@ class LicenseActivationTests(TestCase):
         self.assertIsNone(license.end_date)
 
 
+class LicenseAbonnementTests(TestCase):
+    """Formules d'abonnement récurrent (2026-09-17) : cycle initial à la création,
+    renouvellement manuel, alerte d'expiration proche."""
+
+    def setUp(self):
+        self.org = Organization.objects.create(name="Cabinet Abonnement", slug="cabinet-abonnement")
+
+    def test_abonnement_mensuel_recoit_30_jours_a_la_creation(self):
+        license = License.objects.create(organization=self.org, plan='abonnement_mensuel', status='active')
+        self.assertIsNotNone(license.end_date)
+        self.assertAlmostEqual(
+            (license.end_date - timezone.now()).days, 30, delta=1
+        )
+
+    def test_abonnement_annuel_recoit_365_jours_a_la_creation(self):
+        license = License.objects.create(organization=self.org, plan='abonnement_annuel', status='active')
+        self.assertAlmostEqual(
+            (license.end_date - timezone.now()).days, 365, delta=1
+        )
+
+    def test_renouveler_prolonge_a_partir_de_la_date_de_fin_si_pas_encore_expiree(self):
+        end_date_initiale = timezone.now() + timedelta(days=5)
+        license = License.objects.create(
+            organization=self.org, plan='abonnement_mensuel', status='active', end_date=end_date_initiale,
+        )
+        license.renouveler()
+        # Prolongé depuis l'échéance existante (pas depuis aujourd'hui) : pas de jours perdus.
+        self.assertAlmostEqual((license.end_date - end_date_initiale).days, 30, delta=1)
+        self.assertEqual(license.dernier_paiement_le, timezone.now().date())
+
+    def test_renouveler_repart_d_aujourdhui_si_licence_deja_expiree(self):
+        license = License.objects.create(
+            organization=self.org, plan='abonnement_mensuel', status='expired',
+            end_date=timezone.now() - timedelta(days=10),
+        )
+        license.renouveler()
+        self.assertAlmostEqual((license.end_date - timezone.now()).days, 30, delta=1)
+        self.assertEqual(license.status, 'active')
+
+    def test_renouveler_sans_effet_sur_trial_et_lifetime(self):
+        license = License.objects.create(organization=self.org, plan='lifetime', status='active')
+        license.renouveler()
+        self.assertIsNone(license.end_date)
+
+    def test_expire_bientot_detecte_une_echeance_proche(self):
+        license = License.objects.create(
+            organization=self.org, plan='abonnement_mensuel', status='active',
+            end_date=timezone.now() + timedelta(days=3),
+        )
+        self.assertTrue(license.expire_bientot(jours=7))
+        self.assertFalse(license.expire_bientot(jours=1))
+
+    def test_expire_bientot_faux_pour_lifetime(self):
+        license = License.objects.create(organization=self.org, plan='lifetime', status='active')
+        self.assertFalse(license.expire_bientot())
+
+    def test_expire_bientot_faux_si_licence_deja_inactive(self):
+        license = License.objects.create(
+            organization=self.org, plan='abonnement_mensuel', status='suspended',
+            end_date=timezone.now() + timedelta(days=1),
+        )
+        self.assertFalse(license.expire_bientot())
+
+    def test_renouveler_journalise_un_paiement(self):
+        from accounts.models import PaiementLicence
+
+        license = License.objects.create(
+            organization=self.org, plan='abonnement_mensuel', status='active', prix_dhs=299,
+        )
+        license.renouveler()
+        self.assertEqual(PaiementLicence.objects.filter(license=license).count(), 1)
+        paiement = PaiementLicence.objects.get(license=license)
+        self.assertEqual(paiement.montant, 299)
+        self.assertEqual(paiement.plan, 'abonnement_mensuel')
+        self.assertEqual(paiement.date_paiement, timezone.now().date())
+
+    def test_renouveler_plusieurs_fois_accumule_l_historique(self):
+        from accounts.models import PaiementLicence
+
+        license = License.objects.create(organization=self.org, plan='abonnement_mensuel', status='active')
+        license.renouveler()
+        license.renouveler()
+        self.assertEqual(PaiementLicence.objects.filter(license=license).count(), 2)
+
+    def test_renouveler_sans_effet_ne_journalise_rien_pour_lifetime(self):
+        from accounts.models import PaiementLicence
+
+        license = License.objects.create(organization=self.org, plan='lifetime', status='active')
+        license.renouveler()
+        self.assertEqual(PaiementLicence.objects.filter(license=license).count(), 0)
+
+
 class LicensePatientQuotaTests(TestCase):
     """Vérifie le quota de patients par organisation."""
 

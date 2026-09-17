@@ -140,7 +140,16 @@ class License(models.Model):
     PLAN_CHOICES = [
         ('trial', 'Essai gratuit (30 jours)'),
         ('lifetime', 'Licence complète (achat unique)'),
+        ('abonnement_mensuel', 'Abonnement mensuel'),
+        ('abonnement_annuel', 'Abonnement annuel'),
     ]
+
+    # Formules avec renouvellement récurrent (par opposition à trial/lifetime qui ne se
+    # renouvellent pas) - durée d'un cycle, utilisée par save() et renouveler().
+    CYCLE_JOURS = {
+        'abonnement_mensuel': 30,
+        'abonnement_annuel': 365,
+    }
     
     STATUS_CHOICES = [
         ('active', 'Active'),
@@ -181,6 +190,14 @@ class License(models.Model):
     end_date = models.DateTimeField(null=True, blank=True, verbose_name="Date de fin (null = illimité)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Suivi manuel de la facturation (pas de passerelle de paiement en ligne - le superadmin
+    # encaisse lui-même virement/espèces et enregistre le paiement ici).
+    prix_dhs = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True,
+        verbose_name="Prix (DHS)", help_text="Montant du cycle de facturation (mensuel ou annuel), pour ton suivi."
+    )
+    dernier_paiement_le = models.DateField(null=True, blank=True, verbose_name="Dernier paiement le")
     
     class Meta:
         verbose_name = "Licence"
@@ -200,7 +217,41 @@ class License(models.Model):
                 self.end_date = timezone.now() + timedelta(days=30)
         elif self.plan == 'lifetime':
             self.end_date = None
+        elif self.plan in self.CYCLE_JOURS and not self.end_date:
+            # Premier enregistrement d'un abonnement : démarre un cycle plein.
+            self.end_date = timezone.now() + timedelta(days=self.CYCLE_JOURS[self.plan])
         super().save(*args, **kwargs)
+
+    def renouveler(self, paye_le=None, montant=None):
+        """Renouvelle un abonnement d'un cycle (mensuel/annuel) - suivi manuel du paiement,
+        pas de passerelle en ligne : le superadmin encaisse lui-même puis clique ce bouton.
+        Sans effet sur trial/lifetime (pas de cycle récurrent). Journalise le paiement dans
+        PaiementLicence pour garder un historique (le champ dernier_paiement_le seul
+        n'en gardait aucune trace au-delà du tout dernier)."""
+        cycle_jours = self.CYCLE_JOURS.get(self.plan)
+        if cycle_jours is None:
+            return
+
+        paye_le = paye_le or timezone.now().date()
+        base = self.end_date if self.end_date and self.end_date > timezone.now() else timezone.now()
+        self.end_date = base + timedelta(days=cycle_jours)
+        self.dernier_paiement_le = paye_le
+        self.status = 'active'
+        self.save()
+
+        PaiementLicence.objects.create(
+            license=self,
+            date_paiement=paye_le,
+            montant=montant if montant is not None else self.prix_dhs,
+            plan=self.plan,
+        )
+
+    def expire_bientot(self, jours=7):
+        """Licence active dont le cycle actuel (trial ou abonnement) se termine dans les
+        `jours` à venir - utilisé pour l'alerte de renouvellement du superadmin."""
+        if self.plan == 'lifetime' or not self.end_date or self.status != 'active':
+            return False
+        return timezone.now() <= self.end_date <= timezone.now() + timedelta(days=jours)
 
     def is_active(self):
         """Vérifie si la licence est active et non expirée"""
@@ -373,3 +424,25 @@ class License(models.Model):
         all_tests = ['D2R', 'Vineland', 'PEP3' , 'Beck' , 'STAI']
         available = self.get_available_tests()
         return [test for test in all_tests if test not in available]
+
+
+class PaiementLicence(models.Model):
+    """Historique des paiements manuels d'une licence par abonnement (2026-09-17).
+
+    License.dernier_paiement_le ne garde trace que du tout dernier paiement - ce modèle
+    journalise chaque renouvellement (License.renouveler()) pour que le superadmin retrouve
+    l'historique complet d'encaissement d'un cabinet (pas de passerelle de paiement en ligne,
+    suivi manuel assumé)."""
+    license = models.ForeignKey(License, on_delete=models.CASCADE, related_name='paiements')
+    date_paiement = models.DateField()
+    montant = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    plan = models.CharField(max_length=20, choices=License.PLAN_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Paiement de licence"
+        verbose_name_plural = "Paiements de licence"
+        ordering = ['-date_paiement', '-created_at']
+
+    def __str__(self):
+        return f"{self.license.organization.name} - {self.montant} DHS le {self.date_paiement}"

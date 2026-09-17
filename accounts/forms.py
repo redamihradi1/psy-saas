@@ -159,6 +159,11 @@ class ClientCreateForm(forms.Form):
         label="Nombre max de patients", initial=10, min_value=1,
         widget=forms.NumberInput(attrs={'class': TEXT_INPUT_CLASS}),
     )
+    prix_dhs = forms.DecimalField(
+        label="Prix (DHS)", required=False, min_value=0, max_digits=8, decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': TEXT_INPUT_CLASS, 'step': '0.01'}),
+        help_text="Montant du cycle de facturation (mensuel/annuel) - pour ton suivi, aucun paiement en ligne.",
+    )
     # Un seul interrupteur par test : coché = activé sur la licence du cabinet ET utilisable
     # tout de suite par son psychologue (il n'y a qu'un seul psychologue par cabinet, donc pas
     # de raison d'activer un test sur la licence sans le lui donner - contrairement aux
@@ -223,6 +228,7 @@ class ClientCreateForm(forms.Form):
             plan=data['plan'],
             status='active',
             max_patients=data['max_patients'],
+            prix_dhs=data['prix_dhs'],
             has_vineland=data['has_vineland'],
             has_beck=data['has_beck'],
             has_stai=data['has_stai'],
@@ -257,6 +263,11 @@ class ClientEditForm(forms.Form):
     plan = forms.ChoiceField(label="Formule", choices=License.PLAN_CHOICES, widget=forms.Select(attrs={'class': TEXT_INPUT_CLASS}))
     status = forms.ChoiceField(label="Statut de la licence", choices=License.STATUS_CHOICES, widget=forms.Select(attrs={'class': TEXT_INPUT_CLASS}))
     max_patients = forms.IntegerField(label="Nombre max de patients", min_value=1, widget=forms.NumberInput(attrs={'class': TEXT_INPUT_CLASS}))
+    prix_dhs = forms.DecimalField(
+        label="Prix (DHS)", required=False, min_value=0, max_digits=8, decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': TEXT_INPUT_CLASS, 'step': '0.01'}),
+        help_text="Montant du cycle de facturation (mensuel/annuel) - pour ton suivi, aucun paiement en ligne.",
+    )
     has_vineland = forms.BooleanField(label="Test Vineland", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
     has_beck = forms.BooleanField(label="Test Beck", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
     has_stai = forms.BooleanField(label="Test STAI", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
@@ -282,6 +293,7 @@ class ClientEditForm(forms.Form):
             if license:
                 initial.update({
                     'plan': license.plan, 'status': license.status, 'max_patients': license.max_patients,
+                    'prix_dhs': license.prix_dhs,
                     'has_vineland': license.has_vineland, 'has_beck': license.has_beck,
                     'has_stai': license.has_stai, 'has_d2r': license.has_d2r,
                 })
@@ -311,6 +323,7 @@ class ClientEditForm(forms.Form):
         license.plan = data['plan']
         license.status = data['status']
         license.max_patients = data['max_patients']
+        license.prix_dhs = data['prix_dhs']
         license.has_vineland = data['has_vineland']
         license.has_beck = data['has_beck']
         license.has_stai = data['has_stai']

@@ -203,6 +203,31 @@ class ClientEditTests(PlatformAdminTestCaseBase):
         response = self.client.get(reverse('accounts:client_edit', args=[self.org.id]))
         self.assertRedirects(response, reverse('cabinet:dashboard'))
 
+    def test_avertit_si_la_nouvelle_limite_est_sous_le_nombre_de_patients_existants(self):
+        from cabinet.models import Patient
+
+        for i in range(3):
+            Patient.objects.create(organization=self.org, nom=f"Nom{i}", prenom="Test", date_naissance="2000-01-01")
+
+        response = self.client.post(
+            reverse('accounts:client_edit', args=[self.org.id]), self._post_data(max_patients=2), follow=True,
+        )
+        messages = [str(m) for m in response.context['messages']]
+        self.assertTrue(any('inférieure au nombre de' in m for m in messages))
+        # Rien n'est supprimé - juste un avertissement.
+        self.assertEqual(Patient.objects.filter(organization=self.org).count(), 3)
+
+    def test_pas_d_avertissement_si_la_limite_reste_suffisante(self):
+        from cabinet.models import Patient
+
+        Patient.objects.create(organization=self.org, nom="Nom", prenom="Test", date_naissance="2000-01-01")
+
+        response = self.client.post(
+            reverse('accounts:client_edit', args=[self.org.id]), self._post_data(max_patients=10), follow=True,
+        )
+        messages = [str(m) for m in response.context['messages']]
+        self.assertFalse(any('inférieure au nombre de' in m for m in messages))
+
 
 class AssistantCreateTests(PlatformAdminTestCaseBase):
 
@@ -285,3 +310,40 @@ class AssistantEditAndActionsTests(PlatformAdminTestCaseBase):
         self.assertRedirects(response, reverse('accounts:assistants_list'))
         self.client.logout()
         self.assertTrue(self.client.login(username='assist1', password='nouveaumdp789'))
+
+
+class ClientLicenseRenouvelerTests(PlatformAdminTestCaseBase):
+    """Renouvellement manuel d'une licence d'abonnement (2026-09-17) - suivi sans passerelle
+    de paiement en ligne, réservé au superadmin."""
+
+    def setUp(self):
+        super().setUp()
+        self.license.plan = 'abonnement_mensuel'
+        self.license.save()
+        self.client.force_login(self.superadmin)
+
+    def test_renouveler_prolonge_la_licence_et_redirige(self):
+        ancienne_echeance = self.license.end_date
+        response = self.client.post(reverse('accounts:client_license_renouveler', args=[self.org.id]))
+        self.assertRedirects(response, reverse('accounts:clients_list'))
+        self.license.refresh_from_db()
+        self.assertGreater(self.license.end_date, ancienne_echeance)
+        self.assertIsNotNone(self.license.dernier_paiement_le)
+
+    def test_renouveler_refuse_pour_une_licence_non_abonnement(self):
+        self.license.plan = 'lifetime'
+        self.license.save()
+        ancienne_echeance = self.license.end_date
+        self.client.post(reverse('accounts:client_license_renouveler', args=[self.org.id]))
+        self.license.refresh_from_db()
+        self.assertEqual(self.license.end_date, ancienne_echeance)
+
+    def test_psychologue_ne_peut_pas_renouveler(self):
+        self.client.logout()
+        self.client.force_login(self.psychologue)
+        response = self.client.post(reverse('accounts:client_license_renouveler', args=[self.org.id]))
+        self.assertRedirects(response, reverse('cabinet:dashboard'))
+
+    def test_get_non_autorise(self):
+        response = self.client.get(reverse('accounts:client_license_renouveler', args=[self.org.id]))
+        self.assertEqual(response.status_code, 405)

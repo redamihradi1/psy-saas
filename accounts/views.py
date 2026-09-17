@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from .decorators import superadmin_required
 from .models import User, Organization, License
@@ -101,6 +102,7 @@ def settings_view(request):
 @superadmin_required
 def clients_list(request):
     """Vue d'ensemble de la plateforme : liste des cabinets + stats globales, tous clients confondus."""
+    from django.db.models import Sum
     from cabinet.models import Patient, Consultation
 
     organizations = Organization.objects.select_related('license').prefetch_related('users').order_by('-created_at')
@@ -110,12 +112,26 @@ def clients_list(request):
     total_consultations = Consultation.objects.count()
     licences_actives = sum(1 for org in organizations if getattr(org, 'license', None) and org.license.is_active())
 
+    today = timezone.now().date()
+    ca_mois_plateforme = Consultation.objects.filter(
+        statut_paiement='paye', date_seance__year=today.year, date_seance__month=today.month,
+    ).aggregate(total=Sum('tarif'))['total'] or 0
+
+    licences_a_surveiller = [
+        org for org in organizations
+        if getattr(org, 'license', None) and (
+            not org.license.is_active() or org.license.expire_bientot()
+        )
+    ]
+
     return render(request, 'accounts/clients_list.html', {
         'organizations': organizations,
         'total_clients': total_clients,
         'total_patients': total_patients,
         'total_consultations': total_consultations,
         'licences_actives': licences_actives,
+        'ca_mois_plateforme': ca_mois_plateforme,
+        'licences_a_surveiller': licences_a_surveiller,
     })
 
 
@@ -144,11 +160,45 @@ def client_edit(request, org_id):
         if form.is_valid():
             form.save()
             messages.success(request, f"Cabinet « {organization.name} » mis à jour.")
+
+            from cabinet.models import Patient
+            nb_patients = Patient.objects.filter(organization=organization).count()
+            nouvelle_limite = form.cleaned_data['max_patients']
+            if nouvelle_limite < nb_patients:
+                messages.warning(
+                    request,
+                    f"Attention : la limite ({nouvelle_limite}) est inférieure au nombre de "
+                    f"patients déjà enregistrés ({nb_patients}). Rien n'est supprimé, mais le "
+                    f"cabinet ne pourra plus ajouter de nouveau patient tant qu'il n'est pas "
+                    f"repassé sous la limite."
+                )
+
             return redirect('accounts:clients_list')
     else:
         form = ClientEditForm(organization)
 
     return render(request, 'accounts/client_form.html', {'form': form, 'mode': 'edit', 'organization': organization})
+
+
+@superadmin_required
+@require_http_methods(["POST"])
+def client_license_renouveler(request, org_id):
+    """Marque le paiement du cycle courant comme reçu et prolonge la licence d'un cycle
+    (mensuel/annuel). Suivi manuel : le superadmin encaisse lui-même puis clique ce bouton,
+    aucune passerelle de paiement en ligne."""
+    organization = get_object_or_404(Organization, id=org_id)
+    license = getattr(organization, 'license', None)
+
+    if not license or license.plan not in License.CYCLE_JOURS:
+        messages.error(request, "Cette licence n'a pas de formule d'abonnement récurrent à renouveler.")
+    else:
+        license.renouveler()
+        messages.success(
+            request,
+            f"Licence de « {organization.name} » renouvelée jusqu'au {license.end_date.strftime('%d/%m/%Y')}."
+        )
+
+    return redirect(request.POST.get('next') or 'accounts:clients_list')
 
 
 @superadmin_required

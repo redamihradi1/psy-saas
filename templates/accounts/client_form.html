@@ -55,7 +55,7 @@
         <div class="bg-white rounded-xl shadow p-4 sm:p-6 mb-6">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">Licence</h2>
             <div class="space-y-4">
-                <div class="grid grid-cols-1 {% if mode == 'edit' %}sm:grid-cols-3{% else %}sm:grid-cols-2{% endif %} gap-4">
+                <div class="grid grid-cols-1 {% if mode == 'edit' %}sm:grid-cols-4{% else %}sm:grid-cols-3{% endif %} gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.plan.label }}</label>
                         {{ form.plan }}
@@ -71,7 +71,45 @@
                         {{ form.max_patients }}
                         {% if form.max_patients.errors %}<p class="mt-1 text-sm text-red-600">{{ form.max_patients.errors.0 }}</p>{% endif %}
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.prix_dhs.label }}</label>
+                        {{ form.prix_dhs }}
+                        <p class="text-xs text-gray-400 mt-1">{{ form.prix_dhs.help_text }}</p>
+                    </div>
                 </div>
+                {% if mode == 'edit' and organization.license and organization.license.plan in 'abonnement_mensuel,abonnement_annuel' %}
+                <div class="bg-gray-50 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="text-sm text-gray-600">
+                        <div>
+                            <i class="fas fa-calendar mr-1"></i>Échéance actuelle :
+                            <strong>{{ organization.license.end_date|date:"d/m/Y" }}</strong>
+                            {% if organization.license.days_remaining != 'Illimité' %}({{ organization.license.days_remaining }} jour{{ organization.license.days_remaining|pluralize }} restant{{ organization.license.days_remaining|pluralize }}){% endif %}
+                        </div>
+                        {% if organization.license.dernier_paiement_le %}
+                        <div class="text-xs text-gray-400 mt-1">Dernier paiement enregistré le {{ organization.license.dernier_paiement_le|date:"d/m/Y" }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" name="renouveler" formaction="{% url 'accounts:client_license_renouveler' organization.id %}"
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap">
+                        <i class="fas fa-rotate mr-2"></i>Marquer comme payé et renouveler
+                    </button>
+                </div>
+                {% endif %}
+                {% if mode == 'edit' and organization.license.paiements.all %}
+                <div>
+                    <p class="text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-history mr-1 text-gray-400"></i>Historique des paiements
+                    </p>
+                    <div class="border border-gray-100 rounded-lg divide-y divide-gray-100 max-h-48 overflow-y-auto">
+                        {% for paiement in organization.license.paiements.all %}
+                        <div class="flex items-center justify-between px-3 py-2 text-sm">
+                            <span class="text-gray-600">{{ paiement.date_paiement|date:"d/m/Y" }} - {{ paiement.get_plan_display }}</span>
+                            <span class="font-medium text-gray-800">{% if paiement.montant %}{{ paiement.montant|floatformat:0 }} DHS{% else %}—{% endif %}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tests activés pour ce cabinet</label>
                     <p class="text-xs text-gray-500 mb-2">Coché = disponible pour le cabinet ET utilisable tout de suite par son psychologue.</p>

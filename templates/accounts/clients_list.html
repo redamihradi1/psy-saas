@@ -18,7 +18,7 @@
 </div>
 
 <!-- Vue d'ensemble plateforme -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     <div class="bg-white rounded-xl shadow p-4">
         <div class="text-2xl font-bold text-gray-800">{{ total_clients }}</div>
         <div class="text-xs text-gray-500 mt-1"><i class="fas fa-building mr-1"></i>Clients</div>
@@ -35,7 +35,38 @@
         <div class="text-2xl font-bold text-gray-800">{{ total_consultations }}</div>
         <div class="text-xs text-gray-500 mt-1"><i class="fas fa-calendar-check mr-1"></i>Consultations (tous clients)</div>
     </div>
+    <div class="bg-white rounded-xl shadow p-4">
+        <div class="text-2xl font-bold text-gray-800">{{ ca_mois_plateforme|floatformat:0 }} DHS</div>
+        <div class="text-xs text-gray-500 mt-1"><i class="fas fa-coins mr-1"></i>CA du mois (tous clients)</div>
+    </div>
 </div>
+
+{% if licences_a_surveiller %}
+<div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4 mb-6">
+    <h3 class="text-sm font-semibold text-amber-900 mb-3">
+        <i class="fas fa-triangle-exclamation mr-2"></i>{{ licences_a_surveiller|length }} licence{{ licences_a_surveiller|pluralize }} à surveiller
+    </h3>
+    <div class="space-y-2">
+        {% for org in licences_a_surveiller %}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-white rounded-lg p-3">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-medium text-gray-800">{{ org.name }}</span>
+                {% if not org.license.is_active %}
+                <span class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">Licence inactive/expirée</span>
+                {% else %}
+                <span class="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-800">
+                    Expire le {{ org.license.end_date|date:"d/m/Y" }}
+                </span>
+                {% endif %}
+            </div>
+            <a href="{% url 'accounts:client_edit' org.id %}" class="text-sm text-primary hover:text-primary-dark whitespace-nowrap">
+                Gérer la licence <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 {% if organizations %}
 <div class="space-y-4">
@@ -59,6 +90,10 @@
                     {% for u in org.users.all %}
                         {% if u.role == 'psychologist' %}
                             <i class="fas fa-user-md text-gray-400"></i> {{ u.get_full_name|default:u.username }} (@{{ u.username }})
+                            <span class="text-xs text-gray-400 ml-2">
+                                <i class="fas fa-clock"></i>
+                                {% if u.last_login %}Dernière connexion le {{ u.last_login|date:"d/m/Y à H:i" }}{% else %}Jamais connecté{% endif %}
+                            </span>
                         {% endif %}
                     {% endfor %}
                 </div>
@@ -70,10 +105,17 @@
                     {% if org.license.has_stai %}<span class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">STAI</span>{% endif %}
                     {% if org.license.has_d2r %}<span class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">D2R</span>{% endif %}
                 </div>
+                {% if org.license.end_date %}
+                <div class="text-xs text-gray-500 mt-2">
+                    {% if org.license.plan == 'trial' %}Essai jusqu'au{% else %}Échéance le{% endif %}
+                    {{ org.license.end_date|date:"d/m/Y" }}
+                    {% if org.license.prix_dhs %} · {{ org.license.prix_dhs|floatformat:0 }} DHS{% endif %}
+                </div>
+                {% endif %}
                 {% endif %}
             </div>
             <div class="flex flex-col items-end gap-2 shrink-0">
-                <div class="flex gap-2">
+                <div class="flex flex-wrap justify-end gap-2">
                     <a href="{% url 'accounts:client_patients' org.id %}"
                        class="text-sm px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
                         <i class="fas fa-history mr-1"></i>Patients &amp; tests
@@ -82,6 +124,14 @@
                        class="text-sm px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
                         <i class="fas fa-sliders-h mr-1"></i>Modifier
                     </a>
+                    {% if org.license.plan == 'abonnement_mensuel' or org.license.plan == 'abonnement_annuel' %}
+                    <form method="POST" action="{% url 'accounts:client_license_renouveler' org.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="text-sm px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition whitespace-nowrap">
+                            <i class="fas fa-rotate mr-1"></i>Renouveler
+                        </button>
+                    </form>
+                    {% endif %}
                 </div>
                 <div class="text-xs text-gray-400">Créé le {{ org.created_at|date:"d/m/Y" }}</div>
             </div>
