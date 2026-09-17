@@ -19,6 +19,14 @@ def _post_login_redirect(user):
     return redirect('cabinet:dashboard')
 
 
+def home_view(request):
+    """Page d'accueil publique. Un utilisateur déjà connecté n'a rien à faire sur la
+    page marketing - il est renvoyé directement vers son espace."""
+    if request.user.is_authenticated:
+        return _post_login_redirect(request.user)
+    return render(request, 'home.html')
+
+
 def login_view(request):
     if request.user.is_authenticated:
         return _post_login_redirect(request.user)
