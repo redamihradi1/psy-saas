@@ -6,22 +6,18 @@ from datetime import timedelta
 from ..models import Patient, Consultation
 
 
-@login_required
-def dashboard_view(request):
-    """
-    Vue principale du dashboard avec toutes les statistiques.
+def build_dashboard_context(organization, can_patients, can_consultations, can_comptabilite):
+    """Calcule les statistiques du dashboard pour une organisation donnée.
 
-    N'affiche/ne calcule que ce que l'utilisateur a le droit de voir : un(e) assistant(e)
-    (ou un psychologue) sans accès à un module donné ne doit pas voir ses widgets, même en
-    lecture seule (ex: chiffre d'affaires sans accès comptabilité).
+    Extrait de dashboard_view pour être réutilisé par la vue superadmin
+    (accounts:admin_dashboard) qui doit pouvoir afficher ces mêmes stats pour
+    n'importe quel cabinet, sans être connecté avec le compte du psychologue.
+    N'affiche/ne calcule que ce que l'appelant a le droit de voir : un(e)
+    assistant(e) (ou un psychologue) sans accès à un module donné ne doit pas
+    voir ses widgets, même en lecture seule (ex: chiffre d'affaires sans accès
+    comptabilité) - le superadmin passe toujours can_*=True.
     """
-    user = request.user
-    organization = user.organization
     today = timezone.now().date()
-
-    can_patients = user.has_module_access('patients')
-    can_consultations = user.has_module_access('consultations')
-    can_comptabilite = user.has_module_access('comptabilite')
 
     # Début du mois et de la semaine
     debut_mois = today.replace(day=1)
@@ -165,12 +161,11 @@ def dashboard_view(request):
             (consultations_payees_mois / consultations_mois_count * 100) if consultations_mois_count > 0 else 0
         )
 
-    context = {
+    return {
         'today': today,
         'can_patients': can_patients,
         'can_consultations': can_consultations,
         'can_comptabilite': can_comptabilite,
-        'can_agenda': user.has_module_access('agenda'),
         'total_patients': total_patients,
         'nouveaux_patients_mois': nouveaux_patients_mois,
         'evolution_patients': evolution_patients,
@@ -188,5 +183,18 @@ def dashboard_view(request):
         'stats_lieu': stats_lieu_formatted,
         'stats_type': stats_type_formatted,
     }
+
+
+@login_required
+def dashboard_view(request):
+    """Vue principale du dashboard avec toutes les statistiques du cabinet de l'utilisateur."""
+    user = request.user
+
+    can_patients = user.has_module_access('patients')
+    can_consultations = user.has_module_access('consultations')
+    can_comptabilite = user.has_module_access('comptabilite')
+
+    context = build_dashboard_context(user.organization, can_patients, can_consultations, can_comptabilite)
+    context['can_agenda'] = user.has_module_access('agenda')
 
     return render(request, 'cabinet/dashboard.html', context)

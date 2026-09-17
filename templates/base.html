@@ -213,6 +213,18 @@
             <span class="ml-3">Assistant(e)s</span>
           </a>
         </li>
+        <li>
+          <a href="{% url 'accounts:admin_dashboard' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-chart-pie w-5"></i>
+            <span class="ml-3">Dashboard (par cabinet)</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'accounts:admin_comptabilite' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-coins w-5"></i>
+            <span class="ml-3">Comptabilité (par cabinet)</span>
+          </a>
+        </li>
         {% endif %}
       </ul>
 

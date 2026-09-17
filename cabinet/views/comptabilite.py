@@ -36,12 +36,13 @@ def _mois_suivant(annee, mois):
     return (annee + 1, 1) if mois == 12 else (annee, mois + 1)
 
 
-@login_required
-@require_module_access('comptabilite')
-def comptabilite_dashboard(request):
-    organization = request.user.organization
-    annee, mois = _parse_periode(request)
+def build_comptabilite_context(organization, annee, mois):
+    """Calcule les statistiques comptables pour une organisation/période donnée.
 
+    Extrait de comptabilite_dashboard pour être réutilisé par la vue superadmin
+    (accounts:admin_comptabilite) qui doit pouvoir afficher la compta de n'importe
+    quel cabinet sans être connecté avec le compte du psychologue.
+    """
     revenus_mois = Consultation.objects.filter(
         organization=organization, statut_paiement='paye',
         date_seance__year=annee, date_seance__month=mois,
@@ -103,7 +104,7 @@ def comptabilite_dashboard(request):
     mois_precedent = _mois_precedent(annee, mois)
     mois_suivant = _mois_suivant(annee, mois)
 
-    context = {
+    return {
         'today': timezone.now().date(),
         'annee': annee,
         'mois': mois,
@@ -122,6 +123,14 @@ def comptabilite_dashboard(request):
         'categories': Depense.CATEGORIE_CHOICES,
         'alertes_paiement': alertes_paiement,
     }
+
+
+@login_required
+@require_module_access('comptabilite')
+def comptabilite_dashboard(request):
+    organization = request.user.organization
+    annee, mois = _parse_periode(request)
+    context = build_comptabilite_context(organization, annee, mois)
     return render(request, 'cabinet/comptabilite_dashboard.html', context)
 
 

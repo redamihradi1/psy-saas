@@ -1,16 +1,39 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Dashboard - PsySaaS{% endblock %}
 
 {% block content %}
+{% if is_admin_view %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+    <label for="org-switcher" class="text-sm font-medium text-gray-600 shrink-0">
+        <i class="fas fa-building mr-1"></i>Cabinet consulté :
+    </label>
+    <select id="org-switcher" data-searchable="1" data-placeholder="Rechercher un cabinet..."
+            onchange="if(this.value) window.location.href = '?org=' + this.value"
+            class="w-full sm:max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+        <option value="">Sélectionnez un cabinet</option>
+        {% for org in organizations %}
+        <option value="{{ org.id }}" {% if viewed_organization and org.id == viewed_organization.id %}selected{% endif %}>{{ org.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}
 <!-- Header -->
 <div class="relative overflow-hidden bg-gradient-to-br from-primary via-fuchsia-500 to-primary-dark rounded-2xl shadow-lg p-5 sm:p-8 mb-6 text-white">
     <div class="absolute -right-10 -top-10 w-56 h-56 rounded-full bg-white opacity-10"></div>
     <div class="absolute right-16 bottom-0 w-24 h-24 rounded-full bg-white opacity-10"></div>
     <div class="relative flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
+            {% if is_admin_view %}
+            <h1 class="text-2xl sm:text-3xl font-bold mb-1">
+                <i class="fas fa-eye mr-2"></i>Dashboard de {{ viewed_organization.name }}
+            </h1>
+            <p class="text-white text-opacity-90">Vue superadmin - lecture des données de ce cabinet</p>
+            {% else %}
             <h1 class="text-2xl sm:text-3xl font-bold mb-1">Bonjour, {{ user.get_full_name|default:user.username }} 👋</h1>
             <p class="text-white text-opacity-90">{{ user.organization.name }}</p>
+            {% endif %}
             <p class="text-white text-opacity-70 text-sm mt-1">{{ today|date:"l d F Y" }}</p>
         </div>
         {% if can_consultations %}
@@ -198,7 +221,7 @@
                 <i class="fas fa-calendar-day text-primary mr-2"></i>
                 Prochaines consultations
             </h3>
-            {% if can_agenda %}
+            {% if can_agenda and not is_admin_view %}
             <a href="{% url 'cabinet:agenda' %}" class="text-primary hover:text-primary-dark text-sm font-medium">
                 Voir l'agenda →
             </a>
@@ -249,6 +272,7 @@
             Actions rapides
         </h3>
         <div class="space-y-2">
+            {% if not is_admin_view %}
             {% if can_consultations %}
             <a href="{% url 'cabinet:consultation_create' %}"
                class="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-dark text-white px-4 py-3 rounded-xl transition font-medium">
@@ -266,6 +290,7 @@
                class="flex items-center justify-center gap-2 w-full bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-xl transition font-medium">
                 <i class="fas fa-calendar-alt"></i>Voir l'agenda
             </a>
+            {% endif %}
             {% endif %}
         </div>
 
@@ -373,6 +398,9 @@
 {{ stats_lieu|json_script:"stats-lieu-data" }}
 {{ stats_type|json_script:"stats-type-data" }}
 
+{% if is_admin_view %}
+<script src="{% static 'js/searchable-select.js' %}"></script>
+{% endif %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const cards = document.querySelectorAll('.rounded-2xl');

@@ -1,31 +1,54 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Comptabilité - PsySaaS{% endblock %}
 
 {% block content %}
+{% if is_admin_view %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+    <label for="org-switcher" class="text-sm font-medium text-gray-600 shrink-0">
+        <i class="fas fa-building mr-1"></i>Cabinet consulté :
+    </label>
+    <select id="org-switcher" data-searchable="1" data-placeholder="Rechercher un cabinet..."
+            onchange="if(this.value) window.location.href = '?org=' + this.value"
+            class="w-full sm:max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+        <option value="">Sélectionnez un cabinet</option>
+        {% for org in organizations %}
+        <option value="{{ org.id }}" {% if viewed_organization and org.id == viewed_organization.id %}selected{% endif %}>{{ org.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}
 <!-- Header -->
 <div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl shadow-lg p-5 sm:p-8 mb-6 text-white">
     <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
+            {% if is_admin_view %}
+            <h1 class="text-2xl font-bold mb-1"><i class="fas fa-eye mr-2"></i>Comptabilité de {{ viewed_organization.name }}</h1>
+            <p class="text-white text-opacity-90">Vue superadmin - lecture des données de ce cabinet</p>
+            {% else %}
             <h1 class="text-2xl font-bold mb-1"><i class="fas fa-calculator mr-2"></i>Comptabilité</h1>
             <p class="text-white text-opacity-90">Revenus, dépenses et résultat net</p>
+            {% endif %}
         </div>
         <div class="flex items-center gap-2 flex-wrap">
-            <a href="?annee={{ mois_precedent.0 }}&mois={{ mois_precedent.1 }}"
+            <a href="?{% if is_admin_view %}org={{ viewed_organization.id }}&{% endif %}annee={{ mois_precedent.0 }}&mois={{ mois_precedent.1 }}"
                class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-lg flex items-center justify-center transition shrink-0">
                 <i class="fas fa-chevron-left"></i>
             </a>
             <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 font-semibold min-w-[140px] text-center">
                 {{ mois_nom }} {{ annee }}
             </div>
-            <a href="?annee={{ mois_suivant.0 }}&mois={{ mois_suivant.1 }}"
+            <a href="?{% if is_admin_view %}org={{ viewed_organization.id }}&{% endif %}annee={{ mois_suivant.0 }}&mois={{ mois_suivant.1 }}"
                class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-lg flex items-center justify-center transition shrink-0">
                 <i class="fas fa-chevron-right"></i>
             </a>
+            {% if not is_admin_view %}
             <a href="{% url 'cabinet:comptabilite_export_csv' %}?annee={{ annee }}&mois={{ mois }}"
                class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition font-medium sm:ml-2">
                 <i class="fas fa-download mr-2"></i>Export CSV
             </a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -141,10 +164,12 @@
         <h3 class="text-lg font-semibold text-gray-800">
             <i class="fas fa-receipt text-gray-500 mr-2"></i>Dépenses de {{ mois_nom }} {{ annee }}
         </h3>
+        {% if not is_admin_view %}
         <button type="button" onclick="document.getElementById('depense-create-modal').classList.remove('hidden')"
                 class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition text-sm font-medium">
             <i class="fas fa-plus mr-2"></i>Ajouter une dépense
         </button>
+        {% endif %}
     </div>
 
     {% if depenses_liste %}
@@ -159,12 +184,14 @@
             <div class="text-sm text-gray-600">{{ depense.description|default:"—" }}</div>
             <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
                 <span class="text-xs text-gray-500">{{ depense.date_depense|date:"d/m/Y" }}</span>
+                {% if not is_admin_view %}
                 <div>
                     <a href="{% url 'cabinet:depense_edit' depense.id %}?next={{ request.get_full_path|urlencode }}"
                        class="text-gray-400 hover:text-primary px-2"><i class="fas fa-edit"></i></a>
                     <a href="{% url 'cabinet:depense_delete' depense.id %}?next={{ request.get_full_path|urlencode }}"
                        class="text-gray-400 hover:text-red-600 px-2"><i class="fas fa-trash"></i></a>
                 </div>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -179,7 +206,7 @@
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Catégorie</th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                     <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
-                    <th class="px-4 py-2"></th>
+                    {% if not is_admin_view %}<th class="px-4 py-2"></th>{% endif %}
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
@@ -191,12 +218,14 @@
                     </td>
                     <td class="px-4 py-3 text-sm text-gray-600">{{ depense.description|default:"—" }}</td>
                     <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">{{ depense.montant }} DHS</td>
+                    {% if not is_admin_view %}
                     <td class="px-4 py-3 text-right whitespace-nowrap">
                         <a href="{% url 'cabinet:depense_edit' depense.id %}?next={{ request.get_full_path|urlencode }}"
                            class="text-gray-400 hover:text-primary px-1"><i class="fas fa-edit"></i></a>
                         <a href="{% url 'cabinet:depense_delete' depense.id %}?next={{ request.get_full_path|urlencode }}"
                            class="text-gray-400 hover:text-red-600 px-1"><i class="fas fa-trash"></i></a>
                     </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -256,6 +285,9 @@
 {{ evolution|json_script:"evolution-data" }}
 {{ repartition|json_script:"repartition-data" }}
 
+{% if is_admin_view %}
+<script src="{% static 'js/searchable-select.js' %}"></script>
+{% endif %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const evolution = JSON.parse(document.getElementById('evolution-data').textContent);

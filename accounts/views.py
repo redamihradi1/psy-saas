@@ -276,3 +276,57 @@ def assistant_toggle_active(request, user_id):
     assistant.save()
     messages.success(request, f"Compte de {assistant.username} {'réactivé' if assistant.is_active else 'désactivé'}.")
     return redirect('accounts:assistants_list')
+
+
+@superadmin_required
+def admin_dashboard(request):
+    """Dashboard d'un cabinet au choix, consultable par le superadmin sans se connecter
+    avec le compte du psychologue. Superadmin voit toujours tous les modules (pas de
+    gating par permission comme pour un psychologue/assistant(e))."""
+    from cabinet.views.dashboard import build_dashboard_context
+
+    organizations = Organization.objects.order_by('name')
+    org_id = request.GET.get('org')
+    if not org_id:
+        return render(request, 'accounts/admin_org_picker.html', {
+            'organizations': organizations,
+            'page_title': 'Dashboard par cabinet',
+            'page_icon': 'fas fa-chart-pie',
+        })
+
+    organization = get_object_or_404(Organization, id=org_id)
+    context = build_dashboard_context(organization, True, True, True)
+    context.update({
+        'can_agenda': False,
+        'is_admin_view': True,
+        'viewed_organization': organization,
+        'organizations': organizations,
+    })
+    return render(request, 'cabinet/dashboard.html', context)
+
+
+@superadmin_required
+def admin_comptabilite(request):
+    """Comptabilité d'un cabinet au choix, consultable en lecture par le superadmin sans
+    se connecter avec le compte du psychologue. Lecture seule (les actions d'ajout/édition/
+    suppression de dépense sont masquées côté template pour ce mode)."""
+    from cabinet.views.comptabilite import build_comptabilite_context, _parse_periode
+
+    organizations = Organization.objects.order_by('name')
+    org_id = request.GET.get('org')
+    if not org_id:
+        return render(request, 'accounts/admin_org_picker.html', {
+            'organizations': organizations,
+            'page_title': 'Comptabilité par cabinet',
+            'page_icon': 'fas fa-coins',
+        })
+
+    organization = get_object_or_404(Organization, id=org_id)
+    annee, mois = _parse_periode(request)
+    context = build_comptabilite_context(organization, annee, mois)
+    context.update({
+        'is_admin_view': True,
+        'viewed_organization': organization,
+        'organizations': organizations,
+    })
+    return render(request, 'cabinet/comptabilite_dashboard.html', context)
