@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agenda de {{ viewed_organization.name }} - PsySaaS{% endblock %}
+
+{% block extra_css %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+<style>
+.consultation-planifie { background-color: #60a5fa; border-color: #3b82f6; }
+.consultation-termine { background-color: #34d399; border-color: #10b981; }
+.consultation-absent { background-color: #fb923c; border-color: #f97316; }
+.consultation-reporte { background-color: #fbbf24; border-color: #f59e0b; }
+.consultation-annule { background-color: #f87171; border-color: #ef4444; text-decoration: line-through; }
+.indisponibilite-event { opacity: 0.7; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+    <label for="org-switcher" class="text-sm font-medium text-gray-600 shrink-0">
+        <i class="fas fa-building mr-1"></i>Cabinet consulté :
+    </label>
+    <select id="org-switcher" data-searchable="1" data-placeholder="Rechercher un cabinet..."
+            onchange="if(this.value) window.location.href = '?org=' + this.value"
+            class="w-full sm:max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+        <option value="">Sélectionnez un cabinet</option>
+        {% for org in organizations %}
+        <option value="{{ org.id }}" {% if org.id == viewed_organization.id %}selected{% endif %}>{{ org.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="bg-gradient-to-br from-primary via-fuchsia-500 to-primary-dark rounded-2xl shadow-lg p-5 sm:p-6 mb-6 text-white">
+    <h1 class="text-xl sm:text-2xl font-bold mb-1"><i class="fas fa-eye mr-2"></i>Agenda de {{ viewed_organization.name }}</h1>
+    <p class="text-white text-opacity-90 text-sm">Vue superadmin - lecture seule, pas de création/modification depuis cette page.</p>
+</div>
+
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
+    <div id="calendar"></div>
+</div>
+
+<script src="{% static 'js/searchable-select.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const isMobile = window.innerWidth < 640;
+    const orgId = {{ viewed_organization.id }};
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: isMobile ? 'listWeek' : 'dayGridMonth',
+        locale: 'fr',
+        headerToolbar: { left: 'prev,next', center: 'title', right: '' },
+        buttonText: { today: "Aujourd'hui" },
+        height: 'auto',
+        eventSources: [
+            { id: 'consultations', url: '/cabinet/consultations/api/?org=' + orgId },
+            { id: 'indispo', url: '/cabinet/indisponibilites/api/?org=' + orgId },
+        ],
+        eventClassNames: function(arg) {
+            if (arg.event.extendedProps.event_type === 'indisponibilite') {
+                return ['indisponibilite-event'];
+            }
+            return ['consultation-' + arg.event.extendedProps.statut];
+        },
+    });
+
+    calendar.render();
+});
+</script>
+{% endblock %}

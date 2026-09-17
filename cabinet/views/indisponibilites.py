@@ -20,7 +20,13 @@ TYPE_COLORS = {
 @require_module_access('agenda')
 def indisponibilites_api(request):
     """API JSON pour FullCalendar (agenda)"""
-    indisponibilites = Indisponibilite.objects.all()
+    if request.user.is_superadmin():
+        indisponibilites = Indisponibilite.all_objects.all()
+        org_id = request.GET.get('org')
+        if org_id:
+            indisponibilites = indisponibilites.filter(organization_id=org_id)
+    else:
+        indisponibilites = Indisponibilite.objects.all()
 
     events = [
         {

@@ -380,3 +380,25 @@ def admin_comptabilite(request):
         'organizations': organizations,
     })
     return render(request, 'cabinet/comptabilite_dashboard.html', context)
+
+
+@superadmin_required
+def admin_agenda(request):
+    """Agenda d'un cabinet au choix, consultable en lecture par le superadmin sans se
+    connecter avec le compte du psychologue. Lecture seule (pas de création/blocage de
+    créneau ici - le calendrier interactif complet reste réservé au psychologue)."""
+    organizations = Organization.objects.order_by('name')
+    org_id = request.GET.get('org')
+    if not org_id:
+        return render(request, 'accounts/admin_org_picker.html', {
+            'organizations': organizations,
+            'page_title': 'Agenda par cabinet',
+            'page_icon': 'fas fa-calendar-alt',
+        })
+
+    organization = get_object_or_404(Organization, id=org_id)
+    return render(request, 'accounts/admin_agenda.html', {
+        'is_admin_view': True,
+        'viewed_organization': organization,
+        'organizations': organizations,
+    })

@@ -68,6 +68,9 @@ def consultations_api(request):
     """API JSON pour FullCalendar"""
     if request.user.is_superadmin():
         consultations = Consultation.all_objects.select_related('patient').all()
+        org_id = request.GET.get('org')
+        if org_id:
+            consultations = consultations.filter(organization_id=org_id)
     else:
         consultations = Consultation.objects.select_related('patient').all()
 

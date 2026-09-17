@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/assistants/<int:user_id>/toggle-active/', views.assistant_toggle_active, name='assistant_toggle_active'),
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin/comptabilite/', views.admin_comptabilite, name='admin_comptabilite'),
+    path('admin/agenda/', views.admin_agenda, name='admin_agenda'),
 ]
