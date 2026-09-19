@@ -7,7 +7,7 @@ class TestD2R(TestPsychometrique):
     """Test d'attention D2R"""
     
     # Informations participant
-    code = models.CharField(max_length=50, verbose_name="Code du test")
+    code = models.CharField(max_length=50, blank=True, verbose_name="Code du test")
     date = models.DateField(verbose_name="Date")
     age = models.IntegerField(verbose_name="Âge")
     sexe = models.CharField(

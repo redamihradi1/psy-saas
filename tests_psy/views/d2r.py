@@ -37,7 +37,7 @@ def d2r_nouveau(request, patient_id=None):
         patient = get_object_or_404(Patient, id=patient_id, organization=request.user.organization)
     
     if request.method == 'POST':
-        form = TestD2RForm(request.POST)
+        form = TestD2RForm(request.POST, organization=request.user.organization)
         if form.is_valid():
             test = form.save(commit=False)
             test.organization = request.user.organization
@@ -57,12 +57,7 @@ def d2r_nouveau(request, patient_id=None):
         if patient:
             initial['patient'] = patient
             initial['age'] = patient.age
-        form = TestD2RForm(initial=initial)
-        
-        # Filtrer les patients par organisation
-        form.fields['patient'].queryset = Patient.objects.filter(
-            organization=request.user.organization
-        )
+        form = TestD2RForm(initial=initial, organization=request.user.organization)
     
     context = {
         'form': form,

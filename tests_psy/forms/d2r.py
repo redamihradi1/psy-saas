@@ -1,5 +1,6 @@
 from django import forms
 from tests_psy.models import TestD2R
+from cabinet.models import Patient
 
 class TestD2RForm(forms.ModelForm):
     class Meta:
@@ -24,7 +25,7 @@ class TestD2RForm(forms.ModelForm):
             }),
             'code': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent',
-                'placeholder': 'Code du test'
+                'placeholder': 'Code du test (optionnel)'
             }),
             'date': forms.DateInput(attrs={
                 'type': 'date',
@@ -57,6 +58,19 @@ class TestD2RForm(forms.ModelForm):
                 'class': 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent'
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        organization = kwargs.pop('organization', None)
+        super().__init__(*args, **kwargs)
+
+        if organization:
+            self.fields['patient'].queryset = Patient.objects.filter(
+                organization=organization
+            ).order_by('nom', 'prenom')
+
+        self.fields['patient'].label = "Patient"
+        self.fields['patient'].empty_label = "Sélectionnez un patient"
+        self.fields['code'].required = False
 
 
 class TestD2RResponseForm(forms.Form):
