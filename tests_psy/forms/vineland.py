@@ -39,10 +39,17 @@ class TestVinelandModeForm(forms.Form):
         super().__init__(*args, **kwargs)
         if all_patients:
             self.fields['patient'].queryset = Patient.all_objects.order_by('nom', 'prenom')
+            recent_ids = Patient.all_objects.order_by('-date_creation').values_list('id', flat=True)[:5]
         elif organization:
             self.fields['patient'].queryset = Patient.objects.filter(
                 organization=organization
             ).order_by('nom', 'prenom')
+            recent_ids = Patient.objects.filter(
+                organization=organization
+            ).order_by('-date_creation').values_list('id', flat=True)[:5]
+        else:
+            recent_ids = []
+        self.fields['patient'].widget.attrs['data-recent-ids'] = ','.join(str(pk) for pk in recent_ids)
         self.fields['patient'].label = "Patient"
 
     def clean(self):

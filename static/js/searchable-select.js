@@ -26,6 +26,11 @@
             return Array.prototype.filter.call(select.options, function (o) { return o.value !== ''; });
         }
 
+        function recentIds() {
+            var raw = select.dataset.recentIds || '';
+            return raw.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        }
+
         function selectedText() {
             var opt = select.options[select.selectedIndex];
             return (opt && opt.value !== '') ? opt.textContent : '';
@@ -46,15 +51,36 @@
         function render(term) {
             term = (term || '').toLowerCase();
             dropdown.innerHTML = '';
-            var matches = choices().filter(function (o) {
-                return o.textContent.toLowerCase().indexOf(term) !== -1;
-            });
+            var showingRecent = false;
+            var matches;
+            if (!term) {
+                var ids = recentIds();
+                if (ids.length) {
+                    showingRecent = true;
+                    var all = choices();
+                    matches = ids
+                        .map(function (id) { return all.filter(function (o) { return o.value === id; })[0]; })
+                        .filter(Boolean);
+                } else {
+                    matches = choices();
+                }
+            } else {
+                matches = choices().filter(function (o) {
+                    return o.textContent.toLowerCase().indexOf(term) !== -1;
+                });
+            }
             if (matches.length === 0) {
                 var empty = document.createElement('div');
                 empty.className = 'px-4 py-2 text-sm text-gray-400';
                 empty.textContent = 'Aucun résultat';
                 dropdown.appendChild(empty);
                 return;
+            }
+            if (showingRecent) {
+                var label = document.createElement('div');
+                label.className = 'px-4 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide';
+                label.textContent = 'Patients récents';
+                dropdown.appendChild(label);
             }
             matches.forEach(function (o) {
                 var item = document.createElement('div');

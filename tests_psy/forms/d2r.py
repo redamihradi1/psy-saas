@@ -68,6 +68,11 @@ class TestD2RForm(forms.ModelForm):
                 organization=organization
             ).order_by('nom', 'prenom')
 
+            recent_ids = Patient.objects.filter(
+                organization=organization
+            ).order_by('-date_creation').values_list('id', flat=True)[:5]
+            self.fields['patient'].widget.attrs['data-recent-ids'] = ','.join(str(pk) for pk in recent_ids)
+
         self.fields['patient'].label = "Patient"
         self.fields['patient'].empty_label = "Sélectionnez un patient"
         self.fields['code'].required = False
