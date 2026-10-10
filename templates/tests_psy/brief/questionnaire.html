@@ -1,0 +1,169 @@
+{% extends is_public|yesno:'base_public.html,base.html' %}
+
+{% block title %}Questionnaire BRIEF{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-4 sm:p-8">
+    <div class="mb-6 pb-6 border-b border-gray-200">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            <i class="fas fa-puzzle-piece text-primary mr-2"></i>
+            {% if is_public %}Questionnaire concernant {{ patient.prenom }}{% else %}Questionnaire BRIEF - Forme Parent{% endif %}
+        </h2>
+        {% if not is_public %}
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+            <div><i class="fas fa-user mr-1"></i><strong>Patient :</strong> {{ patient.nom_complet }}</div>
+            <div><i class="fas fa-birthday-cake mr-1"></i><strong>Né(e) le :</strong> {{ patient.date_naissance|date:"d/m/Y" }}</div>
+            {% if test.repondant %}<div><i class="fas fa-user-friends mr-1"></i><strong>Répondant :</strong> {{ test.repondant }}</div>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mb-6 bg-gray-50 rounded-lg p-4 text-sm text-gray-700 space-y-2">
+        {% if is_public %}
+        <p>
+            Vous trouverez ci-dessous une liste de comportements. Pour chacun, indiquez si votre enfant
+            a présenté des difficultés avec ce comportement <strong>au cours des 6 derniers mois</strong>.
+            Merci de répondre à toutes les questions, même si certaines vous semblent difficiles ou peu
+            adaptées à votre enfant.
+        </p>
+        <p>Vous pouvez enregistrer et revenir plus tard avec le même lien, tant que vous n'avez pas envoyé vos réponses.</p>
+        {% endif %}
+        <div class="flex flex-wrap gap-x-6 gap-y-1 font-medium">
+            <span><strong class="text-primary-dark">J</strong> = Jamais</span>
+            <span><strong class="text-primary-dark">P</strong> = Parfois</span>
+            <span><strong class="text-primary-dark">S</strong> = Souvent</span>
+        </div>
+    </div>
+
+    <form method="POST" id="briefForm">
+        {% csrf_token %}
+
+        {% for item in items %}
+        <div class="question-block flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-100 py-4 px-2 sm:px-3 rounded-lg"
+             data-item="{{ item.numero }}">
+            <div class="flex items-start gap-3 sm:w-2/3">
+                <span class="inline-flex shrink-0 items-center justify-center bg-primary text-white font-bold rounded-full w-8 h-8 text-sm">{{ item.numero }}</span>
+                <span class="text-sm text-gray-900 pt-1.5">
+                    {{ item.texte }}
+                    <span class="unanswered-badge ml-1 text-amber-700 text-xs font-medium hidden">À répondre</span>
+                </span>
+            </div>
+            <div class="response-group flex gap-2 sm:justify-end">
+                {% for value, label in choix_reponses %}
+                <label class="radio-label flex-1 sm:flex-none sm:w-24 h-11 flex items-center justify-center gap-1 border-2 rounded-lg cursor-pointer transition text-sm font-semibold
+                              {% if item.reponse_actuelle == value %}bg-primary border-primary text-white{% else %}border-gray-300 text-gray-700 hover:border-primary{% endif %}">
+                    <input type="radio" name="item_{{ item.numero }}" value="{{ value }}" class="hidden"
+                           {% if item.reponse_actuelle == value %}checked{% endif %}>
+                    <span>{{ label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 text-center py-8">Le questionnaire n'est pas encore disponible. Merci de contacter le cabinet.</p>
+        {% endfor %}
+
+        {% if items %}
+        <div class="sticky bottom-0 bg-white mt-6 pt-4 pb-2 border-t-2 border-gray-200">
+            <div class="flex items-center justify-center gap-3 mb-3">
+                <span class="text-sm font-medium text-gray-600 whitespace-nowrap">
+                    <span id="answeredCount">{{ nb_reponses }}</span> / {{ items|length }} réponses
+                </span>
+                <div class="flex-1 max-w-xs bg-gray-200 rounded-full h-2">
+                    <div id="progressBar" class="bg-primary h-2 rounded-full transition-all duration-300"
+                         style="width: {% widthratio nb_reponses items|length 100 %}%"></div>
+                </div>
+            </div>
+
+            <div id="unansweredCounter" class="hidden mb-3 bg-blue-50 border-l-4 border-blue-400 text-blue-800 text-sm px-4 py-3 rounded">
+                <p class="font-medium mb-2"><i class="fas fa-info-circle mr-1"></i><span id="unansweredCounterText"></span></p>
+                <button type="submit" name="action" value="submit" data-force="1"
+                        class="text-sm underline text-blue-900 hover:text-blue-700">
+                    {% if is_public %}Envoyer quand même{% else %}Terminer quand même{% endif %}
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button type="submit" name="action" value="save"
+                        class="flex-1 sm:flex-none bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-save mr-2"></i>Enregistrer et continuer plus tard
+                </button>
+                <button type="submit" name="action" value="submit"
+                        class="flex-1 sm:flex-none sm:ml-auto bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg">
+                    <i class="fas fa-check mr-2"></i>{% if is_public %}Envoyer mes réponses{% else %}Terminer{% endif %}
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('briefForm');
+    if (!form) return;
+    const blocks = Array.from(document.querySelectorAll('.question-block[data-item]'));
+    const counter = document.getElementById('unansweredCounter');
+    const counterText = document.getElementById('unansweredCounterText');
+    const answeredCount = document.getElementById('answeredCount');
+    const progressBar = document.getElementById('progressBar');
+
+    function isAnswered(block) {
+        return !!block.querySelector('input[type="radio"]:checked');
+    }
+
+    function refreshProgress() {
+        const answered = blocks.filter(isAnswered).length;
+        if (answeredCount) answeredCount.textContent = answered;
+        if (progressBar && blocks.length) progressBar.style.width = Math.round(answered * 100 / blocks.length) + '%';
+        if (answered === blocks.length && counter) counter.classList.add('hidden');
+    }
+
+    document.querySelectorAll('.radio-label').forEach(function(label) {
+        label.addEventListener('click', function() {
+            const block = this.closest('.question-block');
+            block.querySelectorAll('.radio-label').forEach(function(l) {
+                l.classList.remove('bg-primary', 'border-primary', 'text-white');
+                l.classList.add('border-gray-300', 'text-gray-700');
+            });
+            this.classList.remove('border-gray-300', 'text-gray-700');
+            this.classList.add('bg-primary', 'border-primary', 'text-white');
+            // Une question signalée redevient normale dès qu'elle reçoit une réponse.
+            block.classList.remove('question-unanswered');
+            const badge = block.querySelector('.unanswered-badge');
+            if (badge) badge.classList.add('hidden');
+            setTimeout(refreshProgress, 0);
+        });
+    });
+
+    // Comme pour Vineland : rien n'est signalé au chargement, seulement quand on tente de
+    // terminer avec des questions sans réponse (ton neutre, pas d'alerte rouge). Le manuel
+    // BRIEF tolère quelques omissions, d'où le bouton "quand même".
+    form.addEventListener('submit', function(e) {
+        const submitter = e.submitter;
+        if (!submitter || submitter.value !== 'submit' || submitter.dataset.force) return;
+        const unanswered = blocks.filter(function(b) { return !isAnswered(b); });
+        if (unanswered.length === 0) return;
+
+        e.preventDefault();
+        unanswered.forEach(function(block) {
+            block.classList.add('question-unanswered');
+            block.querySelector('.unanswered-badge').classList.remove('hidden');
+        });
+        counterText.textContent = unanswered.length === 1
+            ? 'Il reste 1 question sans réponse.'
+            : 'Il reste ' + unanswered.length + ' questions sans réponse.';
+        counter.classList.remove('hidden');
+        unanswered[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+});
+</script>
+
+<style>
+.question-block.question-unanswered {
+    background-color: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+</style>
+{% endblock %}

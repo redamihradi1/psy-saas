@@ -1,0 +1,9 @@
+{
+ "forme": "parent",
+ "items": [
+  {"numero": 1, "texte": "Texte de l'item 1", "echelle": "controle_emotionnel", "negativite": false},
+  {"numero": 2, "texte": "Texte de l'item 2", "echelle": "memoire_travail", "negativite": false},
+  {"numero": 3, "texte": "Texte de l'item 3 (non compté dans une échelle)", "echelle": "", "negativite": true}
+ ],
+ "paires_incoherence": [[1, 2]]
+}

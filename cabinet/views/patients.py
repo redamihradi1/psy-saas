@@ -15,6 +15,7 @@ _TEST_SOURCES = [
     ('Beck', 'beck', 'tests_psy:beck_resultats', 'tests_psy:beck_passation'),
     ('STAI', 'stai', 'tests_psy:stai_resultats', 'tests_psy:stai_passation'),
     ('D2R', 'd2r', 'tests_psy:d2r_resultats', 'tests_psy:d2r_passation'),
+    ('BRIEF', 'brief', 'tests_psy:brief_resultats', 'tests_psy:brief_questionnaire'),
 ]
 
 
@@ -23,8 +24,8 @@ def _patient_tests_par_categorie(user, patient):
     l'utilisateur peut voir (licence de l'organisation ET permission utilisateur sur le test),
     pour que le psychologue (ou l'assistant(e) autorisé(e)) retrouve l'historique directement
     depuis la fiche patient, comme sur la vue d'ensemble du super admin."""
-    from tests_psy.models import TestVineland, TestBeck, TestSTAI, TestD2R
-    models_by_key = {'vineland': TestVineland, 'beck': TestBeck, 'stai': TestSTAI, 'd2r': TestD2R}
+    from tests_psy.models import TestVineland, TestBeck, TestSTAI, TestD2R, TestBRIEF
+    models_by_key = {'vineland': TestVineland, 'beck': TestBeck, 'stai': TestSTAI, 'd2r': TestD2R, 'brief': TestBRIEF}
 
     organization = patient.organization
     license = getattr(organization, 'license', None)
@@ -44,11 +45,11 @@ def _patient_tests_par_categorie(user, patient):
 
         tests = []
         for test in queryset.order_by('-date_passation'):
-            # Vineland "notes importées" n'a pas de réponses item par item à éditer (édition
-            # dédiée), et un lien public pas encore soumis par le parent n'a rien à éditer.
-            if key == 'vineland' and getattr(test, 'mode', 'cabinet') == 'importe':
-                edit_url = reverse('tests_psy:vineland_notes_importees', kwargs={'test_id': test.id})
-            elif key == 'vineland' and getattr(test, 'mode', 'cabinet') == 'lien_public' and not test.lien_soumis_le:
+            # Vineland/BRIEF "notes importées" n'ont pas de réponses item par item à éditer
+            # (édition dédiée), et un lien public pas encore soumis par le parent n'a rien à éditer.
+            if key in ('vineland', 'brief') and getattr(test, 'mode', 'cabinet') == 'importe':
+                edit_url = reverse(f'tests_psy:{key}_notes_importees', kwargs={'test_id': test.id})
+            elif key in ('vineland', 'brief') and getattr(test, 'mode', 'cabinet') == 'lien_public' and not test.lien_soumis_le:
                 edit_url = None
             else:
                 edit_url = reverse(edit_name, kwargs={'test_id': test.id})

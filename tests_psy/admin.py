@@ -18,7 +18,10 @@ from .models import (
     TestBeck, ReponseItemBeck, ItemBeck, PhraseBeck,
 
     # STAI
-    TestSTAI, ReponseItemSTAI, ItemSTAI
+    TestSTAI, ReponseItemSTAI, ItemSTAI,
+
+    # BRIEF
+    ItemBRIEF, PaireIncoherenceBRIEF, NormeBRIEF, TestBRIEF, ReponseBRIEF, NoteBruteImporteeBRIEF,
 )
 
 
@@ -467,3 +470,43 @@ class ItemSTAIAdmin(admin.ModelAdmin):
     def texte_court(self, obj):
         return obj.texte[:60] + '...' if len(obj.texte) > 60 else obj.texte
     texte_court.short_description = 'Texte'
+
+
+# ========== BRIEF ==========
+
+@admin.register(ItemBRIEF)
+class ItemBRIEFAdmin(admin.ModelAdmin):
+    list_display = ['numero', 'forme', 'echelle', 'est_negativite']
+    list_filter = ['forme', 'echelle', 'est_negativite']
+    search_fields = ['texte']
+
+
+@admin.register(PaireIncoherenceBRIEF)
+class PaireIncoherenceBRIEFAdmin(admin.ModelAdmin):
+    list_display = ['forme', 'item_a', 'item_b']
+
+
+@admin.register(NormeBRIEF)
+class NormeBRIEFAdmin(admin.ModelAdmin):
+    list_display = ['forme', 'sexe', 'age_min', 'age_max', 'echelle', 'score_brut', 'score_t', 'percentile', 'ic90']
+    list_filter = ['forme', 'sexe', 'age_min', 'echelle']
+
+
+class ReponseBRIEFInline(admin.TabularInline):
+    model = ReponseBRIEF
+    extra = 0
+    fields = ['item', 'reponse', 'valeur']
+    readonly_fields = ['valeur']
+
+
+class NoteBruteImporteeBRIEFInline(admin.TabularInline):
+    model = NoteBruteImporteeBRIEF
+    extra = 0
+
+
+@admin.register(TestBRIEF)
+class TestBRIEFAdmin(admin.ModelAdmin):
+    list_display = ['patient', 'organization', 'sexe', 'mode', 'date_passation', 'termine_le']
+    list_filter = ['mode', 'sexe', 'organization']
+    search_fields = ['patient__nom', 'patient__prenom']
+    inlines = [ReponseBRIEFInline, NoteBruteImporteeBRIEFInline]

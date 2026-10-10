@@ -23,3 +23,7 @@ vineland_test_*_export_*.json
 # Notes de passation personnelles (jamais commitées)
 passation.md
 projet.md
+# Contenu BRIEF sous droit d'auteur (Hogrefe) : items, répartition, normes - jamais versionné,
+# chargé en base via `python manage.py import_brief` (voir tests_psy/data/brief/README.md)
+tests_psy/data/brief/*.json
+!tests_psy/data/brief/*.example.json

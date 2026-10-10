@@ -148,7 +148,7 @@
         {% endif %}
 
         <!-- Menu Tests Psychométriques - Affiché uniquement si au moins 1 test disponible et autorisé pour cet utilisateur -->
-        {% if user.organization.license.has_d2r and user|has_test:'d2r' or user.organization.license.has_vineland and user|has_test:'vineland' or user.organization.license.has_beck and user|has_test:'beck' or user.organization.license.has_stai and user|has_test:'stai' %}
+        {% if user.organization.license.has_d2r and user|has_test:'d2r' or user.organization.license.has_vineland and user|has_test:'vineland' or user.organization.license.has_beck and user|has_test:'beck' or user.organization.license.has_stai and user|has_test:'stai' or user.organization.license.has_brief and user|has_test:'brief' %}
         <li class="mt-4 px-6">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tests</p>
         </li>
@@ -189,6 +189,16 @@
           <a href="{% url 'tests_psy:stai_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
             <i class="fas fa-heartbeat w-5"></i>
             <span class="ml-3">Test STAI (Anxiété)</span>
+          </a>
+        </li>
+        {% endif %}
+
+        <!-- Test BRIEF - Affiché uniquement si accès autorisé -->
+        {% if user.organization.license.has_brief and user|has_test:'brief' %}
+        <li>
+          <a href="{% url 'tests_psy:brief_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-puzzle-piece w-5"></i>
+            <span class="ml-3">Test BRIEF (Fonctions exécutives)</span>
           </a>
         </li>
         {% endif %}

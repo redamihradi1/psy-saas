@@ -42,6 +42,15 @@ from .stai import (
 
 )
 
+from .brief import (
+    ItemBRIEF,
+    PaireIncoherenceBRIEF,
+    NormeBRIEF,
+    TestBRIEF,
+    ReponseBRIEF,
+    NoteBruteImporteeBRIEF,
+)
+
 __all__ = [
     # Commun
     'Domain',
@@ -82,4 +91,12 @@ __all__ = [
     'ItemSTAI',
     'TestSTAI',
     'ReponseItemSTAI',
+
+    # BRIEF
+    'ItemBRIEF',
+    'PaireIncoherenceBRIEF',
+    'NormeBRIEF',
+    'TestBRIEF',
+    'ReponseBRIEF',
+    'NoteBruteImporteeBRIEF',
 ]

@@ -265,5 +265,5 @@ class LicenseAvailableTestsTests(TestCase):
         manquants = set(license.get_missing_tests())
 
         self.assertEqual(disponibles, {'Beck', 'STAI'})
-        self.assertEqual(manquants, {'D2R', 'Vineland', 'PEP3'})
+        self.assertEqual(manquants, {'D2R', 'Vineland', 'PEP3', 'BRIEF'})
         self.assertEqual(disponibles & manquants, set())

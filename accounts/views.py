@@ -208,7 +208,7 @@ def client_patients(request, org_id):
     passation déjà existante (pré-remplie avec les réponses actuelles) pour corriger une
     réponse et relancer le calcul - pas besoin d'un éditeur dédié, la passation le fait déjà."""
     from cabinet.models import Patient
-    from tests_psy.models import TestVineland, TestBeck, TestSTAI, TestD2R
+    from tests_psy.models import TestVineland, TestBeck, TestSTAI, TestD2R, TestBRIEF
 
     organization = get_object_or_404(Organization, id=org_id)
     patients = Patient.objects.filter(organization=organization).order_by('nom', 'prenom')
@@ -219,16 +219,17 @@ def client_patients(request, org_id):
         ('Beck', TestBeck, 'tests_psy:beck_resultats', 'tests_psy:beck_passation'),
         ('STAI', TestSTAI, 'tests_psy:stai_resultats', 'tests_psy:stai_passation'),
         ('D2R', TestD2R, 'tests_psy:d2r_resultats', 'tests_psy:d2r_passation'),
+        ('BRIEF', TestBRIEF, 'tests_psy:brief_resultats', 'tests_psy:brief_questionnaire'),
     ]
 
     tests_par_patient = {}
     for label, model, resultats_url_name, edit_url_name in test_sources:
         for test in model.all_objects.filter(organization=organization):
-            # Vineland "notes importées" n'a pas de réponses item par item à éditer (édition
-            # dédiée), et un lien public pas encore soumis par le parent n'a rien à éditer.
-            if label == 'Vineland' and getattr(test, 'mode', 'cabinet') == 'importe':
-                edit_url = reverse('tests_psy:vineland_notes_importees', kwargs={'test_id': test.id})
-            elif label == 'Vineland' and getattr(test, 'mode', 'cabinet') == 'lien_public' and not test.lien_soumis_le:
+            # Vineland/BRIEF "notes importées" n'ont pas de réponses item par item à éditer
+            # (édition dédiée), et un lien public pas encore soumis par le parent n'a rien à éditer.
+            if label in ('Vineland', 'BRIEF') and getattr(test, 'mode', 'cabinet') == 'importe':
+                edit_url = reverse(f'tests_psy:{label.lower()}_notes_importees', kwargs={'test_id': test.id})
+            elif label in ('Vineland', 'BRIEF') and getattr(test, 'mode', 'cabinet') == 'lien_public' and not test.lien_soumis_le:
                 edit_url = None
             else:
                 edit_url = reverse(edit_url_name, kwargs={'test_id': test.id})

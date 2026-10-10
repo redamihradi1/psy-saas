@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Scores bruts BRIEF{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-4 sm:p-8 max-w-3xl mx-auto">
+    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+        <i class="fas fa-pen text-primary mr-2"></i>Scores bruts BRIEF déjà cotés
+    </h2>
+    <p class="text-sm text-gray-600 mb-6">
+        {{ patient.nom_complet }} - {{ test.get_sexe_display }}, né(e) le {{ patient.date_naissance|date:"d/m/Y" }}.
+        Les indices (IRC, IM, CEG), les scores T et les percentiles sont calculés automatiquement.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="mb-4 text-sm text-red-600">{{ form.non_field_errors }}</div>{% endif %}
+
+        <h3 class="font-semibold text-gray-800 mb-3">Échelles cliniques</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            {% for field in form.champs_echelles %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }} *</label>
+                {{ field }}
+                {% if field.errors %}<p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <h3 class="font-semibold text-gray-800 mb-1">Échelles de validité <span class="font-normal text-sm text-gray-500">(facultatif)</span></h3>
+        <p class="text-xs text-gray-500 mb-3">Sans les réponses item par item, elles ne peuvent pas être recalculées : reporte les scores de la feuille de cotation si tu les as.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {% for field in form.champs_validite %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-gray-200">
+            <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg">
+                <i class="fas fa-check mr-2"></i>Enregistrer et voir les résultats
+            </button>
+            <a href="{% url 'tests_psy:brief_liste' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition text-center">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

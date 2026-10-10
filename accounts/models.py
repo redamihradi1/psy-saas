@@ -88,6 +88,7 @@ class User(AbstractUser):
     can_access_beck = models.BooleanField(default=True, verbose_name="Accès au test Beck")
     can_access_stai = models.BooleanField(default=True, verbose_name="Accès au test STAI")
     can_access_d2r = models.BooleanField(default=True, verbose_name="Accès au test D2R")
+    can_access_brief = models.BooleanField(default=True, verbose_name="Accès au test BRIEF")
 
     MODULE_PERMISSIONS = [
         ('can_access_patients', 'Patients'),
@@ -102,6 +103,7 @@ class User(AbstractUser):
         ('can_access_beck', 'Test Beck'),
         ('can_access_stai', 'Test STAI'),
         ('can_access_d2r', 'Test D2R'),
+        ('can_access_brief', 'Test BRIEF'),
     ]
 
     class Meta:
@@ -181,6 +183,9 @@ class License(models.Model):
 
     has_stai = models.BooleanField(default=False, verbose_name="Accès Test STAI")
     max_tests_stai = models.IntegerField(default=0, verbose_name="Nombre max de tests STAI (0 = illimité)")
+
+    has_brief = models.BooleanField(default=False, verbose_name="Accès Test BRIEF")
+    max_tests_brief = models.IntegerField(default=0, verbose_name="Nombre max de tests BRIEF (0 = illimité)")
 
     has_pep3 = models.BooleanField(default=False, verbose_name="Accès Test PEP3")
     max_tests_pep3 = models.IntegerField(default=0, verbose_name="Nombre max de tests PEP3 (0 = illimité)")
@@ -301,6 +306,7 @@ class License(models.Model):
             'vineland': self.max_tests_vineland,
             'beck': self.max_tests_beck,
             'stai': self.max_tests_stai,
+            'brief': self.max_tests_brief,
             'pep3': self.max_tests_pep3,
         }
         
@@ -324,6 +330,10 @@ class License(models.Model):
         elif test_name.lower() == 'stai':
             current_count = TestSTAI.objects.filter(organization=self.organization).count()
             return current_count < max_tests
+        elif test_name.lower() == 'brief':
+            from tests_psy.models import TestBRIEF
+            current_count = TestBRIEF.objects.filter(organization=self.organization).count()
+            return current_count < max_tests
         elif test_name.lower() == 'pep3':
             # TODO: Implémenter quand PEP3 sera disponible
             return True
@@ -344,6 +354,7 @@ class License(models.Model):
             'vineland': self.max_tests_vineland,
             'beck': self.max_tests_beck,
             'stai': self.max_tests_stai,
+            'brief': self.max_tests_brief,
             'pep3': self.max_tests_pep3,
         }
         
@@ -368,6 +379,10 @@ class License(models.Model):
         elif test_name_lower == 'stai':
             current_count = TestSTAI.objects.filter(organization=self.organization).count()
             return max(0, max_tests - current_count)
+        elif test_name_lower == 'brief':
+            from tests_psy.models import TestBRIEF
+            current_count = TestBRIEF.objects.filter(organization=self.organization).count()
+            return max(0, max_tests - current_count)
         elif test_name_lower == 'pep3':
             # TODO: Implémenter quand PEP3 sera disponible
             return 'Illimité'
@@ -391,6 +406,7 @@ class License(models.Model):
             'vineland': self.has_vineland,
             'beck': self.has_beck,
             'stai': self.has_stai,
+            'brief': self.has_brief,
             'pep3': self.has_pep3,
         }
         
@@ -411,6 +427,8 @@ class License(models.Model):
             tests.append('Beck')
         if self.has_stai:
             tests.append('STAI')
+        if self.has_brief:
+            tests.append('BRIEF')
         if self.has_pep3:
             tests.append('PEP3')
         return tests
@@ -421,7 +439,7 @@ class License(models.Model):
         Returns:
             list: Liste des noms de tests non disponibles
         """
-        all_tests = ['D2R', 'Vineland', 'PEP3' , 'Beck' , 'STAI']
+        all_tests = ['D2R', 'Vineland', 'PEP3', 'Beck', 'STAI', 'BRIEF']
         available = self.get_available_tests()
         return [test for test in all_tests if test not in available]
 

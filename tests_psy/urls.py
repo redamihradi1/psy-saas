@@ -1,6 +1,8 @@
 from django.urls import path
 from tests_psy.views import d2r, vineland , beck , stai
 from tests_psy.views.vineland import public as vineland_public
+from tests_psy.views import brief
+from tests_psy.views.brief import public as brief_public
 
 app_name = 'tests_psy'
 
@@ -59,6 +61,24 @@ urlpatterns = [
     path('stai/<int:test_id>/passation/', stai.stai_passation, name='stai_passation'),
     path('stai/<int:test_id>/resultats/', stai.stai_resultats, name='stai_resultats'),
     path('stai/<int:test_id>/pdf/', stai.stai_pdf, name='stai_pdf'),
+
+    # ========== BRIEF ==========
+    path('brief/', brief.brief_liste, name='brief_liste'),
+    path('brief/nouveau/', brief.brief_nouveau, name='brief_nouveau'),
+    path('brief/nouveau/<int:patient_id>/', brief.brief_nouveau, name='brief_nouveau_patient'),
+    path('brief/<int:test_id>/questionnaire/', brief.brief_questionnaire, name='brief_questionnaire'),
+    path('brief/<int:test_id>/notes-importees/', brief.brief_notes_importees, name='brief_notes_importees'),
+    path('brief/<int:test_id>/resultats/', brief.brief_resultats, name='brief_resultats'),
+    path('brief/<int:test_id>/pdf/', brief.brief_pdf, name='brief_pdf'),
+    path('brief/<int:test_id>/lien/genere/', brief.brief_lien_genere, name='brief_lien_genere'),
+    path('brief/<int:test_id>/lien/reouvrir/', brief.brief_reouvrir_lien, name='brief_reouvrir_lien'),
+    path('brief/<int:test_id>/supprimer/', brief.brief_delete, name='brief_delete'),
+
+    # Lien public BRIEF - AUCUNE authentification (jeton secret dans l'URL), destiné au
+    # parent. Voir tests_psy/views/brief/public.py.
+    path('brief/public/<str:token>/', brief_public.brief_public_questionnaire, name='brief_public_questionnaire'),
+    path('brief/public/<str:token>/merci/', brief_public.brief_public_merci, name='brief_public_merci'),
+
 
 
 ]

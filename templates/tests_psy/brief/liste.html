@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Tests BRIEF{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-4 sm:p-8">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+                <i class="fas fa-puzzle-piece text-primary mr-2"></i>Tests BRIEF
+            </h2>
+            {% if tests_restants != 'Illimité' %}
+            <p class="text-sm text-gray-500 mt-1">Tests restants sur votre licence : {{ tests_restants }}</p>
+            {% endif %}
+        </div>
+        {% if peut_creer %}
+        <a href="{% url 'tests_psy:brief_nouveau' %}"
+           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg text-center">
+            <i class="fas fa-plus mr-2"></i>Nouveau Test
+        </a>
+        {% endif %}
+    </div>
+
+    {% if not items_charges %}
+    <div class="mb-6 bg-amber-50 border-l-4 border-amber-500 p-4 rounded text-sm text-amber-900">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        Le questionnaire BRIEF n'est pas encore chargé sur ce serveur
+        (<code>python manage.py import_brief</code>).
+    </div>
+    {% endif %}
+
+    {% if tests %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de passation</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Répondant</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for test in tests %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ test.patient.nom_complet }}</div>
+                        <div class="text-sm text-gray-500">{{ test.get_sexe_display }} · né(e) le {{ test.patient.date_naissance|date:"d/m/Y" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ test.date_passation|date:"d/m/Y à H:i" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ test.repondant|default:"—" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if test.mode == 'importe' %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Notes importées</span>
+                        {% elif test.mode == 'lien_public' %}
+                            {% if test.lien_soumis_le %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Complété</span>
+                            {% elif test.lien_expire_le and test.lien_expire_le < now %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Lien expiré</span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">En attente du parent</span>
+                            {% endif %}
+                        {% elif test.is_complete %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Complété</span>
+                        {% else %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">En cours</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex justify-end items-center gap-3">
+                            {% if test.mode == 'lien_public' and not test.lien_soumis_le %}
+                                <a href="{% url 'tests_psy:brief_lien_genere' test.id %}" class="text-gray-600 hover:text-gray-900" title="Copier / renvoyer le lien">
+                                    <i class="fas fa-link"></i>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'tests_psy:brief_resultats' test.id %}" class="text-blue-600 hover:text-blue-900" title="Voir les résultats">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'tests_psy:brief_pdf' test.id %}" class="text-purple-600 hover:text-purple-900" title="Télécharger PDF">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                {% if test.edit_url %}
+                                <a href="{{ test.edit_url }}" class="text-amber-600 hover:text-amber-800"
+                                   title="{% if test.mode == 'importe' %}Modifier les scores importés{% else %}Modifier les réponses{% endif %}">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                {% endif %}
+                                {% if test.mode == 'lien_public' and test.lien_soumis_le %}
+                                <form method="post" action="{% url 'tests_psy:brief_reouvrir_lien' test.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-gray-600 hover:text-gray-900" title="Réouvrir le lien pour le parent">
+                                        <i class="fas fa-unlock"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            {% endif %}
+                            <a href="{% url 'tests_psy:brief_delete' test.id %}" class="text-red-600 hover:text-red-800" title="Supprimer ce test">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <i class="fas fa-puzzle-piece text-gray-400 text-6xl mb-4"></i>
+        <p class="text-gray-500 text-lg mb-4">Aucun test BRIEF pour le moment</p>
+        {% if peut_creer %}
+        <a href="{% url 'tests_psy:brief_nouveau' %}"
+           class="inline-block bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition">
+            <i class="fas fa-plus mr-2"></i>Créer votre premier test
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+    <div class="flex items-start">
+        <i class="fas fa-info-circle text-blue-500 text-xl mr-3 mt-0.5"></i>
+        <div>
+            <h3 class="font-semibold text-blue-900 mb-1">À propos de la BRIEF</h3>
+            <p class="text-sm text-blue-800">
+                Inventaire d'évaluation comportementale des fonctions exécutives (5 à 18 ans), Forme Parent :
+                8 échelles cliniques, 2 indices (Régulation Comportementale, Métacognition) et un score
+                Composite Exécutif Global, plus deux échelles de validité (Négativité, Incohérence).
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

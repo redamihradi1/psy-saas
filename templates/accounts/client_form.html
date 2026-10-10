@@ -113,7 +113,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tests activés pour ce cabinet</label>
                     <p class="text-xs text-gray-500 mb-2">Coché = disponible pour le cabinet ET utilisable tout de suite par son psychologue.</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                         <label class="flex items-center gap-2 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
                             {{ form.has_vineland }}<span class="text-sm text-gray-700">Vineland</span>
                         </label>
@@ -125,6 +125,9 @@
                         </label>
                         <label class="flex items-center gap-2 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
                             {{ form.has_d2r }}<span class="text-sm text-gray-700">D2R</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                            {{ form.has_brief }}<span class="text-sm text-gray-700">BRIEF</span>
                         </label>
                     </div>
                 </div>

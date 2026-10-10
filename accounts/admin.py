@@ -26,7 +26,7 @@ class UserAdmin(BaseUserAdmin):
                 'can_export_backup',
                 'can_access_patients', 'can_access_consultations', 'can_access_agenda',
                 'can_access_comptabilite', 'can_access_tags',
-                'can_access_vineland', 'can_access_beck', 'can_access_stai', 'can_access_d2r',
+                'can_access_vineland', 'can_access_beck', 'can_access_stai', 'can_access_d2r', 'can_access_brief',
             )
         }),
     )

@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}Résultats BRIEF - {{ patient.nom_complet }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- En-tête -->
+    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-puzzle-piece text-primary mr-2"></i>Résultats BRIEF - Forme Parent
+                </h2>
+                <div class="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-600">
+                    <span><strong>Enfant :</strong> {{ patient.nom_complet }}</span>
+                    <span><strong>Sexe :</strong> {{ test.get_sexe_display }}</span>
+                    <span><strong>Âge au test :</strong> {{ r.age }} ans</span>
+                    <span><strong>Passation :</strong> {{ test.date_passation|date:"d/m/Y" }}</span>
+                    {% if test.repondant %}<span><strong>Répondant :</strong> {{ test.repondant }}</span>{% endif %}
+                    <span><strong>Mode :</strong> {{ test.get_mode_display }}</span>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'tests_psy:brief_pdf' test.id %}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-file-pdf mr-1"></i>PDF
+                </a>
+                {% if edit_url %}
+                <a href="{{ edit_url }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-pen mr-1"></i>Modifier
+                </a>
+                {% endif %}
+                <a href="{% url 'tests_psy:brief_liste' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-arrow-left mr-1"></i>Liste
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Points d'attention -->
+    {% if not r.protocole_cotable %}
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded text-sm text-red-900">
+        <i class="fas fa-exclamation-circle mr-1"></i>
+        <strong>Protocole non cotable :</strong> {{ r.manquants_total }} items manquants (maximum 14 selon le manuel).
+        Demander au répondant de compléter les items manquants si possible. Les scores T ne sont pas calculés.
+    </div>
+    {% endif %}
+    {% if r.hors_etalonnage %}
+    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded text-sm text-amber-900">
+        <i class="fas fa-exclamation-triangle mr-1"></i>
+        L'enfant a {{ r.age }} ans : la BRIEF est étalonnée de 5 à 18 ans, les scores T ne sont pas calculés.
+    </div>
+    {% elif r.protocole_cotable and not r.normes_disponibles %}
+    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded text-sm text-amber-900">
+        <i class="fas fa-hourglass-half mr-1"></i>
+        Scores T et percentiles en attente : les tables d'étalonnage ({{ test.get_sexe_display|lower }}s, {{ r.age }} ans)
+        ne sont pas encore chargées sur ce serveur.
+    </div>
+    {% endif %}
+    {% if r.alerte_ecart_irc_im %}
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded text-sm text-blue-900">
+        <i class="fas fa-info-circle mr-1"></i>
+        Écart de <strong>{{ r.ecart_irc_im }} points T</strong> entre l'IRC et l'IM (seuil : {{ r.seuil_ecart_irc_im }}).
+        Le CEG peut masquer des différences importantes entre les deux indices et ne doit pas être utilisé comme mesure résumée.
+    </div>
+    {% endif %}
+
+    <!-- Tableau résumé des cotations -->
+    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Tableau résumé des cotations</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-xs uppercase">
+                        <th class="px-4 py-2 text-left">Échelle / Indice</th>
+                        <th class="px-4 py-2 text-center">Score brut</th>
+                        <th class="px-4 py-2 text-center">Score T</th>
+                        <th class="px-4 py-2 text-center">Percentile</th>
+                        <th class="px-4 py-2 text-center">IC 90 %</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for ligne in r.lignes %}
+                    <tr class="{% if ligne.est_indice %}bg-primary-light font-semibold{% endif %}">
+                        <td class="px-4 py-2 text-gray-900">
+                            {{ ligne.libelle }}
+                            {% if ligne.manquants %}
+                            <span class="ml-1 text-xs font-normal text-amber-700" title="Items sans réponse dans cette échelle">
+                                ({{ ligne.manquants }} manquant{{ ligne.manquants|pluralize }}{% if ligne.note_brute is None %} - score non calculable{% endif %})
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2 text-center">{{ ligne.note_brute|default_if_none:"—" }}</td>
+                        <td class="px-4 py-2 text-center">
+                            {% if ligne.score_t is not None %}
+                            <span class="{% if ligne.significatif %}inline-block px-2 rounded bg-red-100 text-red-800 font-bold{% endif %}">{{ ligne.score_t }}</span>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="px-4 py-2 text-center">{{ ligne.percentile|default_if_none:"—" }}</td>
+                        <td class="px-4 py-2 text-center">{% if ligne.ic_bas is not None %}{{ ligne.ic_bas }} - {{ ligne.ic_haut }}{% else %}—{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="mt-3 text-xs text-gray-500">
+            Scores T : moyenne 50, écart-type 10. Un score T ≥ {{ r.seuil_t_clinique }} (en rouge) a une signification clinique potentielle.
+            IRC = Inhibition + Flexibilité + Contrôle émotionnel ; IM = Initiation + Mémoire de travail + Planification/Organisation
+            + Organisation du matériel + Contrôle ; CEG = IRC + IM.
+        </p>
+    </div>
+
+    <!-- Profil -->
+    {% if r.normes_disponibles %}
+    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Profil des scores T</h3>
+        <div class="relative h-80">
+            <canvas id="profilChart"></canvas>
+        </div>
+    </div>
+    {{ profil|json_script:"profil-data" }}
+    {% endif %}
+
+    <!-- Validité -->
+    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Échelles de validité</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="border rounded-lg p-4">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="font-semibold text-gray-800">Négativité</span>
+                    <span class="text-sm text-gray-500">0 à 9</span>
+                </div>
+                {% if r.negativite.score is not None %}
+                <p class="text-2xl font-bold text-gray-900">{{ r.negativite.score }}
+                    <span class="text-base font-semibold {% if r.negativite.classification == 'Acceptable' %}text-green-700{% else %}text-red-700{% endif %}">{{ r.negativite.classification }}</span>
+                </p>
+                <p class="text-xs text-gray-500 mt-1">≤ 4 Acceptable · 5-6 Élevé · ≥ 7 Très élevé</p>
+                {% else %}
+                <p class="text-sm text-gray-500">Non renseigné.</p>
+                {% endif %}
+            </div>
+            <div class="border rounded-lg p-4">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="font-semibold text-gray-800">Incohérence</span>
+                    <span class="text-sm text-gray-500">0 à 20</span>
+                </div>
+                {% if r.incoherence.score is not None %}
+                <p class="text-2xl font-bold text-gray-900">{{ r.incoherence.score }}
+                    {% if r.incoherence.classification %}<span class="text-base font-semibold text-gray-700">{{ r.incoherence.classification }}</span>{% endif %}
+                </p>
+                {% if r.incoherence.paires_incompletes %}
+                <p class="text-xs text-amber-700 mt-1">{{ r.incoherence.paires_incompletes }} paire(s) avec une réponse manquante, non comptée(s).</p>
+                {% endif %}
+                {% if not r.seuils_incoherence_connus %}
+                <p class="text-xs text-gray-500 mt-1">Classification (Acceptable / Limite / Incohérent) en attente des seuils de l'adaptation française.</p>
+                {% endif %}
+                {% if r.incoherence.details %}
+                <details class="mt-2 text-xs text-gray-600">
+                    <summary class="cursor-pointer">Détail des paires</summary>
+                    <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                        {% for p in r.incoherence.details %}
+                        <span>Items {{ p.item_a }} / {{ p.item_b }} : {{ p.difference|default_if_none:"—" }}</span>
+                        {% endfor %}
+                    </div>
+                </details>
+                {% endif %}
+                {% else %}
+                <p class="text-sm text-gray-500">Non renseigné.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Détail des réponses -->
+    {% if items_reponses %}
+    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <details>
+            <summary class="text-lg font-bold text-gray-900 cursor-pointer">Détail des réponses ({{ r.nb_reponses }} / {{ items_reponses|length }})</summary>
+            <div class="overflow-x-auto mt-4">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 text-xs uppercase">
+                            <th class="px-3 py-2 text-left">N°</th>
+                            <th class="px-3 py-2 text-left">Item</th>
+                            <th class="px-3 py-2 text-left">Échelle</th>
+                            <th class="px-3 py-2 text-center">Réponse</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for item in items_reponses %}
+                        <tr>
+                            <td class="px-3 py-1.5 text-gray-500">{{ item.numero }}</td>
+                            <td class="px-3 py-1.5 text-gray-900">{{ item.texte }}</td>
+                            <td class="px-3 py-1.5 text-gray-600 whitespace-nowrap">{{ item.echelle }}</td>
+                            <td class="px-3 py-1.5 text-center whitespace-nowrap {% if item.valeur == 3 %}font-bold text-red-700{% elif not item.valeur %}text-amber-700{% endif %}">
+                                {{ item.reponse|default:"Sans réponse" }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if r.normes_disponibles %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const data = JSON.parse(document.getElementById('profil-data').textContent);
+    // Deux profils distincts comme sur la feuille de profil du manuel : les 8 échelles,
+    // puis les 3 indices (null = rupture de la ligne entre les deux).
+    const echelles = data.scores_t.map(function(v, i) { return i < 8 ? v : null; });
+    const indices = data.scores_t.map(function(v, i) { return i >= 8 ? v : null; });
+    new Chart(document.getElementById('profilChart'), {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [
+                { label: 'Échelles', data: echelles, borderColor: '#c026d3', backgroundColor: '#c026d3', pointRadius: 5, tension: 0 },
+                { label: 'Indices', data: indices, borderColor: '#7c3aed', backgroundColor: '#7c3aed', pointRadius: 6, pointStyle: 'rectRot', tension: 0 },
+            ],
+        },
+        options: {
+            maintainAspectRatio: false,
+            spanGaps: false,
+            scales: { y: { min: 30, max: 100, title: { display: true, text: 'Score T' } } },
+            plugins: {
+                legend: { position: 'bottom' },
+                annotation: {
+                    annotations: {
+                        clinique: { type: 'box', yMin: 65, yMax: 100, backgroundColor: 'rgba(220, 38, 38, 0.06)', borderWidth: 0 },
+                        seuil: { type: 'line', yMin: 65, yMax: 65, borderColor: '#dc2626', borderDash: [6, 4], borderWidth: 1,
+                                 label: { display: true, content: 'T = 65', position: 'start', font: { size: 10 } } },
+                        moyenne: { type: 'line', yMin: 50, yMax: 50, borderColor: '#9ca3af', borderWidth: 1 },
+                    },
+                },
+            },
+        },
+    });
+});
+</script>
+{% endif %}
+{% endblock %}
