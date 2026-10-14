@@ -1,7 +1,14 @@
 from pathlib import Path
 import os
+import zoneinfo
 import dj_database_url
 from dotenv import load_dotenv
+
+# Fuseaux horaires lus uniquement depuis le paquet pip `tzdata` (version figée dans
+# requirements.txt), jamais depuis /usr/share/zoneinfo du serveur : la base système de
+# PythonAnywhere peut être en retard (ex. Maroc passé en GMT+0 permanent le 2026-09-20,
+# intégré seulement à partir de IANA 2026c / tzdata 2026.3).
+zoneinfo.reset_tzpath(to=[])
 
 # Charge les variables d'environnement depuis .env
 load_dotenv()
