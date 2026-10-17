@@ -185,6 +185,13 @@ def patient_detail(request, patient_id):
 
     tests_categories = _patient_tests_par_categorie(request.user, patient)
 
+    # Bilans : licence du cabinet ET permission utilisateur (None = onglet masqué)
+    license = getattr(patient.organization, 'license', None)
+    bilans_patient = None
+    if license and license.has_bilans and request.user.has_test_permission('bilans'):
+        from bilans.models import Bilan
+        bilans_patient = Bilan.all_objects.filter(organization=patient.organization, patient=patient)
+
     context = {
         'patient': patient,
         'can_consultations': can_consultations,
@@ -198,6 +205,7 @@ def patient_detail(request, patient_id):
         'prochaine_consultation': prochaine_consultation,
         'all_tags': Tag.objects.all(),
         'tests_categories': tests_categories,
+        'bilans_patient': bilans_patient,
     }
 
     return render(request, 'cabinet/patient_detail.html', context)

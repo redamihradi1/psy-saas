@@ -89,6 +89,8 @@ class User(AbstractUser):
     can_access_stai = models.BooleanField(default=True, verbose_name="Accès au test STAI")
     can_access_d2r = models.BooleanField(default=True, verbose_name="Accès au test D2R")
     can_access_brief = models.BooleanField(default=True, verbose_name="Accès au test BRIEF")
+    # Rédaction de bilans (module licencié comme un test : License.has_bilans + cette case)
+    can_access_bilans = models.BooleanField(default=True, verbose_name="Accès aux bilans")
 
     MODULE_PERMISSIONS = [
         ('can_access_patients', 'Patients'),
@@ -104,6 +106,7 @@ class User(AbstractUser):
         ('can_access_stai', 'Test STAI'),
         ('can_access_d2r', 'Test D2R'),
         ('can_access_brief', 'Test BRIEF'),
+        ('can_access_bilans', 'Bilans'),
     ]
 
     class Meta:
@@ -186,6 +189,10 @@ class License(models.Model):
 
     has_brief = models.BooleanField(default=False, verbose_name="Accès Test BRIEF")
     max_tests_brief = models.IntegerField(default=0, verbose_name="Nombre max de tests BRIEF (0 = illimité)")
+
+    # Rédaction de bilans (modèles + première version et chat IA) - branché sur la même
+    # mécanique que les tests (has_test_access('bilans'), require_test_access('bilans')).
+    has_bilans = models.BooleanField(default=False, verbose_name="Accès aux Bilans")
 
     has_pep3 = models.BooleanField(default=False, verbose_name="Accès Test PEP3")
     max_tests_pep3 = models.IntegerField(default=0, verbose_name="Nombre max de tests PEP3 (0 = illimité)")
@@ -407,6 +414,7 @@ class License(models.Model):
             'beck': self.has_beck,
             'stai': self.has_stai,
             'brief': self.has_brief,
+            'bilans': self.has_bilans,
             'pep3': self.has_pep3,
         }
         

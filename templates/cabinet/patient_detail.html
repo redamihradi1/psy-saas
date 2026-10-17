@@ -157,6 +157,12 @@
                 <i class="fas fa-vial mr-2"></i>Tests psychométriques
             </button>
             {% endif %}
+            {% if bilans_patient is not None %}
+            <button onclick="switchTab('bilans')" id="tab-bilans"
+                    class="tab-button px-4 py-3 rounded-lg font-medium transition shrink-0">
+                <i class="fas fa-file-signature mr-2"></i>Bilans
+            </button>
+            {% endif %}
         </nav>
     </div>
 
@@ -920,6 +926,33 @@
                 </div>
                 {% endfor %}
             </div>
+        </div>
+        {% endif %}
+
+        {% if bilans_patient is not None %}
+        <!-- Onglet Bilans -->
+        <div id="content-bilans" class="tab-content hidden">
+            <div class="flex justify-end mb-4">
+                <a href="{% url 'bilans:nouveau' %}?patient={{ patient.id }}"
+                   class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-plus mr-1"></i>Nouveau bilan
+                </a>
+            </div>
+            {% for bilan in bilans_patient %}
+            <a href="{% url 'bilans:editeur' bilan.id %}" class="block border border-gray-100 rounded-lg p-4 mb-2 hover:bg-gray-50 transition">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-semibold text-gray-900">{{ bilan.titre }}</span>
+                    {% if bilan.est_finalise %}
+                    <span class="px-2 text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Finalisé</span>
+                    {% else %}
+                    <span class="px-2 text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">Brouillon</span>
+                    {% endif %}
+                </div>
+                <div class="text-sm text-gray-500 mt-1">{{ bilan.get_modele_display }} · modifié le {{ bilan.date_modification|date:"d/m/Y à H:i" }}</div>
+            </a>
+            {% empty %}
+            <p class="text-sm text-gray-400">Aucun bilan rédigé pour ce patient.</p>
+            {% endfor %}
         </div>
         {% endif %}
     </div>

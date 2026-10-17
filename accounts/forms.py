@@ -12,7 +12,8 @@ CHECKBOX_CLASS = 'w-5 h-5 text-primary rounded border-gray-300 focus:ring-primar
 # nouvelle organisation + une nouvelle licence : voir ClientCreateForm plus bas.
 MODULE_FIELDS = ['can_access_patients', 'can_access_consultations', 'can_access_agenda',
                   'can_access_comptabilite', 'can_access_tags', 'can_export_backup']
-TEST_FIELDS = ['can_access_vineland', 'can_access_beck', 'can_access_stai', 'can_access_d2r', 'can_access_brief']
+TEST_FIELDS = ['can_access_vineland', 'can_access_beck', 'can_access_stai', 'can_access_d2r', 'can_access_brief',
+               'can_access_bilans']
 PERMISSION_FIELDS = MODULE_FIELDS + TEST_FIELDS
 
 # Pour le psychologue (titulaire) uniquement : une case "has_x" de licence règle à la fois la
@@ -25,6 +26,7 @@ LICENSE_TO_USER_TEST_FIELD = {
     'has_stai': 'can_access_stai',
     'has_d2r': 'can_access_d2r',
     'has_brief': 'can_access_brief',
+    'has_bilans': 'can_access_bilans',
 }
 
 # Accès accordés par défaut à la création d'un(e) assistant(e) - le reste (tests, comptabilité,
@@ -174,6 +176,7 @@ class ClientCreateForm(forms.Form):
     has_stai = forms.BooleanField(label="Test STAI", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
     has_d2r = forms.BooleanField(label="Test D2R", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
     has_brief = forms.BooleanField(label="Test BRIEF", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
+    has_bilans = forms.BooleanField(label="Bilans", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
 
     # Accès du psychologue à ses modules (onglets) - par défaut : Patients uniquement, le
     # reste doit être coché explicitement.
@@ -236,6 +239,7 @@ class ClientCreateForm(forms.Form):
             has_stai=data['has_stai'],
             has_d2r=data['has_d2r'],
             has_brief=data['has_brief'],
+            has_bilans=data['has_bilans'],
         )
         user = User(
             username=data['username'],
@@ -276,6 +280,7 @@ class ClientEditForm(forms.Form):
     has_stai = forms.BooleanField(label="Test STAI", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
     has_d2r = forms.BooleanField(label="Test D2R", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
     has_brief = forms.BooleanField(label="Test BRIEF", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
+    has_bilans = forms.BooleanField(label="Bilans", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
 
     can_access_patients = forms.BooleanField(label="Patients", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
     can_access_consultations = forms.BooleanField(label="Consultations", required=False, widget=forms.CheckboxInput(attrs={'class': CHECKBOX_CLASS}))
@@ -301,6 +306,7 @@ class ClientEditForm(forms.Form):
                     'has_vineland': license.has_vineland, 'has_beck': license.has_beck,
                     'has_stai': license.has_stai, 'has_d2r': license.has_d2r,
                     'has_brief': license.has_brief,
+                    'has_bilans': license.has_bilans,
                 })
             if self.psychologue:
                 initial.update({field: getattr(self.psychologue, field) for field in MODULE_FIELDS})
@@ -334,6 +340,7 @@ class ClientEditForm(forms.Form):
         license.has_stai = data['has_stai']
         license.has_d2r = data['has_d2r']
         license.has_brief = data['has_brief']
+        license.has_bilans = data['has_bilans']
         license.save()
 
         if self.psychologue:

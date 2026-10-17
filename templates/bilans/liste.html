@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Bilans{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-4 sm:p-8">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+                <i class="fas fa-file-signature text-primary mr-2"></i>Bilans
+            </h2>
+            {% if patient %}
+            <p class="text-sm text-gray-500 mt-1">
+                Bilans de {{ patient.nom_complet }} -
+                <a href="{% url 'bilans:liste' %}" class="text-primary-dark hover:underline">voir tous les bilans</a>
+            </p>
+            {% endif %}
+        </div>
+        <a href="{% url 'bilans:nouveau' %}{% if patient %}?patient={{ patient.id }}{% endif %}"
+           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg text-center">
+            <i class="fas fa-plus mr-2"></i>Nouveau bilan
+        </a>
+    </div>
+
+    {% if bilans %}
+    <div class="space-y-3">
+        {% for bilan in bilans %}
+        <div class="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition flex flex-col sm:flex-row sm:items-center gap-3">
+            <a href="{% url 'bilans:editeur' bilan.id %}" class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-semibold text-gray-900">{{ bilan.titre }}</span>
+                    {% if bilan.est_finalise %}
+                    <span class="px-2 text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Finalisé</span>
+                    {% else %}
+                    <span class="px-2 text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">Brouillon</span>
+                    {% endif %}
+                </div>
+                <div class="text-sm text-gray-500 mt-1">
+                    {{ bilan.patient.nom_complet }} · {{ bilan.get_modele_display }} · modifié le {{ bilan.date_modification|date:"d/m/Y à H:i" }}
+                </div>
+            </a>
+            <div class="flex items-center gap-3 text-sm">
+                <a href="{% url 'bilans:export' bilan.id 'docx' %}" class="text-blue-600 hover:text-blue-900" title="Télécharger en Word">
+                    <i class="fas fa-file-word"></i>
+                </a>
+                <a href="{% url 'bilans:export' bilan.id 'pdf' %}" class="text-purple-600 hover:text-purple-900" title="Télécharger en PDF">
+                    <i class="fas fa-file-pdf"></i>
+                </a>
+                <a href="{% url 'bilans:supprimer' bilan.id %}" class="text-red-500 hover:text-red-700" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 text-gray-500">
+        <i class="fas fa-file-signature text-4xl text-gray-300 mb-3"></i>
+        <p>Aucun bilan pour le moment.</p>
+        <p class="text-sm mt-1">Choisissez un modèle : les identités et les résultats des tests sont remplis automatiquement.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

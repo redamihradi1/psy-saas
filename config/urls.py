@@ -22,6 +22,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('cabinet/', include('cabinet.urls')),
     path('tests/', include('tests_psy.urls')),
+    path('bilans/', include('bilans.urls')),
 ]
 
 if settings.DEBUG:

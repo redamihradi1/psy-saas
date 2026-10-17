@@ -1,0 +1,622 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ bilan.titre }} - {{ bilan.patient.nom_complet }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc { font-family: Georgia, 'Times New Roman', serif; color: #1f2937; line-height: 1.6; outline: none; min-height: 60vh; }
+    .doc h1 { font-size: 1.6rem; font-weight: 700; text-align: center; color: #6b21a8; margin: 0 0 1.25rem; }
+    .doc h2 { font-size: 1.15rem; font-weight: 700; color: #6b21a8; margin: 1.6rem 0 .6rem; padding-bottom: .25rem; border-bottom: 1px solid #f3e8ff; }
+    .doc h3 { font-size: 1rem; font-weight: 700; margin: 1rem 0 .4rem; }
+    .doc p { margin: 0 0 .7rem; }
+    .doc ul { list-style: disc; padding-left: 1.6rem; margin: 0 0 .7rem; }
+    .doc ol { list-style: decimal; padding-left: 1.6rem; margin: 0 0 .7rem; }
+    .doc table { border-collapse: collapse; width: 100%; margin: .4rem 0 1rem; font-family: ui-sans-serif, system-ui, sans-serif; font-size: .82rem; }
+    .doc th, .doc td { border: 1px solid #e5e7eb; padding: .3rem .5rem; vertical-align: top; }
+    .doc th { background: #faf5ff; font-weight: 600; text-align: left; }
+    .doc h2[data-type]::after { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .65rem; font-weight: 600; margin-left: .5rem; padding: .1rem .45rem; border-radius: 9999px; vertical-align: middle; }
+    .doc h2[data-type="auto"]::after { content: "Données"; background: #eff6ff; color: #1d4ed8; }
+    .doc h2[data-type="ia"]::after { content: "IA"; background: #fdf4ff; color: #a21caf; }
+    .doc h2[data-type="libre"]::after { content: "À vous"; background: #fefce8; color: #a16207; }
+    .doc[contenteditable="false"] { cursor: default; }
+    .outil { padding: .35rem .6rem; border-radius: .375rem; color: #4b5563; }
+    .outil:hover { background: #f3f4f6; color: #111827; }
+    .bulle-psy { background: #fdf4ff; border: 1px solid #f5d0fe; }
+    .bulle-ia { background: #f9fafb; border: 1px solid #e5e7eb; }
+    .proposition { white-space: pre-wrap; font-family: Georgia, serif; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Barre du haut -->
+    <div class="bg-white rounded-xl shadow p-3 sm:p-4 mb-4 flex flex-col lg:flex-row lg:items-center gap-3">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+            <a href="{% url 'bilans:liste' %}?patient={{ bilan.patient.id }}" class="text-gray-400 hover:text-gray-700" title="Retour aux bilans du patient">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex-1 min-w-0">
+                <input id="titre" type="text" value="{{ bilan.titre }}" maxlength="200" {% if bilan.est_finalise %}readonly{% endif %}
+                       class="w-full text-lg font-bold text-gray-900 bg-transparent border-0 border-b border-transparent focus:border-primary focus:ring-0 px-0 py-0.5">
+                <div class="text-xs text-gray-500 flex flex-wrap items-center gap-x-2">
+                    <a href="{% url 'cabinet:patient_detail' bilan.patient.id %}" class="hover:underline">{{ bilan.patient.nom_complet }}</a>
+                    <span>·</span><span>{{ modele.titre }}</span>
+                    <span>·</span>
+                    {% if bilan.est_finalise %}
+                    <span class="px-2 font-semibold rounded-full bg-green-100 text-green-800">Finalisé</span>
+                    {% else %}
+                    <span class="px-2 font-semibold rounded-full bg-amber-100 text-amber-800">Brouillon</span>
+                    {% endif %}
+                    <span id="etat-sauvegarde" class="text-gray-400"></span>
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <button type="button" id="btn-versions" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm text-gray-700">
+                <i class="fas fa-history mr-1"></i>Versions
+            </button>
+            <a href="{% url 'bilans:export' bilan.id 'docx' %}" class="lien-export px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-sm text-blue-700">
+                <i class="fas fa-file-word mr-1"></i>Word
+            </a>
+            <a href="{% url 'bilans:export' bilan.id 'pdf' %}" class="lien-export px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 text-sm text-purple-700">
+                <i class="fas fa-file-pdf mr-1"></i>PDF
+            </a>
+            <form method="post" action="{% url 'bilans:statut' bilan.id %}" id="form-statut">
+                {% csrf_token %}
+                {% if bilan.est_finalise %}
+                <input type="hidden" name="action" value="rouvrir">
+                <button type="submit" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm text-gray-700">
+                    <i class="fas fa-lock-open mr-1"></i>Rouvrir
+                </button>
+                {% else %}
+                <input type="hidden" name="action" value="finaliser">
+                <button type="submit" class="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-sm text-white">
+                    <i class="fas fa-check mr-1"></i>Finaliser
+                </button>
+                {% endif %}
+            </form>
+            <a href="{% url 'bilans:supprimer' bilan.id %}" class="px-2 py-2 text-red-500 hover:text-red-700" title="Supprimer le bilan">
+                <i class="fas fa-trash"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-4 items-start">
+        <!-- Document -->
+        <div class="flex-1 min-w-0 w-full bg-white rounded-xl shadow">
+            {% if not bilan.est_finalise %}
+            <div id="barre-outils" class="flex flex-wrap items-center gap-1 border-b border-gray-100 px-3 py-2 sticky top-0 bg-white rounded-t-xl z-10">
+                <button type="button" class="outil" data-cmd="bold" title="Gras (Ctrl+B)"><i class="fas fa-bold"></i></button>
+                <button type="button" class="outil" data-cmd="italic" title="Italique (Ctrl+I)"><i class="fas fa-italic"></i></button>
+                <button type="button" class="outil" data-cmd="underline" title="Souligné (Ctrl+U)"><i class="fas fa-underline"></i></button>
+                <span class="w-px h-5 bg-gray-200 mx-1"></span>
+                <button type="button" class="outil text-sm font-semibold" data-cmd="formatBlock" data-val="h2" title="Titre de section">T1</button>
+                <button type="button" class="outil text-sm font-semibold" data-cmd="formatBlock" data-val="h3" title="Sous-titre">T2</button>
+                <button type="button" class="outil text-sm" data-cmd="formatBlock" data-val="p" title="Texte normal">¶</button>
+                <span class="w-px h-5 bg-gray-200 mx-1"></span>
+                <button type="button" class="outil" data-cmd="insertUnorderedList" title="Liste à puces"><i class="fas fa-list-ul"></i></button>
+                <button type="button" class="outil" data-cmd="insertOrderedList" title="Liste numérotée"><i class="fas fa-list-ol"></i></button>
+                <span class="w-px h-5 bg-gray-200 mx-1"></span>
+                <button type="button" class="outil" data-cmd="undo" title="Annuler (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+                <button type="button" class="outil" data-cmd="redo" title="Rétablir (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+            </div>
+            {% endif %}
+            <div class="px-4 sm:px-10 py-6 sm:py-10">
+                <div id="editeur" class="doc" contenteditable="{% if bilan.est_finalise %}false{% else %}true{% endif %}" spellcheck="true">{{ bilan.contenu|safe }}</div>
+            </div>
+        </div>
+
+        <!-- Assistant IA -->
+        <aside class="w-full lg:w-[380px] shrink-0 bg-white rounded-xl shadow lg:sticky lg:top-4 flex flex-col lg:max-h-[calc(100vh-2rem)]">
+            <div class="px-4 py-3 border-b border-gray-100">
+                <h3 class="font-semibold text-gray-900"><i class="fas fa-robot text-primary mr-2"></i>Assistant IA</h3>
+                {% if ia_configuree %}
+                <p class="text-xs text-gray-500 mt-0.5">
+                    Les noms sont anonymisés avant envoi. <span id="quota">{{ appels_restants }}</span> demande(s) restante(s) aujourd'hui.
+                </p>
+                {% endif %}
+            </div>
+
+            {% if not ia_configuree %}
+            <div class="p-4 text-sm text-gray-600">
+                <p>L'assistant IA n'est pas encore configuré sur ce serveur.</p>
+                <p class="mt-2 text-xs text-gray-400">Tout le reste fonctionne : modèle, édition, versions, export Word et PDF.</p>
+            </div>
+            {% elif bilan.est_finalise %}
+            <div class="p-4 text-sm text-gray-600">Ce bilan est finalisé. Rouvrez-le pour le retravailler avec l'assistant.</div>
+            {% else %}
+            <div class="p-4 border-b border-gray-100 space-y-2">
+                <button type="button" id="btn-premier-jet" class="w-full bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-lg font-semibold transition text-sm">
+                    <i class="fas fa-magic mr-2"></i>Première version IA
+                </button>
+                <!-- Toutes les sections IA rédigées : choix d'une section à réécrire -->
+                <div id="liste-reecriture" class="hidden space-y-1"></div>
+                <p class="text-xs text-gray-500">
+                    <span id="aide-ia">Rédige les sections marquées <span class="px-1.5 rounded-full bg-fuchsia-50 text-fuchsia-700 font-semibold">IA</span>
+                    encore vides.</span> Les tableaux de résultats ne sont jamais modifiés.
+                    <button type="button" id="btn-apercu" class="text-primary-dark hover:underline">Voir les données envoyées</button>
+                </p>
+            </div>
+            {% endif %}
+
+            <div id="chat" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-[160px] text-sm">
+                <p id="chat-vide" class="text-xs text-gray-400">
+                    Demandez une reformulation, un paragraphe, une recommandation... Sélectionnez d'abord un passage du
+                    bilan pour une modification ciblée.
+                </p>
+            </div>
+
+            {% if ia_configuree and not bilan.est_finalise %}
+            <div class="p-3 border-t border-gray-100 space-y-2">
+                <div id="selection-active" class="hidden text-xs bg-fuchsia-50 border border-fuchsia-200 text-fuchsia-800 rounded-lg px-2 py-1.5 flex items-start gap-2">
+                    <i class="fas fa-i-cursor mt-0.5"></i>
+                    <span class="flex-1 min-w-0"><span class="font-semibold">Passage sélectionné :</span> <span id="selection-texte" class="italic"></span></span>
+                    <button type="button" id="selection-effacer" class="text-fuchsia-500 hover:text-fuchsia-800" title="Ne plus cibler ce passage"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="flex flex-wrap gap-1">
+                    <button type="button" class="suggestion text-xs px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700">Plus concis</button>
+                    <button type="button" class="suggestion text-xs px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700">Plus professionnel</button>
+                    <button type="button" class="suggestion text-xs px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700">Plus accessible pour les parents</button>
+                    <button type="button" class="suggestion text-xs px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700">Vérifie la cohérence avec les scores</button>
+                </div>
+                <form id="form-chat" class="flex gap-2 items-end">
+                    <textarea id="chat-message" rows="2" maxlength="2000" placeholder="Votre demande..."
+                              class="flex-1 resize-none px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+                    <button type="submit" id="btn-envoyer" class="bg-primary hover:bg-primary-dark text-white w-10 h-10 rounded-lg shrink-0" title="Envoyer (Entrée)">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </aside>
+    </div>
+</div>
+
+<!-- Fenêtre : versions -->
+<div id="modal-versions" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+        <div class="px-5 py-3 border-b flex items-center justify-between">
+            <h3 class="font-semibold text-gray-900"><i class="fas fa-history text-primary mr-2"></i>Versions précédentes</h3>
+            <button type="button" class="fermer-modal text-gray-400 hover:text-gray-700"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="liste-versions" class="overflow-y-auto p-3 space-y-2 text-sm"></div>
+        <p class="px-5 py-3 border-t text-xs text-gray-500">Restaurer une version enregistre d'abord la version actuelle : rien n'est perdu.</p>
+    </div>
+</div>
+
+<!-- Fenêtre : données envoyées à l'IA -->
+<div id="modal-apercu" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col">
+        <div class="px-5 py-3 border-b flex items-center justify-between">
+            <h3 class="font-semibold text-gray-900"><i class="fas fa-user-secret text-primary mr-2"></i>Texte exact envoyé à l'IA (anonymisé)</h3>
+            <button type="button" class="fermer-modal text-gray-400 hover:text-gray-700"><i class="fas fa-times"></i></button>
+        </div>
+        <pre id="apercu-texte" class="overflow-auto p-5 text-xs whitespace-pre-wrap text-gray-700 bg-gray-50"></pre>
+        <p class="px-5 py-3 border-t text-xs text-gray-500">
+            Les vrais noms sont remis automatiquement dans le texte rédigé. Le téléphone et l'email ne sont jamais envoyés.
+        </p>
+    </div>
+</div>
+
+{{ historique|json_script:"historique-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const CSRF = '{{ csrf_token }}';
+    const FINALISE = {{ bilan.est_finalise|yesno:"true,false" }};
+    const URLS = {
+        sauvegarder: "{% url 'bilans:sauvegarder' bilan.id %}",
+        versions: "{% url 'bilans:versions' bilan.id %}",
+        restaurer: "{% url 'bilans:restaurer_version' bilan.id 0 %}",
+        apercu: "{% url 'bilans:ia_apercu' bilan.id %}",
+        premierJet: "{% url 'bilans:ia_premier_jet' bilan.id %}",
+        chat: "{% url 'bilans:ia_chat' bilan.id %}",
+    };
+    const ed = document.getElementById('editeur');
+    const titre = document.getElementById('titre');
+    const etat = document.getElementById('etat-sauvegarde');
+    const chat = document.getElementById('chat');
+
+    // ---------- utilitaires ----------
+    async function appel(url, data, methode) {
+        const options = { method: methode || 'POST', headers: { 'X-CSRFToken': CSRF } };
+        if (data !== undefined) {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(data);
+        }
+        try {
+            const r = await fetch(url, options);
+            try { return await r.json(); } catch (e) { return { ok: false, erreur: 'Erreur du serveur (' + r.status + ').' }; }
+        } catch (e) {
+            return { ok: false, erreur: 'Connexion perdue. Vérifiez votre réseau.' };
+        }
+    }
+    function afficherEtat(texte, erreur) {
+        etat.textContent = texte;
+        etat.className = erreur ? 'text-red-600' : 'text-gray-400';
+    }
+    function ouvrir(id) { document.getElementById(id).classList.remove('hidden'); }
+    document.querySelectorAll('.fermer-modal').forEach(function (b) {
+        b.addEventListener('click', function () { b.closest('.fixed').classList.add('hidden'); });
+    });
+    document.querySelectorAll('#modal-versions, #modal-apercu').forEach(function (m) {
+        m.addEventListener('click', function (e) { if (e.target === m) m.classList.add('hidden'); });
+    });
+
+    // ---------- sauvegarde automatique ----------
+    let modifie = false, enCours = false, aRefaire = false, minuteur = null;
+    async function sauvegarder(extra) {
+        if (FINALISE) return { ok: true };
+        clearTimeout(minuteur);
+        if (enCours) { aRefaire = true; return { ok: true }; }
+        enCours = true;
+        afficherEtat('Enregistrement...');
+        const j = await appel(URLS.sauvegarder, Object.assign({ contenu: ed.innerHTML, titre: titre.value }, extra || {}));
+        enCours = false;
+        if (j.ok) { modifie = false; afficherEtat('Enregistré à ' + j.date_modification); }
+        else { afficherEtat(j.erreur, true); }
+        if (aRefaire) { aRefaire = false; return sauvegarder(); }
+        return j;
+    }
+    function aSauvegarder() {
+        modifie = true;
+        afficherEtat('Modifications non enregistrées');
+        clearTimeout(minuteur);
+        minuteur = setTimeout(sauvegarder, 2500);
+    }
+    if (!FINALISE) {
+        try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
+        ed.addEventListener('input', aSauvegarder);
+        titre.addEventListener('input', aSauvegarder);
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); sauvegarder(); }
+        });
+        window.addEventListener('beforeunload', function (e) {
+            if (modifie) { e.preventDefault(); e.returnValue = ''; }
+        });
+        // Exporter / finaliser : on enregistre d'abord pour exporter la dernière version
+        document.querySelectorAll('.lien-export').forEach(function (lien) {
+            lien.addEventListener('click', async function (e) {
+                if (!modifie) return;
+                e.preventDefault();
+                await sauvegarder();
+                window.location.href = lien.href;
+            });
+        });
+        document.getElementById('form-statut').addEventListener('submit', async function (e) {
+            if (!modifie) return;
+            e.preventDefault();
+            await sauvegarder();
+            modifie = false;
+            e.target.submit();
+        });
+    }
+
+    // ---------- barre d'outils ----------
+    document.querySelectorAll('#barre-outils [data-cmd]').forEach(function (b) {
+        b.addEventListener('mousedown', function (e) { e.preventDefault(); });  // garde la sélection
+        b.addEventListener('click', function () {
+            ed.focus();
+            const val = b.dataset.val ? '<' + b.dataset.val + '>' : null;
+            document.execCommand(b.dataset.cmd, false, val);
+            aSauvegarder();
+        });
+    });
+
+    // ---------- sélection ciblée ----------
+    let selection = null;      // {range, texte} : passage à modifier par l'IA
+    let curseur = null;        // dernière position du curseur dans le document
+    const boiteSelection = document.getElementById('selection-active');
+    function afficherSelection() {
+        if (!boiteSelection) return;
+        if (selection) {
+            const t = selection.texte;
+            document.getElementById('selection-texte').textContent = t.length > 140 ? t.slice(0, 140) + '...' : t;
+            boiteSelection.classList.remove('hidden');
+        } else {
+            boiteSelection.classList.add('hidden');
+        }
+    }
+    document.addEventListener('selectionchange', function () {
+        const s = window.getSelection();
+        if (!s.rangeCount) return;
+        const r = s.getRangeAt(0);
+        if (!ed.contains(r.commonAncestorContainer)) return;  // clic dans le chat : on garde la cible
+        curseur = r.cloneRange();
+        const texte = s.toString().trim();
+        selection = texte ? { range: r.cloneRange(), texte: texte } : null;
+        afficherSelection();
+    });
+    const effacer = document.getElementById('selection-effacer');
+    if (effacer) effacer.addEventListener('click', function () { selection = null; afficherSelection(); });
+
+    // ---------- insertion de texte IA ----------
+    function fragmentTexte(texte) {
+        const frag = document.createDocumentFragment();
+        const paragraphes = texte.trim().split(/\n\s*\n/);
+        paragraphes.forEach(function (p, i) {
+            if (i) { frag.appendChild(document.createElement('br')); frag.appendChild(document.createElement('br')); }
+            p.split('\n').forEach(function (ligne, j) {
+                if (j) frag.appendChild(document.createElement('br'));
+                frag.appendChild(document.createTextNode(ligne));
+            });
+        });
+        return frag;
+    }
+    function blocDuDocument(noeud) {
+        while (noeud && noeud.parentNode !== ed) noeud = noeud.parentNode;
+        return noeud;
+    }
+    async function appliquer(texte, range, html) {
+        if (FINALISE) return;
+        const blocs = Array.prototype.slice.call(new DOMParser().parseFromString(html || '', 'text/html').body.children);
+        const simpleParagraphe = blocs.length <= 1 && (!blocs.length || blocs[0].tagName === 'P');
+        if (range && ed.contains(range.commonAncestorContainer) && simpleParagraphe) {
+            // Un seul paragraphe : on remplace/insère dans le texte, sans casser le paragraphe courant
+            range.deleteContents();
+            range.insertNode(fragmentTexte(texte));
+        } else if (range && ed.contains(range.commonAncestorContainer)) {
+            // Plusieurs blocs (listes, sous-titres) : insérés comme vrais blocs après le bloc courant
+            const parent = blocDuDocument(range.startContainer);
+            range.deleteContents();
+            if (parent && !parent.textContent.trim() && !parent.querySelector('table')) {
+                blocs.forEach(function (b) { ed.insertBefore(b, parent); });
+                parent.remove();
+            } else {
+                let ref = parent;
+                blocs.forEach(function (b) { if (ref) { ref.after(b); ref = b; } else { ed.appendChild(b); } });
+            }
+        } else {
+            blocs.forEach(function (b) { ed.appendChild(b); });
+        }
+        selection = null;
+        afficherSelection();
+        modifie = true;
+        await sauvegarder({ version_avant: true });
+    }
+
+    // ---------- chat ----------
+    function bulle(role, texte, options) {
+        options = options || {};
+        const vide = document.getElementById('chat-vide');
+        if (vide) vide.remove();
+        // Même message d'erreur/information que le précédent : on le fait clignoter au lieu d'empiler
+        const dernier = chat.lastElementChild;
+        if (options.erreur && dernier && dernier.dataset.erreur === texte) {
+            dernier.classList.remove('animate-pulse');
+            void dernier.offsetWidth;
+            dernier.classList.add('animate-pulse');
+            setTimeout(function () { dernier.classList.remove('animate-pulse'); }, 1200);
+            return dernier;
+        }
+        const div = document.createElement('div');
+        if (options.erreur) div.dataset.erreur = texte;
+        div.className = 'rounded-lg p-3 ' + (role === 'psy' ? 'bulle-psy ml-6' : 'bulle-ia mr-2') + (options.erreur ? ' border-red-200 bg-red-50 text-red-700' : '');
+        if (options.selection) {
+            const cite = document.createElement('div');
+            cite.className = 'text-xs italic text-fuchsia-700 border-l-2 border-fuchsia-300 pl-2 mb-1';
+            cite.textContent = options.selection.length > 160 ? options.selection.slice(0, 160) + '...' : options.selection;
+            div.appendChild(cite);
+        }
+        const corps = document.createElement('div');
+        corps.className = 'whitespace-pre-wrap text-gray-800';
+        corps.textContent = texte;
+        div.appendChild(corps);
+        if (options.proposition) {
+            const prop = document.createElement('div');
+            prop.className = 'proposition mt-2 p-2 bg-white border border-gray-200 rounded text-gray-800 text-[13px]';
+            prop.textContent = options.proposition;
+            div.appendChild(prop);
+            if (!FINALISE && options.actions !== false) {
+                const actions = document.createElement('div');
+                actions.className = 'flex flex-wrap gap-1 mt-2';
+                function bouton(libelle, icone, action) {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'text-xs px-2 py-1 rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-700';
+                    b.innerHTML = '<i class="fas ' + icone + ' mr-1"></i>';
+                    b.appendChild(document.createTextNode(libelle));
+                    b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+                    b.addEventListener('click', function () { action(b); });
+                    actions.appendChild(b);
+                }
+                const html = options.propositionHtml;
+                if (options.range) {
+                    bouton('Remplacer le passage', 'fa-exchange-alt', function (b) { appliquer(options.proposition, options.range, html); b.closest('div').remove(); });
+                }
+                bouton('Insérer au curseur', 'fa-i-cursor', function () {
+                    appliquer(options.proposition, curseur ? (function () { const r = curseur.cloneRange(); r.collapse(false); return r; })() : null, html);
+                });
+                bouton('Ajouter à la fin', 'fa-plus', function () { appliquer(options.proposition, null, html); });
+                bouton('Copier', 'fa-copy', function (b) {
+                    if (navigator.clipboard) navigator.clipboard.writeText(options.proposition);
+                    b.lastChild.textContent = 'Copié';
+                });
+                div.appendChild(actions);
+            }
+        }
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+        return div;
+    }
+    function attente(texte) {
+        const div = bulle('ia', texte);
+        div.querySelector('div').innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2 text-primary"></i>' + texte;
+        return div;
+    }
+    function majQuota(n) {
+        const q = document.getElementById('quota');
+        if (q && n !== undefined) q.textContent = n;
+    }
+
+    JSON.parse(document.getElementById('historique-data').textContent).forEach(function (m) {
+        bulle(m.role, m.contenu, { selection: m.selection, proposition: m.proposition, propositionHtml: m.proposition_html });
+    });
+
+    const formChat = document.getElementById('form-chat');
+    const champ = document.getElementById('chat-message');
+    let occupe = false;
+    async function envoyer(texte) {
+        texte = (texte || '').trim();
+        if (!texte || occupe) return;
+        occupe = true;
+        const cible = selection;
+        bulle('psy', texte, { selection: cible ? cible.texte : '' });
+        champ.value = '';
+        const attenteDiv = attente("L'assistant rédige...");
+        const j = await appel(URLS.chat, { message: texte, selection: cible ? cible.texte : '', contenu: ed.innerHTML });
+        attenteDiv.remove();
+        occupe = false;
+        if (!j.ok) { bulle('ia', j.erreur, { erreur: true }); return; }
+        modifie = false;
+        majQuota(j.restants);
+        bulle('ia', j.reponse, { proposition: j.proposition, propositionHtml: j.proposition_html, range: cible ? cible.range : null });
+    }
+    if (formChat) {
+        formChat.addEventListener('submit', function (e) { e.preventDefault(); envoyer(champ.value); });
+        champ.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); envoyer(champ.value); }
+        });
+        document.querySelectorAll('.suggestion').forEach(function (b) {
+            b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+            b.addEventListener('click', function () {
+                const demande = b.textContent.trim();
+                envoyer(selection ? 'Réécris ce passage : ' + demande.toLowerCase() + '.' : demande + ' (pour l\'ensemble du bilan : propose les passages à revoir).');
+            });
+        });
+    }
+
+    // ---------- première version IA / réécriture d'une section ----------
+    const btnJet = document.getElementById('btn-premier-jet');
+    const listeReecriture = document.getElementById('liste-reecriture');
+    const PLACEHOLDER_IA = "{{ placeholder_ia|escapejs }}";
+    function sectionsIA() {
+        // Parcourt le document : chaque <h2 data-type="ia"> et son contenu jusqu'à la section suivante
+        const sections = [];
+        let courante = null;
+        Array.prototype.forEach.call(ed.children, function (el) {
+            if (el.tagName === 'H2' && el.dataset.section) {
+                courante = el.dataset.type === 'ia' ? { cle: el.dataset.section, titre: el.textContent.trim(), texte: '' } : null;
+                if (courante) sections.push(courante);
+            } else if (courante) {
+                courante.texte += ' ' + el.textContent;
+            }
+        });
+        sections.forEach(function (sec) {
+            const t = sec.texte.trim();
+            sec.vide = !t || t === PLACEHOLDER_IA;
+        });
+        return sections;
+    }
+    function majBoutonIA() {
+        if (!btnJet || occupe) return;
+        const restantes = sectionsIA().filter(function (sec) { return sec.vide; }).length;
+        btnJet.innerHTML = restantes
+            ? '<i class="fas fa-magic mr-2"></i>Première version IA'
+            : '<i class="fas fa-redo mr-2"></i>Réécrire une section avec l\'IA <i class="fas fa-chevron-down ml-1 text-xs"></i>';
+        document.getElementById('aide-ia').innerHTML = restantes
+            ? 'Rédige les ' + restantes + ' section(s) <span class="px-1.5 rounded-full bg-fuchsia-50 text-fuchsia-700 font-semibold">IA</span> encore vides.'
+            : 'Toutes les sections IA sont rédigées : choisissez-en une à réécrire (la version actuelle est sauvegardée avant).';
+        if (restantes) listeReecriture.classList.add('hidden');
+    }
+    function afficherListeReecriture() {
+        listeReecriture.textContent = '';
+        sectionsIA().forEach(function (sec) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'w-full text-left text-sm px-3 py-2 rounded-lg border border-gray-200 hover:bg-primary-light hover:border-primary text-gray-700';
+            b.innerHTML = '<i class="fas fa-pen-nib mr-2 text-primary"></i>';
+            b.appendChild(document.createTextNode(sec.titre));
+            b.addEventListener('click', function () { genererIA([sec.cle]); });
+            listeReecriture.appendChild(b);
+        });
+        listeReecriture.classList.toggle('hidden');
+    }
+    async function genererIA(cles) {
+        if (occupe) return;
+        occupe = true;
+        listeReecriture.classList.add('hidden');
+        btnJet.disabled = true;
+        btnJet.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Rédaction en cours...';
+        const j = await appel(URLS.premierJet, cles ? { contenu: ed.innerHTML, sections: cles } : { contenu: ed.innerHTML });
+        btnJet.disabled = false;
+        occupe = false;
+        majBoutonIA();
+        if (!j.ok) { bulle('ia', j.erreur, { erreur: true }); return; }
+        ed.innerHTML = j.contenu;
+        modifie = false;
+        majQuota(j.restants);
+        majBoutonIA();
+        afficherEtat(cles ? 'Section réécrite et enregistrée' : 'Première version enregistrée');
+        bulle('ia', (cles ? 'Section réécrite : ' : 'Sections rédigées : ') + j.remplies.join(', ') +
+            '.\nRelisez et corrigez : vous restez responsable du contenu. La version précédente est dans « Versions ».');
+    }
+    if (btnJet) {
+        btnJet.addEventListener('click', function () {
+            if (sectionsIA().some(function (sec) { return sec.vide; })) genererIA(null);
+            else afficherListeReecriture();
+        });
+        let minuteurBouton = null;
+        ed.addEventListener('input', function () { clearTimeout(minuteurBouton); minuteurBouton = setTimeout(majBoutonIA, 600); });
+        majBoutonIA();
+    }
+    const btnApercu = document.getElementById('btn-apercu');
+    if (btnApercu) {
+        btnApercu.addEventListener('click', async function () {
+            await sauvegarder();
+            document.getElementById('apercu-texte').textContent = 'Chargement...';
+            ouvrir('modal-apercu');
+            const j = await appel(URLS.apercu, undefined, 'GET');
+            document.getElementById('apercu-texte').textContent = j.ok
+                ? (j.nb_sections ? j.texte : "Aucune section IA vide à rédiger : voici tout de même les données qui seraient envoyées.\n\n" + j.texte)
+                : j.erreur;
+        });
+    }
+
+    // ---------- versions ----------
+    document.getElementById('btn-versions').addEventListener('click', async function () {
+        const liste = document.getElementById('liste-versions');
+        liste.textContent = 'Chargement...';
+        ouvrir('modal-versions');
+        if (modifie) await sauvegarder();
+        const j = await appel(URLS.versions, undefined, 'GET');
+        liste.textContent = '';
+        if (!j.ok || !j.versions.length) { liste.textContent = j.ok ? 'Aucune version enregistrée.' : j.erreur; return; }
+        j.versions.forEach(function (v) {
+            const ligne = document.createElement('div');
+            ligne.className = 'flex items-center gap-3 p-2 rounded-lg border border-gray-100';
+            const info = document.createElement('div');
+            info.className = 'flex-1 min-w-0';
+            info.innerHTML = '<div class="font-medium text-gray-800"></div><div class="text-xs text-gray-500"></div>';
+            info.firstChild.textContent = v.motif;
+            info.lastChild.textContent = v.date + (v.auteur ? ' · ' + v.auteur : '');
+            ligne.appendChild(info);
+            if (!FINALISE) {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700';
+                b.textContent = 'Restaurer';
+                b.addEventListener('click', async function () {
+                    if (b.dataset.confirme !== '1') {  // confirmation en deux clics, sans boîte de dialogue
+                        b.dataset.confirme = '1';
+                        b.textContent = 'Confirmer ?';
+                        b.className = 'text-xs px-2 py-1 rounded bg-amber-500 hover:bg-amber-600 text-white';
+                        return;
+                    }
+                    const r = await appel(URLS.restaurer.replace('/0/', '/' + v.id + '/'), {});
+                    if (!r.ok) { b.textContent = r.erreur; return; }
+                    ed.innerHTML = r.contenu;
+                    modifie = false;
+                    afficherEtat('Version restaurée');
+                    document.getElementById('modal-versions').classList.add('hidden');
+                });
+                ligne.appendChild(b);
+            }
+            liste.appendChild(ligne);
+        });
+    });
+})();
+</script>
+{% endblock %}

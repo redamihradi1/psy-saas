@@ -147,6 +147,16 @@
         </li>
         {% endif %}
 
+        <!-- Bilans - licence du cabinet ET permission utilisateur (comme un test) -->
+        {% if user.organization.license.has_bilans and user|has_test:'bilans' %}
+        <li>
+          <a href="{% url 'bilans:liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
+            <i class="fas fa-file-signature w-5"></i>
+            <span class="ml-3">Bilans</span>
+          </a>
+        </li>
+        {% endif %}
+
         <!-- Menu Tests Psychométriques - Affiché uniquement si au moins 1 test disponible et autorisé pour cet utilisateur -->
         {% if user.organization.license.has_d2r and user|has_test:'d2r' or user.organization.license.has_vineland and user|has_test:'vineland' or user.organization.license.has_beck and user|has_test:'beck' or user.organization.license.has_stai and user|has_test:'stai' or user.organization.license.has_brief and user|has_test:'brief' %}
         <li class="mt-4 px-6">

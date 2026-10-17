@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Nouveau bilan - {{ patient.nom_complet }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg p-4 sm:p-8 max-w-4xl mx-auto">
+    <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+        <i class="fas fa-file-signature text-primary mr-2"></i>Nouveau bilan
+    </h2>
+    <p class="text-sm text-gray-500 mt-1 mb-6">
+        {{ patient.nom_complet }} · {{ patient.age }} ans ·
+        <a href="{% url 'bilans:nouveau' %}" class="text-primary-dark hover:underline">changer de patient</a>
+    </p>
+
+    <form method="post" class="space-y-8">
+        {% csrf_token %}
+        <input type="hidden" name="patient" value="{{ patient.id }}">
+
+        <div>
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">1. Modèle de bilan *</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {% for cle, modele in modeles.items %}
+                <label class="modele-carte flex flex-col gap-2 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary transition">
+                    <span class="flex items-center gap-2">
+                        <input type="radio" name="modele" value="{{ cle }}" required class="text-primary focus:ring-primary">
+                        <i class="fas {{ modele.icone }} text-primary"></i>
+                        <span class="font-semibold text-gray-900">{{ modele.titre }}</span>
+                    </span>
+                    <span class="text-xs text-gray-500">{{ modele.description }}</span>
+                    <span class="text-xs text-gray-400">
+                        {{ modele.sections|length }} sections
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-sm font-semibold text-gray-700 mb-1">2. Données à utiliser</h3>
+            <p class="text-xs text-gray-500 mb-3">
+                Les tests cochés apparaissent dans les tableaux de résultats. Toutes ces données servent aussi de
+                base à l'assistant IA, après anonymisation (vous pourrez voir le texte exact envoyé).
+            </p>
+            <div class="space-y-2">
+                {% if peut_clinique %}
+                <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 {% if a_anamnese %}hover:bg-gray-50 cursor-pointer{% else %}opacity-50{% endif %}">
+                    <input type="checkbox" name="anamnese" value="1" {% if a_anamnese %}checked{% else %}disabled{% endif %}
+                           class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary">
+                    <span class="text-sm text-gray-700"><i class="fas fa-file-medical-alt w-4 mr-1 text-gray-400"></i>
+                        Anamnèse {% if not a_anamnese %}(non renseignée){% endif %}</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 {% if nb_seances %}hover:bg-gray-50 cursor-pointer{% else %}opacity-50{% endif %}">
+                    <input type="checkbox" name="consultations" value="1" {% if nb_seances %}checked{% else %}disabled{% endif %}
+                           class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary">
+                    <span class="text-sm text-gray-700"><i class="fas fa-notes-medical w-4 mr-1 text-gray-400"></i>
+                        Notes de séance ({{ nb_seances }} séance{{ nb_seances|pluralize }} terminée{{ nb_seances|pluralize }})</span>
+                </label>
+                {% endif %}
+                {% for test in tests %}
+                <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="tests" value="{{ test.ref }}" data-type="{{ test.type }}"
+                           class="test-source w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary">
+                    <span class="text-sm text-gray-700"><i class="fas fa-vial w-4 mr-1 text-gray-400"></i>
+                        {{ test.nom }} du {{ test.date|date:"d/m/Y" }}</span>
+                </label>
+                {% empty %}
+                <p class="text-sm text-gray-400 p-3">Aucun test psychométrique passé par ce patient.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div>
+            <label for="titre" class="block text-sm font-semibold text-gray-700 mb-2">3. Titre (facultatif)</label>
+            <input type="text" name="titre" id="titre" maxlength="200" placeholder="Par défaut : le nom du modèle"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition">
+                <i class="fas fa-magic mr-2"></i>Créer le bilan
+            </button>
+            <a href="{% url 'cabinet:patient_detail' patient.id %}" class="text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">Annuler</a>
+        </div>
+    </form>
+</div>
+
+{{ modeles|json_script:"modeles-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const modeles = JSON.parse(document.getElementById('modeles-data').textContent);
+    document.querySelectorAll('input[name="modele"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            document.querySelectorAll('.modele-carte').forEach(function (c) {
+                c.classList.toggle('border-primary', c.contains(radio) && radio.checked);
+                c.classList.toggle('bg-primary-light', c.contains(radio) && radio.checked);
+            });
+            // Pré-coche le test le plus récent de chaque type suggéré par le modèle (liste déjà
+            // triée du plus récent au plus ancien) - le psy peut ajuster.
+            const suggeres = modeles[radio.value].tests_suggeres || [];
+            const dejaCoches = new Set();
+            document.querySelectorAll('.test-source').forEach(function (cb) {
+                const type = cb.dataset.type;
+                cb.checked = suggeres.indexOf(type) !== -1 && !dejaCoches.has(type);
+                if (cb.checked) dejaCoches.add(type);
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

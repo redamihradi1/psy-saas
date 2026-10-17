@@ -247,28 +247,20 @@ def d2r_submit(request, test_id):
     return redirect('tests_psy:d2r_resultats', test_id=test_id)
 
 
-@login_required
-@require_test_access('d2r')
-def d2r_resultats(request, test_id):
-    """Afficher les résultats du test D2R"""
-    if request.user.is_superadmin():
-        test = get_object_or_404(TestD2R.all_objects, id=test_id)
-    else:
-        test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
-    
-    # Calculs
+def calculer_scores_d2r(test):
+    """Scores D2R et normes (note standard, percentile) d'un test - partagé entre la page de
+    résultats et les bilans (app `bilans`)."""
     cct = test.reponses_correctes
     ec = test.reponses_incorrectes
     eo = test.reponses_omises or 0
     cc = cct - ec - eo
     e_percentage = ((eo + ec) / cct) * 100 if cct > 0 else 0
     e_pourcentage_sans_virgule = int(e_percentage)
-    
+
     total_reponses = cct + ec
     precision = (cct / total_reponses * 100) if total_reponses > 0 else 0
     temps_moyen_ligne = test.temps_total / 14 if test.temps_total > 0 else 0
-    
-    # Récupération des normes
+
     norme_exactitude = NormeExactitude.objects.filter(
         age_min__lte=test.age,
         age_max__gte=test.age,
@@ -289,10 +281,8 @@ def d2r_resultats(request, test_id):
         valeur_min__lte=cc,
         valeur_max__gte=cc
     ).first()
-    
-    context = {
-        'test': test,
-        'patient': test.patient,
+
+    return {
         'total_reponses': total_reponses,
         'precision': round(precision, 2),
         'temps_moyen_ligne': round(temps_moyen_ligne, 1),
@@ -307,6 +297,22 @@ def d2r_resultats(request, test_id):
         'percentile_cct': norme_rythme.percentile if norme_rythme else None,
         'note_standard_cc': norme_concentration.note_standard if norme_concentration else None,
         'percentile_cc': norme_concentration.percentile if norme_concentration else None,
+    }
+
+
+@login_required
+@require_test_access('d2r')
+def d2r_resultats(request, test_id):
+    """Afficher les résultats du test D2R"""
+    if request.user.is_superadmin():
+        test = get_object_or_404(TestD2R.all_objects, id=test_id)
+    else:
+        test = get_object_or_404(TestD2R, id=test_id, organization=request.user.organization)
+    
+    context = {
+        'test': test,
+        'patient': test.patient,
+        **calculer_scores_d2r(test),
     }
     
     return render(request, 'tests_psy/d2r/resultats.html', context)

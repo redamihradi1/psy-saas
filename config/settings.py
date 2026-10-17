@@ -27,6 +27,14 @@ VAPID_ADMIN_EMAIL = os.environ.get('VAPID_ADMIN_EMAIL', '')
 # Jeton secret pour déclencher l'envoi des rappels push depuis un cron externe
 # (utile si le plan d'hébergement ne permet pas de tâche planifiée fréquente)
 CRON_SECRET_TOKEN = os.environ.get('CRON_SECRET_TOKEN', '')
+
+# Assistant IA des bilans (bilans/ia.py) : toute API compatible OpenAI /chat/completions.
+# Par défaut Groq (offre gratuite, api.groq.com autorisé sur PythonAnywhere gratuit). Sans clé,
+# les bilans fonctionnent sans IA (modèles, éditeur, exports).
+IA_API_KEY = os.environ.get('IA_API_KEY', '')
+IA_API_URL = os.environ.get('IA_API_URL', 'https://api.groq.com/openai/v1/chat/completions')
+IA_MODELE = os.environ.get('IA_MODELE', 'openai/gpt-oss-120b')
+IA_QUOTA_JOUR_PAR_CABINET = int(os.environ.get('IA_QUOTA_JOUR_PAR_CABINET', '40'))
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
@@ -51,6 +59,7 @@ INSTALLED_APPS = [
     'accounts',
     'cabinet',
     'tests_psy',
+    'bilans',
     'core',
 ]
 
