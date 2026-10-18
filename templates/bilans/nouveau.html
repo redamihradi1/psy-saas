@@ -3,83 +3,119 @@
 {% block title %}Nouveau bilan - {{ patient.nom_complet }}{% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-xl shadow-lg p-4 sm:p-8 max-w-4xl mx-auto">
-    <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
-        <i class="fas fa-file-signature text-primary mr-2"></i>Nouveau bilan
-    </h2>
-    <p class="text-sm text-gray-500 mt-1 mb-6">
-        {{ patient.nom_complet }} · {{ patient.age }} ans ·
-        <a href="{% url 'bilans:nouveau' %}" class="text-primary-dark hover:underline">changer de patient</a>
-    </p>
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-encre">Nouveau bilan</h1>
+        <p class="text-sm text-slate-500 mt-1">
+            {{ patient.nom_complet }} · {{ patient.age }} ans ·
+            <a href="{% url 'bilans:nouveau' %}" class="text-primary-dark hover:underline">changer de patient</a>
+        </p>
+    </div>
 
-    <form method="post" class="space-y-8">
+    <form method="post" class="space-y-5">
         {% csrf_token %}
         <input type="hidden" name="patient" value="{{ patient.id }}">
 
-        <div>
-            <h3 class="text-sm font-semibold text-gray-700 mb-3">1. Modèle de bilan *</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <section class="carte p-5 sm:p-6">
+            <h2 class="font-semibold text-encre mb-1">1. Modèle</h2>
+            <p class="text-xs text-slate-500 mb-4">Il fixe le plan du bilan. Vous pourrez tout modifier ensuite.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {% for cle, modele in modeles.items %}
-                <label class="modele-carte flex flex-col gap-2 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary transition">
+                <label class="modele-carte flex flex-col gap-2 p-4 rounded-xl ring-1 ring-slate-200 cursor-pointer hover:ring-primary transition">
                     <span class="flex items-center gap-2">
                         <input type="radio" name="modele" value="{{ cle }}" required class="text-primary focus:ring-primary">
                         <i class="fas {{ modele.icone }} text-primary"></i>
-                        <span class="font-semibold text-gray-900">{{ modele.titre }}</span>
+                        <span class="font-semibold text-encre text-sm">{{ modele.nom }}</span>
                     </span>
-                    <span class="text-xs text-gray-500">{{ modele.description }}</span>
-                    <span class="text-xs text-gray-400">
-                        {{ modele.sections|length }} sections
-                    </span>
+                    <span class="text-xs text-slate-500">{{ modele.description }}</span>
                 </label>
                 {% endfor %}
             </div>
-        </div>
+        </section>
 
-        <div>
-            <h3 class="text-sm font-semibold text-gray-700 mb-1">2. Données à utiliser</h3>
-            <p class="text-xs text-gray-500 mb-3">
-                Les tests cochés apparaissent dans les tableaux de résultats. Toutes ces données servent aussi de
-                base à l'assistant IA, après anonymisation (vous pourrez voir le texte exact envoyé).
+        <section class="carte p-5 sm:p-6">
+            <h2 class="font-semibold text-encre mb-1">2. Informations de la page de garde</h2>
+            <p class="text-xs text-slate-500 mb-4">Tout est facultatif et modifiable plus tard dans « Scores et informations ».</p>
+            {% include 'bilans/_champs_infos.html' %}
+        </section>
+
+        <section class="carte p-5 sm:p-6">
+            <h2 class="font-semibold text-encre mb-1">3. Données de la plateforme</h2>
+            <p class="text-xs text-slate-500 mb-4">
+                Les tests cochés ont leur chapitre de résultats. Toutes ces données servent aussi de base à l'assistant IA,
+                après anonymisation (vous pourrez voir le texte exact envoyé).
             </p>
             <div class="space-y-2">
                 {% if peut_clinique %}
-                <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 {% if a_anamnese %}hover:bg-gray-50 cursor-pointer{% else %}opacity-50{% endif %}">
+                <label class="flex items-center gap-3 p-3 rounded-xl ring-1 ring-slate-200 {% if a_anamnese %}hover:bg-slate-50 cursor-pointer{% else %}opacity-50{% endif %}">
                     <input type="checkbox" name="anamnese" value="1" {% if a_anamnese %}checked{% else %}disabled{% endif %}
-                           class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary">
-                    <span class="text-sm text-gray-700"><i class="fas fa-file-medical-alt w-4 mr-1 text-gray-400"></i>
+                           class="w-5 h-5 text-primary rounded border-slate-300 focus:ring-primary">
+                    <span class="text-sm text-slate-700"><i class="fas fa-file-medical-alt w-4 mr-1 text-slate-400"></i>
                         Anamnèse {% if not a_anamnese %}(non renseignée){% endif %}</span>
                 </label>
-                <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 {% if nb_seances %}hover:bg-gray-50 cursor-pointer{% else %}opacity-50{% endif %}">
+                <label class="flex items-center gap-3 p-3 rounded-xl ring-1 ring-slate-200 {% if nb_seances %}hover:bg-slate-50 cursor-pointer{% else %}opacity-50{% endif %}">
                     <input type="checkbox" name="consultations" value="1" {% if nb_seances %}checked{% else %}disabled{% endif %}
-                           class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary">
-                    <span class="text-sm text-gray-700"><i class="fas fa-notes-medical w-4 mr-1 text-gray-400"></i>
-                        Notes de séance ({{ nb_seances }} séance{{ nb_seances|pluralize }} terminée{{ nb_seances|pluralize }})</span>
+                           class="w-5 h-5 text-primary rounded border-slate-300 focus:ring-primary">
+                    <span class="text-sm text-slate-700"><i class="fas fa-notes-medical w-4 mr-1 text-slate-400"></i>
+                        Notes de séance et observations ({{ nb_seances }} séance{{ nb_seances|pluralize }} terminée{{ nb_seances|pluralize }})</span>
                 </label>
                 {% endif %}
                 {% for test in tests %}
-                <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                <label class="flex items-center gap-3 p-3 rounded-xl ring-1 ring-slate-200 hover:bg-slate-50 cursor-pointer">
                     <input type="checkbox" name="tests" value="{{ test.ref }}" data-type="{{ test.type }}"
-                           class="test-source w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary">
-                    <span class="text-sm text-gray-700"><i class="fas fa-vial w-4 mr-1 text-gray-400"></i>
+                           class="test-source w-5 h-5 text-primary rounded border-slate-300 focus:ring-primary">
+                    <span class="text-sm text-slate-700"><i class="fas fa-vial w-4 mr-1 text-slate-400"></i>
                         {{ test.nom }} du {{ test.date|date:"d/m/Y" }}</span>
                 </label>
                 {% empty %}
-                <p class="text-sm text-gray-400 p-3">Aucun test psychométrique passé par ce patient.</p>
+                <p class="text-sm text-slate-400 px-1">Aucun test passé sur la plateforme par ce patient.</p>
+                {% endfor %}
+                {% if precedents %}
+                <div class="pt-2">
+                    <label for="bilan_precedent" class="block text-xs font-semibold text-slate-600 mb-1">Bilan précédent à prendre en compte (réévaluation)</label>
+                    <select name="bilan_precedent" id="bilan_precedent"
+                            class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="">Aucun</option>
+                        {% for b in precedents %}
+                        <option value="{{ b.id }}">{{ b.titre }} - {{ b.date_creation|date:"d/m/Y" }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="carte p-5 sm:p-6">
+            <h2 class="font-semibold text-encre mb-1">4. Tests passés hors plateforme</h2>
+            <p class="text-xs text-slate-500 mb-4">
+                Cochez les épreuves administrées : vous saisirez leurs scores à l'étape suivante, et le bilan calculera
+                tableaux, graphiques et comparaisons.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                {% for libelle, tests_groupe in groupes_externes %}
+                <div>
+                    <div class="text-xs font-semibold text-slate-400 mb-1.5">{{ libelle }}</div>
+                    {% for cle, test in tests_groupe %}
+                    <label class="flex items-center gap-2 py-1 text-sm text-slate-700 cursor-pointer" title="{{ test.nom_long }}">
+                        <input type="checkbox" name="externes" value="{{ cle }}" class="test-externe w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary">
+                        <span class="font-medium">{{ test.nom }}</span>
+                        {% if cle == 'd2r_papier' or cle == 'brief_papier' %}<span class="text-slate-400 text-xs">cotation papier</span>{% endif %}
+                    </label>
+                    {% endfor %}
+                </div>
                 {% endfor %}
             </div>
-        </div>
+        </section>
 
-        <div>
-            <label for="titre" class="block text-sm font-semibold text-gray-700 mb-2">3. Titre (facultatif)</label>
-            <input type="text" name="titre" id="titre" maxlength="200" placeholder="Par défaut : le nom du modèle"
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-        </div>
+        <section class="carte p-5 sm:p-6">
+            <label for="titre" class="block font-semibold text-encre mb-2">5. Titre <span class="font-normal text-slate-400 text-sm">(facultatif)</span></label>
+            <input type="text" name="titre" id="titre" maxlength="200" placeholder="Par défaut : Bilan neuropsychologique"
+                   class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+        </section>
 
         <div class="flex flex-col sm:flex-row gap-3">
-            <button type="submit" class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition">
-                <i class="fas fa-magic mr-2"></i>Créer le bilan
-            </button>
-            <a href="{% url 'cabinet:patient_detail' patient.id %}" class="text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold transition">Annuler</a>
+            <button type="submit" class="btn btn-primaire"><i class="fas fa-arrow-right"></i>Créer le bilan</button>
+            <a href="{% url 'cabinet:patient_detail' patient.id %}" class="btn btn-secondaire">Annuler</a>
         </div>
     </form>
 </div>
@@ -91,21 +127,35 @@
 <script>
 (function () {
     const modeles = JSON.parse(document.getElementById('modeles-data').textContent);
+    const sousTitre = document.getElementById('info_sous_titre');
+    let sousTitreModifie = false;
+    if (sousTitre) sousTitre.addEventListener('input', function () { sousTitreModifie = true; });
     document.querySelectorAll('input[name="modele"]').forEach(function (radio) {
         radio.addEventListener('change', function () {
+            const modele = modeles[radio.value];
             document.querySelectorAll('.modele-carte').forEach(function (c) {
-                c.classList.toggle('border-primary', c.contains(radio) && radio.checked);
-                c.classList.toggle('bg-primary-light', c.contains(radio) && radio.checked);
+                const choisi = c.contains(radio) && radio.checked;
+                c.classList.toggle('ring-2', choisi);
+                c.classList.toggle('ring-primary', choisi);
+                c.classList.toggle('bg-primary-light', choisi);
             });
-            // Pré-coche le test le plus récent de chaque type suggéré par le modèle (liste déjà
-            // triée du plus récent au plus ancien) - le psy peut ajuster.
-            const suggeres = modeles[radio.value].tests_suggeres || [];
+            // Pré-coche le test le plus récent de chaque type suggéré (liste triée du plus récent au
+            // plus ancien) et les tests externes habituels du modèle - le psy ajuste.
+            const suggeres = modele.tests_suggeres || [];
             const dejaCoches = new Set();
             document.querySelectorAll('.test-source').forEach(function (cb) {
                 const type = cb.dataset.type;
                 cb.checked = suggeres.indexOf(type) !== -1 && !dejaCoches.has(type);
                 if (cb.checked) dejaCoches.add(type);
             });
+            const externes = modele.externes_suggeres || [];
+            document.querySelectorAll('.test-externe').forEach(function (cb) {
+                // d2-R / BRIEF déjà passés sur la plateforme : pas besoin de la saisie papier
+                const surPlateforme = (cb.value === 'd2r_papier' && dejaCoches.has('d2r')) ||
+                                      (cb.value === 'brief_papier' && dejaCoches.has('brief'));
+                cb.checked = externes.indexOf(cb.value) !== -1 && !surPlateforme;
+            });
+            if (sousTitre && !sousTitreModifie) sousTitre.value = modele.sous_titre || '';
         });
     });
 })();

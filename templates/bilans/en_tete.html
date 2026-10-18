@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}En-tête de mes bilans{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-start gap-3 mb-6">
+        <a href="{% if retour %}{% url 'bilans:editeur' retour %}{% else %}{% url 'bilans:liste' %}{% endif %}" class="icone-btn mt-0.5" title="Retour"><i class="fas fa-arrow-left"></i></a>
+        <div>
+            <h1 class="text-2xl font-bold text-encre">En-tête de mes bilans</h1>
+            <p class="text-sm text-slate-500 mt-1">Votre papier à en-tête, appliqué à chaque export Word et PDF de vos bilans.</p>
+        </div>
+    </div>
+
+    <!-- Aperçu -->
+    <div class="carte p-5 sm:p-8 mb-5">
+        <div class="text-xs font-semibold text-slate-400 mb-4">Aperçu</div>
+        <div class="grid grid-cols-3 items-start gap-4 font-serif">
+            <div class="text-sm leading-6">
+                <div class="text-[#1F3A5F] text-base" data-apercu="nom_affiche">{{ en_tete.nom_affiche }}</div>
+                <div data-apercu="titre_pro">{{ en_tete.titre_pro }}</div>
+                <div class="italic" data-apercu="specialites">{{ en_tete.specialites }}</div>
+            </div>
+            <div class="flex justify-center">
+                {% if en_tete.logo %}<img src="{% url 'bilans:en_tete_image' 'logo' %}" alt="Logo" class="h-16 object-contain">{% endif %}
+            </div>
+            <div class="text-sm leading-6 text-right whitespace-pre-line" dir="auto" data-apercu="texte_droite">{{ en_tete.texte_droite }}</div>
+        </div>
+        <div class="mt-10 pt-3 border-t border-slate-100 text-center font-serif text-[11px] leading-4">
+            <div class="font-bold" data-apercu="mention_confidentielle">{{ en_tete.mention_confidentielle }}</div>
+            <div class="text-[#1F3A5F] whitespace-pre-line" data-apercu="pied_de_page">{{ en_tete.pied_de_page }}</div>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="carte p-5 sm:p-6 space-y-5">
+        {% csrf_token %}
+        <input type="hidden" name="retour" value="{{ retour }}">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label class="block">
+                <span class="block text-xs font-semibold text-slate-600 mb-1">Nom affiché</span>
+                <input type="text" name="nom_affiche" value="{{ en_tete.nom_affiche }}" maxlength="120" placeholder="Ex. NOM Prénom"
+                       class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+            </label>
+            <label class="block">
+                <span class="block text-xs font-semibold text-slate-600 mb-1">Titre</span>
+                <input type="text" name="titre_pro" value="{{ en_tete.titre_pro }}" maxlength="150" placeholder="Ex. Psychologue clinicienne - Psychothérapeute"
+                       class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+            </label>
+            <label class="block">
+                <span class="block text-xs font-semibold text-slate-600 mb-1">Spécialités / public</span>
+                <input type="text" name="specialites" value="{{ en_tete.specialites }}" maxlength="150" placeholder="Ex. Enfants - Adolescents - Adultes"
+                       class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+            </label>
+            <label class="block">
+                <span class="block text-xs font-semibold text-slate-600 mb-1">Mention en pied de page</span>
+                <input type="text" name="mention_confidentielle" value="{{ en_tete.mention_confidentielle }}" maxlength="120"
+                       class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+            </label>
+            <label class="block">
+                <span class="block text-xs font-semibold text-slate-600 mb-1">Texte à droite de l'en-tête <span class="font-normal text-slate-400">(une ligne par ligne ; l'arabe s'affiche dans le Word)</span></span>
+                <textarea name="texte_droite" rows="3" dir="auto" maxlength="1500"
+                          class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">{{ en_tete.texte_droite }}</textarea>
+            </label>
+            <label class="block">
+                <span class="block text-xs font-semibold text-slate-600 mb-1">Pied de page <span class="font-normal text-slate-400">(diplômes, adresse, téléphone, email)</span></span>
+                <textarea name="pied_de_page" rows="3" maxlength="1500"
+                          class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">{{ en_tete.pied_de_page }}</textarea>
+            </label>
+            <label class="block sm:col-span-2">
+                <span class="block text-xs font-semibold text-slate-600 mb-1">Formule avant la signature</span>
+                <input type="text" name="formule_signature" value="{{ en_tete.formule_signature }}" maxlength="200"
+                       class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+            </label>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="rounded-xl ring-1 ring-slate-200 p-4">
+                <div class="text-xs font-semibold text-slate-600 mb-2">Logo <span class="font-normal text-slate-400">(centre de l'en-tête)</span></div>
+                {% if en_tete.logo %}
+                <img src="{% url 'bilans:en_tete_image' 'logo' %}" alt="Logo actuel" class="h-16 object-contain mb-2">
+                <label class="flex items-center gap-2 text-xs text-slate-600 mb-2"><input type="checkbox" name="supprimer_logo" value="1" class="rounded border-slate-300"> Retirer le logo</label>
+                {% endif %}
+                <input type="file" name="logo" accept="image/png,image/jpeg" class="text-sm">
+            </div>
+            <div class="rounded-xl ring-1 ring-slate-200 p-4">
+                <div class="text-xs font-semibold text-slate-600 mb-2">Signature ou cachet <span class="font-normal text-slate-400">(fin du bilan)</span></div>
+                {% if en_tete.signature %}
+                <img src="{% url 'bilans:en_tete_image' 'signature' %}" alt="Signature actuelle" class="h-20 object-contain mb-2">
+                <label class="flex items-center gap-2 text-xs text-slate-600 mb-2"><input type="checkbox" name="supprimer_signature" value="1" class="rounded border-slate-300"> Retirer la signature</label>
+                {% endif %}
+                <input type="file" name="signature" accept="image/png,image/jpeg" class="text-sm">
+            </div>
+        </div>
+        <p class="text-xs text-slate-400">PNG ou JPEG, 2 Mo maximum. Une signature sur fond blanc donne le meilleur rendu.
+            Elle s'ajoute aux nouveaux bilans ; pour un bilan existant, utilisez « Scores et informations » puis Enregistrer.</p>
+
+        <div class="flex gap-3">
+            <button type="submit" class="btn btn-primaire"><i class="fas fa-check"></i>Enregistrer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    // Aperçu en direct
+    document.querySelectorAll('form [name]').forEach(function (champ) {
+        const cible = document.querySelector('[data-apercu="' + champ.name + '"]');
+        if (!cible) return;
+        champ.addEventListener('input', function () { cible.textContent = champ.value; });
+    });
+})();
+</script>
+{% endblock %}

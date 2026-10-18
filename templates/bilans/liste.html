@@ -16,10 +16,13 @@
             </p>
             {% endif %}
         </div>
-        <a href="{% url 'bilans:nouveau' %}{% if patient %}?patient={{ patient.id }}{% endif %}"
-           class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg text-center">
-            <i class="fas fa-plus mr-2"></i>Nouveau bilan
-        </a>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'bilans:textes_types' %}" class="btn btn-secondaire"><i class="fas fa-book-open"></i>Textes types</a>
+            <a href="{% url 'bilans:en_tete' %}" class="btn btn-secondaire"><i class="fas fa-stamp"></i>En-tête et signature</a>
+            <a href="{% url 'bilans:nouveau' %}{% if patient %}?patient={{ patient.id }}{% endif %}" class="btn btn-primaire">
+                <i class="fas fa-plus"></i>Nouveau bilan
+            </a>
+        </div>
     </div>
 
     {% if bilans %}
@@ -43,7 +46,7 @@
                 <a href="{% url 'bilans:export' bilan.id 'docx' %}" class="text-blue-600 hover:text-blue-900" title="Télécharger en Word">
                     <i class="fas fa-file-word"></i>
                 </a>
-                <a href="{% url 'bilans:export' bilan.id 'pdf' %}" class="text-purple-600 hover:text-purple-900" title="Télécharger en PDF">
+                <a href="{% url 'bilans:export' bilan.id 'pdf' %}" class="text-brand-600 hover:text-brand-900" title="Télécharger en PDF">
                     <i class="fas fa-file-pdf"></i>
                 </a>
                 <a href="{% url 'bilans:supprimer' bilan.id %}" class="text-red-500 hover:text-red-700" title="Supprimer">

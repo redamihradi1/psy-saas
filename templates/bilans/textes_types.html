@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Bibliothèque de textes{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-start gap-3 mb-6">
+        <a href="{% url 'bilans:liste' %}" class="icone-btn mt-0.5" title="Retour aux bilans"><i class="fas fa-arrow-left"></i></a>
+        <div class="flex-1">
+            <h1 class="text-2xl font-bold text-encre">Bibliothèque de textes</h1>
+            <p class="text-sm text-slate-500 mt-1">
+                Présentations de tests, définitions, recommandations et formules, à insérer en un clic dans vos bilans.
+                Adaptez-les à votre façon d'écrire : vos versions sont partagées par tout le cabinet.
+            </p>
+        </div>
+    </div>
+
+    <details class="carte p-5 mb-5">
+        <summary class="cursor-pointer font-semibold text-encre"><i class="fas fa-plus text-primary mr-2"></i>Ajouter un texte</summary>
+        <form method="post" class="mt-4 space-y-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="enregistrer">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input type="text" name="titre" required maxlength="150" placeholder="Titre"
+                       class="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+                <select name="categorie" class="px-3 py-2 border border-slate-300 rounded-xl text-sm">
+                    {% for code, libelle in categories %}<option value="{{ code }}" {% if code == 'autre' %}selected{% endif %}>{{ libelle }}</option>{% endfor %}
+                </select>
+            </div>
+            <textarea name="contenu" rows="4" maxlength="4000" placeholder="Texte (une ligne commençant par « - » devient une puce)"
+                      class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+            <button type="submit" class="btn btn-primaire">Ajouter</button>
+        </form>
+    </details>
+
+    {% for code, libelle, textes in groupes %}
+    {% if textes %}
+    <section class="mb-6">
+        <h2 class="text-sm font-semibold text-slate-500 mb-2 px-1">{{ libelle }}</h2>
+        <div class="space-y-2">
+            {% for t in textes %}
+            <details class="carte">
+                <summary class="flex items-center gap-3 px-4 py-3 cursor-pointer">
+                    <span class="flex-1 min-w-0">
+                        <span class="font-medium text-encre text-sm">{{ t.titre }}</span>
+                        {% if t.personnalise and t.cle %}<span class="ml-2 text-[11px] px-1.5 py-0.5 rounded-full bg-brand-50 text-brand-700">personnalisé</span>{% endif %}
+                        <span class="block text-xs text-slate-500 truncate">{{ t.contenu|truncatechars:140 }}</span>
+                    </span>
+                </summary>
+                <form method="post" class="px-4 pb-4 space-y-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="cle" value="{{ t.cle }}">
+                    <input type="hidden" name="id" value="{% if not t.cle %}{{ t.id|default:'' }}{% endif %}">
+                    <input type="hidden" name="categorie" value="{{ t.categorie }}">
+                    <input type="text" name="titre" value="{{ t.titre }}" maxlength="150"
+                           class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <textarea name="contenu" rows="4" maxlength="4000"
+                              class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">{{ t.contenu }}</textarea>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="submit" name="action" value="enregistrer" class="btn btn-primaire !py-1.5">Enregistrer</button>
+                        {% if t.cle %}
+                        {% if t.personnalise %}<button type="submit" name="action" value="retablir" class="btn btn-secondaire !py-1.5">Rétablir le texte d'origine</button>{% endif %}
+                        <button type="submit" name="action" value="masquer" class="btn btn-secondaire !py-1.5 text-slate-500">Retirer de la bibliothèque</button>
+                        {% else %}
+                        <button type="submit" name="action" value="supprimer" class="btn btn-secondaire !py-1.5 text-red-600">Supprimer</button>
+                        {% endif %}
+                    </div>
+                </form>
+            </details>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    {% endfor %}
+
+    {% if masques %}
+    <section class="mb-6">
+        <h2 class="text-sm font-semibold text-slate-500 mb-2 px-1">Textes retirés</h2>
+        <div class="carte divide-y divide-slate-100">
+            {% for m in masques %}
+            <form method="post" class="flex items-center gap-3 px-4 py-2.5">
+                {% csrf_token %}
+                <input type="hidden" name="cle" value="{{ m.cle }}">
+                <span class="flex-1 text-sm text-slate-500">{{ m.titre }}</span>
+                <button type="submit" name="action" value="retablir" class="text-xs text-primary-dark hover:underline">Remettre</button>
+            </form>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

@@ -5,23 +5,30 @@
 {% block extra_css %}
 <style>
     .doc { font-family: Georgia, 'Times New Roman', serif; color: #1f2937; line-height: 1.6; outline: none; min-height: 60vh; }
-    .doc h1 { font-size: 1.6rem; font-weight: 700; text-align: center; color: #6b21a8; margin: 0 0 1.25rem; }
-    .doc h2 { font-size: 1.15rem; font-weight: 700; color: #6b21a8; margin: 1.6rem 0 .6rem; padding-bottom: .25rem; border-bottom: 1px solid #f3e8ff; }
-    .doc h3 { font-size: 1rem; font-weight: 700; margin: 1rem 0 .4rem; }
+    .doc h1 { font-size: 1.6rem; font-weight: 700; text-align: center; color: #2236B8; margin: 0 0 1.25rem; }
+    .doc h2 { font-size: 1.15rem; font-weight: 700; color: #2236B8; margin: 1.6rem 0 .6rem; padding-bottom: .25rem; border-bottom: 1px solid #DDE6FF; }
+    .doc h3 { font-size: 1rem; font-weight: 700; margin: 1rem 0 .4rem; color: #1F3A5F; }
+    .doc h1 + p { text-align: center; color: #1F3A5F; margin: -.75rem 0 1.5rem; }
+    .doc figure { margin: .5rem 0 1rem; text-align: center; user-select: none; }
+    .doc figure img { max-width: 100%; display: inline-block; border-radius: .5rem; }
+    .doc figure[data-figure="signature"] { text-align: right; }
+    .doc figure[data-figure="signature"] img { max-height: 90px; }
+    .doc .repere { background: #FEF3C7; transition: background 1.2s ease-out; }
     .doc p { margin: 0 0 .7rem; }
     .doc ul { list-style: disc; padding-left: 1.6rem; margin: 0 0 .7rem; }
     .doc ol { list-style: decimal; padding-left: 1.6rem; margin: 0 0 .7rem; }
     .doc table { border-collapse: collapse; width: 100%; margin: .4rem 0 1rem; font-family: ui-sans-serif, system-ui, sans-serif; font-size: .82rem; }
     .doc th, .doc td { border: 1px solid #e5e7eb; padding: .3rem .5rem; vertical-align: top; }
-    .doc th { background: #faf5ff; font-weight: 600; text-align: left; }
+    .doc th { background: #EEF3FF; font-weight: 600; text-align: left; }
     .doc h2[data-type]::after { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .65rem; font-weight: 600; margin-left: .5rem; padding: .1rem .45rem; border-radius: 9999px; vertical-align: middle; }
     .doc h2[data-type="auto"]::after { content: "Données"; background: #eff6ff; color: #1d4ed8; }
-    .doc h2[data-type="ia"]::after { content: "IA"; background: #fdf4ff; color: #a21caf; }
+    .doc h2[data-type="ia"]::after { content: "IA"; background: #EEF3FF; color: #2236B8; }
     .doc h2[data-type="libre"]::after { content: "À vous"; background: #fefce8; color: #a16207; }
+    .doc h2[data-type="test"]::after { content: "Résultats"; background: #ecfdf5; color: #047857; }
     .doc[contenteditable="false"] { cursor: default; }
     .outil { padding: .35rem .6rem; border-radius: .375rem; color: #4b5563; }
     .outil:hover { background: #f3f4f6; color: #111827; }
-    .bulle-psy { background: #fdf4ff; border: 1px solid #f5d0fe; }
+    .bulle-psy { background: #EEF3FF; border: 1px solid #f5d0fe; }
     .bulle-ia { background: #f9fafb; border: 1px solid #e5e7eb; }
     .proposition { white-space: pre-wrap; font-family: Georgia, serif; }
 </style>
@@ -40,7 +47,7 @@
                        class="w-full text-lg font-bold text-gray-900 bg-transparent border-0 border-b border-transparent focus:border-primary focus:ring-0 px-0 py-0.5">
                 <div class="text-xs text-gray-500 flex flex-wrap items-center gap-x-2">
                     <a href="{% url 'cabinet:patient_detail' bilan.patient.id %}" class="hover:underline">{{ bilan.patient.nom_complet }}</a>
-                    <span>·</span><span>{{ modele.titre }}</span>
+                    <span>·</span><span>{{ modele.nom|default:modele.titre }}</span>
                     <span>·</span>
                     {% if bilan.est_finalise %}
                     <span class="px-2 font-semibold rounded-full bg-green-100 text-green-800">Finalisé</span>
@@ -52,14 +59,26 @@
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'bilans:donnees' bilan.id %}" class="lien-export px-3 py-2 rounded-lg bg-brand-50 hover:bg-brand-100 text-sm text-brand-700 font-medium">
+                <i class="fas fa-table mr-1"></i>Scores et informations
+            </a>
+            <button type="button" id="btn-coherence" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm text-gray-700" title="Relire la cohérence du texte avec les scores">
+                <i class="fas fa-spell-check mr-1"></i>Vérifier
+            </button>
             <button type="button" id="btn-versions" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm text-gray-700">
                 <i class="fas fa-history mr-1"></i>Versions
             </button>
             <a href="{% url 'bilans:export' bilan.id 'docx' %}" class="lien-export px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-sm text-blue-700">
                 <i class="fas fa-file-word mr-1"></i>Word
             </a>
-            <a href="{% url 'bilans:export' bilan.id 'pdf' %}" class="lien-export px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 text-sm text-purple-700">
+            <a href="{% url 'bilans:export' bilan.id 'pdf' %}" class="lien-export px-3 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-sm text-red-700">
                 <i class="fas fa-file-pdf mr-1"></i>PDF
+            </a>
+            <a href="{% url 'bilans:export' bilan.id 'pdf' %}?apercu=1" target="_blank" rel="noopener" class="lien-export px-2 py-2 text-slate-500 hover:text-encre" title="Aperçu du PDF dans un nouvel onglet">
+                <i class="fas fa-eye"></i>
+            </a>
+            <a href="{% url 'bilans:en_tete' %}?retour={{ bilan.id }}" class="lien-export relative px-2 py-2 text-slate-500 hover:text-encre" title="En-tête, logo et signature des exports">
+                <i class="fas fa-stamp"></i>{% if not a_en_tete %}<span class="absolute top-1 right-0.5 w-2 h-2 rounded-full bg-safran-500"></span>{% endif %}
             </a>
             <form method="post" action="{% url 'bilans:statut' bilan.id %}" id="form-statut">
                 {% csrf_token %}
@@ -99,6 +118,8 @@
                 <span class="w-px h-5 bg-gray-200 mx-1"></span>
                 <button type="button" class="outil" data-cmd="undo" title="Annuler (Ctrl+Z)"><i class="fas fa-undo"></i></button>
                 <button type="button" class="outil" data-cmd="redo" title="Rétablir (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+                <span class="w-px h-5 bg-gray-200 mx-1"></span>
+                <button type="button" id="btn-textes" class="outil text-sm" title="Insérer un texte de la bibliothèque au curseur"><i class="fas fa-book-open mr-1"></i>Textes types</button>
             </div>
             {% endif %}
             <div class="px-4 sm:px-10 py-6 sm:py-10">
@@ -127,13 +148,14 @@
             {% else %}
             <div class="p-4 border-b border-gray-100 space-y-2">
                 <button type="button" id="btn-premier-jet" class="w-full bg-primary hover:bg-primary-dark text-white px-4 py-2.5 rounded-lg font-semibold transition text-sm">
-                    <i class="fas fa-magic mr-2"></i>Première version IA
+                    <i class="fas fa-magic mr-2"></i>Rédiger avec l'IA
                 </button>
                 <!-- Toutes les sections IA rédigées : choix d'une section à réécrire -->
                 <div id="liste-reecriture" class="hidden space-y-1"></div>
                 <p class="text-xs text-gray-500">
-                    <span id="aide-ia">Rédige les sections marquées <span class="px-1.5 rounded-full bg-fuchsia-50 text-fuchsia-700 font-semibold">IA</span>
-                    encore vides.</span> Les tableaux de résultats ne sont jamais modifiés.
+                    <span id="aide-ia">Rédige les sections <span class="px-1.5 rounded-full bg-brand-50 text-brand-700 font-semibold">IA</span>
+                    et les interprétations encore vides.</span> Les tableaux de résultats ne sont jamais modifiés.
+                    {% if sections_sans_source %}<span class="block mt-1 text-amber-700">Sans anamnèse ni notes de séance, les sections d'histoire et d'observation restent à écrire par vous (l'IA n'invente rien).</span>{% endif %}
                     <button type="button" id="btn-apercu" class="text-primary-dark hover:underline">Voir les données envoyées</button>
                 </p>
             </div>
@@ -148,10 +170,10 @@
 
             {% if ia_configuree and not bilan.est_finalise %}
             <div class="p-3 border-t border-gray-100 space-y-2">
-                <div id="selection-active" class="hidden text-xs bg-fuchsia-50 border border-fuchsia-200 text-fuchsia-800 rounded-lg px-2 py-1.5 flex items-start gap-2">
+                <div id="selection-active" class="hidden text-xs bg-brand-50 border border-brand-200 text-brand-800 rounded-lg px-2 py-1.5 flex items-start gap-2">
                     <i class="fas fa-i-cursor mt-0.5"></i>
                     <span class="flex-1 min-w-0"><span class="font-semibold">Passage sélectionné :</span> <span id="selection-texte" class="italic"></span></span>
-                    <button type="button" id="selection-effacer" class="text-fuchsia-500 hover:text-fuchsia-800" title="Ne plus cibler ce passage"><i class="fas fa-times"></i></button>
+                    <button type="button" id="selection-effacer" class="text-brand-500 hover:text-brand-800" title="Ne plus cibler ce passage"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="flex flex-wrap gap-1">
                     <button type="button" class="suggestion text-xs px-2 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700">Plus concis</button>
@@ -198,7 +220,47 @@
     </div>
 </div>
 
+<!-- Fenêtre : textes types -->
+<div id="modal-textes" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+        <div class="px-5 py-3 border-b flex items-center gap-3">
+            <h3 class="font-semibold text-gray-900 flex-1"><i class="fas fa-book-open text-primary mr-2"></i>Textes types</h3>
+            <a href="{% url 'bilans:textes_types' %}" class="text-xs text-primary-dark hover:underline">Gérer la bibliothèque</a>
+            <button type="button" class="fermer-modal text-gray-400 hover:text-gray-700"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="px-5 pt-3">
+            <input type="search" id="textes-recherche" placeholder="Rechercher (tiers-temps, attention soutenue, WISC...)"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+        </div>
+        <div id="textes-liste" class="overflow-y-auto p-5 pt-3 space-y-4 text-sm"></div>
+        <p class="px-5 py-3 border-t text-xs text-gray-500">Le texte est inséré à l'endroit du curseur dans le bilan.</p>
+    </div>
+</div>
+
+<!-- Fenêtre : vérification de cohérence -->
+<div id="modal-coherence" class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+        <div class="px-5 py-3 border-b flex items-center justify-between">
+            <h3 class="font-semibold text-gray-900"><i class="fas fa-spell-check text-primary mr-2"></i>Vérification du bilan</h3>
+            <button type="button" class="fermer-modal text-gray-400 hover:text-gray-700"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="overflow-y-auto">
+            <div id="coherence-liste" class="p-5 space-y-2 text-sm"></div>
+            <div id="coherence-ia" class="px-5 pb-4 space-y-2 text-sm"></div>
+        </div>
+        <div class="px-5 py-3 border-t flex flex-wrap items-center gap-2">
+            <p class="flex-1 min-w-[12rem] text-xs text-gray-500">Contrôle automatique des scores cités, des niveaux annoncés et des textes d'attente. Un point signalé est à relire, pas forcément une erreur.</p>
+            {% if ia_configuree and not bilan.est_finalise %}
+            <button type="button" id="btn-relecture-ia" class="text-sm px-3 py-2 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700"><i class="fas fa-robot mr-1"></i>Relecture approfondie par l'IA</button>
+            {% endif %}
+            <button type="button" id="btn-finaliser-quand-meme" class="hidden text-sm px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white"><i class="fas fa-check mr-1"></i>Finaliser quand même</button>
+        </div>
+    </div>
+</div>
+
 {{ historique|json_script:"historique-data" }}
+{{ placeholders_ia|json_script:"placeholders-data" }}
+{{ sections_sans_source|json_script:"sans-source-data" }}
 {% endblock %}
 
 {% block extra_js %}
@@ -213,6 +275,8 @@
         apercu: "{% url 'bilans:ia_apercu' bilan.id %}",
         premierJet: "{% url 'bilans:ia_premier_jet' bilan.id %}",
         chat: "{% url 'bilans:ia_chat' bilan.id %}",
+        textes: "{% url 'bilans:textes_types_json' %}",
+        coherence: "{% url 'bilans:coherence' bilan.id %}",
     };
     const ed = document.getElementById('editeur');
     const titre = document.getElementById('titre');
@@ -241,7 +305,7 @@
     document.querySelectorAll('.fermer-modal').forEach(function (b) {
         b.addEventListener('click', function () { b.closest('.fixed').classList.add('hidden'); });
     });
-    document.querySelectorAll('#modal-versions, #modal-apercu').forEach(function (m) {
+    document.querySelectorAll('#modal-versions, #modal-apercu, #modal-textes, #modal-coherence').forEach(function (m) {
         m.addEventListener('click', function (e) { if (e.target === m) m.classList.add('hidden'); });
     });
 
@@ -282,15 +346,20 @@
                 if (!modifie) return;
                 e.preventDefault();
                 await sauvegarder();
-                window.location.href = lien.href;
+                if (lien.target === '_blank') window.open(lien.href, '_blank'); else window.location.href = lien.href;
             });
         });
         document.getElementById('form-statut').addEventListener('submit', async function (e) {
-            if (!modifie) return;
+            const form = e.target;
+            const finaliser = form.querySelector('[name="action"]').value === 'finaliser';
+            if (!modifie && (!finaliser || form.dataset.confirme === '1')) return;
             e.preventDefault();
-            await sauvegarder();
-            modifie = false;
-            e.target.submit();
+            if (modifie) { await sauvegarder(); modifie = false; }
+            if (finaliser && form.dataset.confirme !== '1') {
+                const n = await verifierCoherence(true);
+                if (n > 0) return;  // la fenêtre propose « Finaliser quand même »
+            }
+            form.submit();
         });
     }
 
@@ -396,7 +465,7 @@
         div.className = 'rounded-lg p-3 ' + (role === 'psy' ? 'bulle-psy ml-6' : 'bulle-ia mr-2') + (options.erreur ? ' border-red-200 bg-red-50 text-red-700' : '');
         if (options.selection) {
             const cite = document.createElement('div');
-            cite.className = 'text-xs italic text-fuchsia-700 border-l-2 border-fuchsia-300 pl-2 mb-1';
+            cite.className = 'text-xs italic text-brand-700 border-l-2 border-brand-300 pl-2 mb-1';
             cite.textContent = options.selection.length > 160 ? options.selection.slice(0, 160) + '...' : options.selection;
             div.appendChild(cite);
         }
@@ -491,22 +560,36 @@
     // ---------- première version IA / réécriture d'une section ----------
     const btnJet = document.getElementById('btn-premier-jet');
     const listeReecriture = document.getElementById('liste-reecriture');
-    const PLACEHOLDER_IA = "{{ placeholder_ia|escapejs }}";
+    const PLACEHOLDERS_IA = JSON.parse(document.getElementById('placeholders-data').textContent);
+    // Sections qui s'appuient sur l'anamnèse ou les notes de séance, absentes de ce bilan : à écrire par le psy
+    const SANS_SOURCE = JSON.parse(document.getElementById('sans-source-data').textContent);
+    function estTitreInterpretation(el) {
+        return el.tagName === 'H3' && el.textContent.trim().replace(/\s*:$/, '').toLowerCase() === 'interprétation';
+    }
     function sectionsIA() {
-        // Parcourt le document : chaque <h2 data-type="ia"> et son contenu jusqu'à la section suivante
+        // Chaque <h2 data-type="ia"> (son contenu) et chaque <h2 data-type="test"> (le texte qui suit
+        // son sous-titre « Interprétation »), jusqu'à la section suivante
         const sections = [];
-        let courante = null;
+        let courante = null, dansInterpretation = false;
         Array.prototype.forEach.call(ed.children, function (el) {
             if (el.tagName === 'H2' && el.dataset.section) {
-                courante = el.dataset.type === 'ia' ? { cle: el.dataset.section, titre: el.textContent.trim(), texte: '' } : null;
+                const type = el.dataset.type;
+                courante = ((type === 'ia' && SANS_SOURCE.indexOf(el.dataset.section) === -1) || type === 'test')
+                    ? { cle: el.dataset.section, titre: el.textContent.trim(), texte: '', type: type } : null;
+                dansInterpretation = false;
                 if (courante) sections.push(courante);
             } else if (courante) {
-                courante.texte += ' ' + el.textContent;
+                if (courante.type === 'test') {
+                    if (estTitreInterpretation(el)) { dansInterpretation = true; return; }
+                    if (dansInterpretation) courante.texte += ' ' + el.textContent;
+                } else {
+                    courante.texte += ' ' + el.textContent;
+                }
             }
         });
         sections.forEach(function (sec) {
             const t = sec.texte.trim();
-            sec.vide = !t || t === PLACEHOLDER_IA;
+            sec.vide = !t || PLACEHOLDERS_IA.indexOf(t) !== -1;
         });
         return sections;
     }
@@ -514,11 +597,11 @@
         if (!btnJet || occupe) return;
         const restantes = sectionsIA().filter(function (sec) { return sec.vide; }).length;
         btnJet.innerHTML = restantes
-            ? '<i class="fas fa-magic mr-2"></i>Première version IA'
+            ? '<i class="fas fa-magic mr-2"></i>Rédiger avec l\'IA'
             : '<i class="fas fa-redo mr-2"></i>Réécrire une section avec l\'IA <i class="fas fa-chevron-down ml-1 text-xs"></i>';
         document.getElementById('aide-ia').innerHTML = restantes
-            ? 'Rédige les ' + restantes + ' section(s) <span class="px-1.5 rounded-full bg-fuchsia-50 text-fuchsia-700 font-semibold">IA</span> encore vides.'
-            : 'Toutes les sections IA sont rédigées : choisissez-en une à réécrire (la version actuelle est sauvegardée avant).';
+            ? 'Rédige les ' + restantes + ' section(s) <span class="px-1.5 rounded-full bg-brand-50 text-brand-700 font-semibold">IA</span> et interprétations encore vides, par lots.'
+            : 'Tout est rédigé : choisissez une section à réécrire (la version actuelle est sauvegardée avant).';
         if (restantes) listeReecriture.classList.add('hidden');
     }
     function afficherListeReecriture() {
@@ -527,31 +610,57 @@
             const b = document.createElement('button');
             b.type = 'button';
             b.className = 'w-full text-left text-sm px-3 py-2 rounded-lg border border-gray-200 hover:bg-primary-light hover:border-primary text-gray-700';
-            b.innerHTML = '<i class="fas fa-pen-nib mr-2 text-primary"></i>';
+            b.innerHTML = '<i class="fas ' + (sec.type === 'test' ? 'fa-chart-line' : 'fa-pen-nib') + ' mr-2 text-primary"></i>';
             b.appendChild(document.createTextNode(sec.titre));
             b.addEventListener('click', function () { genererIA([sec.cle]); });
             listeReecriture.appendChild(b);
         });
         listeReecriture.classList.toggle('hidden');
     }
+    function pause(secondes, libelle) {
+        return new Promise(function (fin) {
+            let reste = secondes;
+            (function tic() {
+                btnJet.innerHTML = '<i class="fas fa-hourglass-half mr-2"></i>' + libelle + ' ' + reste + ' s';
+                if (reste-- <= 0) return fin();
+                setTimeout(tic, 1000);
+            })();
+        });
+    }
     async function genererIA(cles) {
         if (occupe) return;
         occupe = true;
         listeReecriture.classList.add('hidden');
         btnJet.disabled = true;
-        btnJet.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Rédaction en cours...';
-        const j = await appel(URLS.premierJet, cles ? { contenu: ed.innerHTML, sections: cles } : { contenu: ed.innerHTML });
+        const total = cles ? cles.length : sectionsIA().filter(function (sec) { return sec.vide; }).length;
+        let remplies = [], essais = 0, erreur = null;
+        while (true) {
+            btnJet.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>' + (cles ? 'Réécriture en cours...'
+                : 'Rédaction : ' + Math.min(remplies.length + 1, total) + ' / ' + total + '...');
+            const j = await appel(URLS.premierJet, cles ? { contenu: ed.innerHTML, sections: cles } : { contenu: ed.innerHTML });
+            if (!j.ok) {
+                // Limite par minute de l'offre gratuite : on attend et on reprend tout seul
+                if (j.attendre && essais < 4) { essais++; await pause(j.attendre, 'Pause imposée par l\'offre gratuite :'); continue; }
+                erreur = j.erreur;
+                break;
+            }
+            essais = 0;
+            ed.innerHTML = j.contenu;
+            modifie = false;
+            majQuota(j.restants);
+            remplies = remplies.concat(j.remplies);
+            if (cles || !j.restantes) break;
+        }
         btnJet.disabled = false;
         occupe = false;
         majBoutonIA();
-        if (!j.ok) { bulle('ia', j.erreur, { erreur: true }); return; }
-        ed.innerHTML = j.contenu;
-        modifie = false;
-        majQuota(j.restants);
-        majBoutonIA();
-        afficherEtat(cles ? 'Section réécrite et enregistrée' : 'Première version enregistrée');
-        bulle('ia', (cles ? 'Section réécrite : ' : 'Sections rédigées : ') + j.remplies.join(', ') +
-            '.\nRelisez et corrigez : vous restez responsable du contenu. La version précédente est dans « Versions ».');
+        if (remplies.length) {
+            afficherEtat(cles ? 'Section réécrite et enregistrée' : 'Rédaction enregistrée');
+            bulle('ia', (cles ? 'Section réécrite : ' : 'Sections rédigées : ') + remplies.join(', ') +
+                '.\nRelisez et corrigez : vous restez responsable du contenu. La version précédente est dans « Versions ».' +
+                (erreur ? '' : '\nAstuce : « Vérifier » contrôle les scores cités avant de finaliser.'));
+        }
+        if (erreur) bulle('ia', erreur, { erreur: true });
     }
     if (btnJet) {
         btnJet.addEventListener('click', function () {
@@ -572,6 +681,161 @@
             document.getElementById('apercu-texte').textContent = j.ok
                 ? (j.nb_sections ? j.texte : "Aucune section IA vide à rédiger : voici tout de même les données qui seraient envoyées.\n\n" + j.texte)
                 : j.erreur;
+        });
+    }
+
+    // ---------- textes types ----------
+    let textesCharges = null;
+    function afficherTextes(filtre) {
+        const liste = document.getElementById('textes-liste');
+        liste.textContent = '';
+        const f = (filtre || '').trim().toLowerCase();
+        textesCharges.categories.forEach(function (cat) {
+            const textes = textesCharges.textes.filter(function (t) {
+                return t.categorie === cat[0] && (!f || (t.titre + ' ' + t.contenu).toLowerCase().indexOf(f) !== -1);
+            });
+            if (!textes.length) return;
+            const bloc = document.createElement('div');
+            const titre = document.createElement('div');
+            titre.className = 'text-xs font-semibold text-gray-400 mb-1.5';
+            titre.textContent = cat[1];
+            bloc.appendChild(titre);
+            textes.forEach(function (t) {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'w-full text-left p-2.5 rounded-lg border border-gray-100 hover:border-primary hover:bg-primary-light mb-1.5';
+                const nom = document.createElement('div');
+                nom.className = 'font-medium text-gray-800';
+                nom.textContent = t.titre;
+                const apercu = document.createElement('div');
+                apercu.className = 'text-xs text-gray-500 line-clamp-2';
+                apercu.textContent = t.contenu;
+                b.appendChild(nom);
+                b.appendChild(apercu);
+                b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+                b.addEventListener('click', function () {
+                    document.getElementById('modal-textes').classList.add('hidden');
+                    const r = curseur ? curseur.cloneRange() : null;
+                    if (r) r.collapse(false);
+                    appliquer(t.contenu, r, t.html);
+                });
+                bloc.appendChild(b);
+            });
+            liste.appendChild(bloc);
+        });
+        if (!liste.children.length) liste.textContent = 'Aucun texte ne correspond.';
+    }
+    const btnTextes = document.getElementById('btn-textes');
+    if (btnTextes) {
+        btnTextes.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        btnTextes.addEventListener('click', async function () {
+            ouvrir('modal-textes');
+            if (!textesCharges) {
+                document.getElementById('textes-liste').textContent = 'Chargement...';
+                const j = await appel(URLS.textes, undefined, 'GET');
+                if (!j.ok) { document.getElementById('textes-liste').textContent = j.erreur; return; }
+                textesCharges = j;
+            }
+            afficherTextes(document.getElementById('textes-recherche').value);
+        });
+        document.getElementById('textes-recherche').addEventListener('input', function (e) {
+            if (textesCharges) afficherTextes(e.target.value);
+        });
+    }
+
+    // ---------- vérification de cohérence ----------
+    function allerAuPassage(passage) {
+        const debut = (passage || '').replace(/\.\.\.$/, '').slice(0, 40).trim();
+        if (!debut) return;
+        const cible = Array.prototype.find.call(ed.querySelectorAll('p, li, h3'), function (el) {
+            return el.textContent.indexOf(debut) !== -1;
+        });
+        if (!cible) return;
+        document.getElementById('modal-coherence').classList.add('hidden');
+        cible.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        cible.classList.add('repere');
+        setTimeout(function () { cible.classList.remove('repere'); }, 2500);
+    }
+    function ligneCoherence(titre, message, passage, suggestion) {
+        const div = document.createElement('button');
+        div.type = 'button';
+        div.className = 'w-full text-left p-3 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100';
+        const m = document.createElement('div');
+        m.className = 'font-medium text-amber-900';
+        m.textContent = message;
+        div.appendChild(m);
+        if (passage) {
+            const p = document.createElement('div');
+            p.className = 'text-xs text-gray-600 italic mt-1';
+            p.textContent = (titre ? titre + ' : ' : '') + '« ' + passage + ' »';
+            div.appendChild(p);
+        }
+        if (suggestion) {
+            const s = document.createElement('div');
+            s.className = 'text-xs text-gray-700 mt-1';
+            s.textContent = 'Suggestion : ' + suggestion;
+            div.appendChild(s);
+        }
+        div.addEventListener('click', function () { allerAuPassage(passage); });
+        return div;
+    }
+    async function verifierCoherence(avantFinalisation) {
+        const liste = document.getElementById('coherence-liste');
+        document.getElementById('coherence-ia').textContent = '';
+        liste.textContent = 'Vérification...';
+        if (!avantFinalisation) ouvrir('modal-coherence');
+        if (modifie) await sauvegarder();
+        const j = await appel(URLS.coherence, undefined, 'GET');
+        liste.textContent = '';
+        const quandMeme = document.getElementById('btn-finaliser-quand-meme');
+        if (!j.ok) { liste.textContent = j.erreur; return 0; }
+        if (!j.alertes.length) {
+            liste.innerHTML = '<p class="text-green-700"><i class="fas fa-check-circle mr-1"></i>Aucune incohérence repérée entre le texte et les scores.</p>';
+        } else {
+            const entete = document.createElement('p');
+            entete.className = 'text-gray-700 mb-1';
+            entete.textContent = j.alertes.length + ' point(s) à relire' + (avantFinalisation ? ' avant de finaliser' : '') + ' (cliquez pour aller au passage) :';
+            liste.appendChild(entete);
+            j.alertes.forEach(function (a) { liste.appendChild(ligneCoherence(a.section, a.message, a.passage)); });
+        }
+        quandMeme.classList.toggle('hidden', !(avantFinalisation && j.alertes.length));
+        if (avantFinalisation && j.alertes.length) ouvrir('modal-coherence');
+        return j.alertes.length;
+    }
+    document.getElementById('btn-coherence').addEventListener('click', function () { verifierCoherence(false); });
+    const quandMeme = document.getElementById('btn-finaliser-quand-meme');
+    quandMeme.addEventListener('click', function () {
+        const form = document.getElementById('form-statut');
+        form.dataset.confirme = '1';
+        form.submit();
+    });
+    const btnRelecture = document.getElementById('btn-relecture-ia');
+    if (btnRelecture) {
+        btnRelecture.addEventListener('click', async function () {
+            const zone = document.getElementById('coherence-ia');
+            btnRelecture.disabled = true;
+            zone.innerHTML = '<p class="text-gray-500"><i class="fas fa-circle-notch fa-spin mr-2 text-primary"></i>L\'IA relit le bilan...</p>';
+            let j, essais = 0;
+            while (true) {
+                j = await appel(URLS.coherence, { contenu: ed.innerHTML });
+                if (!j.ok && j.attendre && essais < 3) {
+                    essais++;
+                    zone.innerHTML = '<p class="text-gray-500"><i class="fas fa-hourglass-half mr-2"></i>Pause imposée par l\'offre gratuite, reprise dans ' + j.attendre + ' s...</p>';
+                    await new Promise(function (fin) { setTimeout(fin, j.attendre * 1000); });
+                    continue;
+                }
+                break;
+            }
+            btnRelecture.disabled = false;
+            zone.textContent = '';
+            if (!j.ok) { zone.innerHTML = '<p class="text-red-600"></p>'; zone.firstChild.textContent = j.erreur; return; }
+            modifie = false;
+            majQuota(j.restants);
+            const titre = document.createElement('p');
+            titre.className = 'font-semibold text-gray-800 pt-2';
+            titre.textContent = j.problemes.length ? 'Relecture de l\'IA : ' + j.problemes.length + ' remarque(s)' : 'Relecture de l\'IA : rien à signaler.';
+            zone.appendChild(titre);
+            j.problemes.forEach(function (p) { zone.appendChild(ligneCoherence('', p.probleme, p.passage, p.suggestion)); });
         });
     }
 

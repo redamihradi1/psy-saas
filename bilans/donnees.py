@@ -7,7 +7,9 @@ from datetime import date
 from django.utils import timezone
 
 from . import html_blocs as hb
-from .modeles import MODELES, PLACEHOLDER_IA, PLACEHOLDER_LIBRE
+from . import tests_externes as te
+from .modeles import (MODELES, PLACEHOLDER_IA, PLACEHOLDER_LIBRE, SECTIONS_FINALES, TITRE_INTERPRETATION,
+                      section_du_modele)
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,20 @@ TYPES_TESTS = [
 ]
 NOMS_TESTS = {cle: nom for cle, nom, _ in TYPES_TESTS}
 NOMS_LONGS_TESTS = {cle: nom_long for cle, _, nom_long in TYPES_TESTS}
+DOMAINES_PLATEFORME = {'vineland': 'adaptatif', 'brief': 'executif', 'd2r': 'attention', 'beck': 'emotionnel',
+                       'stai': 'emotionnel'}
+PRESENTATIONS_TESTS_PLATEFORME = {
+    'vineland': "Entretien semi-structuré avec un proche évaluant le comportement adaptatif dans la vie "
+                "quotidienne : communication, autonomie, socialisation et motricité.",
+    'brief': "Questionnaire rempli par les parents décrivant les fonctions exécutives dans la vie quotidienne : "
+             "régulation comportementale (inhibition, flexibilité, contrôle émotionnel) et métacognition "
+             "(initiation, mémoire de travail, planification, organisation, contrôle).",
+    'd2r': "Épreuve de barrage explorant l'attention sélective et la concentration : rythme de traitement, "
+           "précision et capacité de concentration, dans une tâche visuelle monotone sous contrainte de temps.",
+    'beck': "Autoquestionnaire de 21 items mesurant l'intensité des symptômes dépressifs.",
+    'stai': "Autoquestionnaire distinguant l'anxiété ressentie au moment présent (anxiété-état) et la tendance "
+            "anxieuse habituelle (anxiété-trait).",
+}
 
 
 def _modeles_tests():
@@ -218,47 +234,251 @@ RESULTATS = {
 }
 
 
-# --- sections automatiques -------------------------------------------------------------------
+# --- informations du bilan (page de garde) -----------------------------------------------------
+
+CHAMPS_INFOS = [
+    ('date_evaluation', "Date d'évaluation", 'date'),
+    ('lateralite', "Latéralité", 'texte'),
+    ('langues', "Langue(s) maternelle(s)", 'texte'),
+    ('etablissement', "Établissement scolaire", 'texte'),
+    ('classe', "Classe (ou profession)", 'texte'),
+    ('situation_familiale', "Situation familiale", 'texte'),
+    ('adresse_par', "Adressé(e) par", 'texte'),
+    ('seances', "Déroulement de l'évaluation", 'texte'),
+    ('civilite', "Civilité utilisée dans le texte", 'choix'),
+    ('bilan_anterieur', "Bilan ou diagnostic antérieur", 'texte_long'),
+    ('sous_titre', "Sous-titre du bilan", 'texte'),
+]
+CIVILITES = ['', 'Mme', 'M.']
+LIBELLES_INFOS = {cle: libelle for cle, libelle, _ in CHAMPS_INFOS}
+# Noms propres de l'entourage : masqués avant tout envoi à l'IA (voir Pseudonymiseur.pour_bilan)
+INFOS_A_MASQUER = ('etablissement', 'adresse_par')
+
+
+def lire_infos(post, modele):
+    infos = {}
+    for cle, _, type_champ in CHAMPS_INFOS:
+        valeur = (post.get(f'info_{cle}') or '').strip()
+        if type_champ == 'choix' and valeur not in CIVILITES:
+            valeur = ''
+        if type_champ == 'date':
+            valeur = valeur if _parse_date(valeur) else ''
+        valeur = valeur[:1500 if type_champ == 'texte_long' else 200]
+        if valeur or (cle == 'sous_titre' and post.get('info_sous_titre') is not None):
+            infos[cle] = valeur  # sous-titre vidé volontairement : on garde la chaîne vide
+    if 'sous_titre' not in infos and post.get('info_sous_titre') is None and modele.get('sous_titre'):
+        infos['sous_titre'] = modele['sous_titre']
+    return infos
+
+
+def _parse_date(texte):
+    try:
+        return date.fromisoformat(texte)
+    except (TypeError, ValueError):
+        return None
+
+
+def date_evaluation(bilan):
+    return _parse_date((bilan.infos or {}).get('date_evaluation')) or timezone.localdate()
+
+
+# --- tests inclus (plateforme + saisis) ----------------------------------------------------------
+
+ORDRE_DOMAINES = ['intellectuel', 'attention', 'executif', 'neuropsy', 'adaptatif', 'graphomoteur',
+                  'questionnaire', 'emotionnel', 'autre']
+
+
+def tests_inclus(bilan, user=None):
+    """Tests du bilan, dans l'ordre de présentation (domaine puis ordre du catalogue) :
+    [{'section', 'origine', 'cle', 'test'|'saisie', 'titre', 'nom', 'domaine'}]."""
+    items = []
+    for cle, test in charger_tests(bilan, user):
+        items.append({'section': f'test_{cle}_{test.id}', 'origine': 'plateforme', 'cle': cle, 'test': test,
+                      'titre': NOMS_LONGS_TESTS[cle], 'nom': NOMS_TESTS[cle],
+                      'domaine': DOMAINES_PLATEFORME.get(cle, 'autre')})
+    for cle, saisie in (bilan.scores or {}).items():
+        if cle in te.TESTS:
+            items.append({'section': f'ext_{cle}', 'origine': 'externe', 'cle': cle, 'saisie': saisie or {},
+                          'titre': te.nom_affiche(cle, saisie), 'nom': te.nom_court(cle, saisie),
+                          'domaine': te.TESTS[cle]['domaine']})
+    ordre_catalogue = list(te.TESTS) + [c for c, _, _ in TYPES_TESTS]
+    items.sort(key=lambda i: (ORDRE_DOMAINES.index(i['domaine']) if i['domaine'] in ORDRE_DOMAINES else 99,
+                              ordre_catalogue.index(i['cle'])))
+    return items
+
+
+def resultats_item(item):
+    """Résultats normalisés d'un test inclus : tableaux, remarques, figures, synthèse, valeurs."""
+    if item['origine'] == 'externe':
+        return te.resultats(item['cle'], item['saisie'])
+    res = resultats_test(item['cle'], item['test'])
+    res['remarques'] = [f"Passation du {_date(item['test'].date_passation)}."] + res['remarques']
+    res.update(figures=[], synthese=_synthese_plateforme(item['cle'], res), valeurs=_valeurs_plateforme(item['cle'], res),
+               niveaux=[])
+    if item['cle'] == 'beck':
+        res['niveaux'] = [{'noms': ['BDI', 'Beck'], 'niveau': item['test'].get_niveau_depression_display()}]
+    return res
+
+
+def _synthese_plateforme(cle, res):
+    if not res['tableaux']:
+        return []
+    lignes = res['tableaux'][0][2]
+    nom = NOMS_TESTS[cle]
+    synthese = []
+    for ligne in lignes:
+        if cle == 'brief':
+            libelle, _, t, pct, _, zone_txt = ligne
+            if zone_txt.startswith('Significatif') or 'Indice' in libelle or 'Composite' in libelle:
+                synthese.append([f"BRIEF - {libelle}", f"T{t}" + (f" - P{pct}" if pct != '-' else ''), zone_txt])
+        elif cle == 'd2r':
+            libelle, _, ns, pct = ligne
+            synthese.append([f"d2-R - {libelle}", f"{ns} - P{pct}" if pct != '-' else str(ns), te.zone(ns, te.ZONES_D2R) or '-'])
+        elif cle == 'vineland':
+            libelle, ns, pct, _, niveau = ligne
+            synthese.append([f"Vineland - {libelle}", f"{ns} - P{pct}" if pct != '-' else str(ns), niveau])
+        else:
+            synthese.append([f"{nom} - {ligne[0]}", ligne[1], ligne[2]])
+    return synthese
+
+
+def _valeurs_plateforme(cle, res):
+    if not res['tableaux']:
+        return []
+    valeurs = []
+    for ligne in res['tableaux'][0][2]:
+        if cle == 'brief' and te.nombre(ligne[2]) is not None:
+            valeurs.append({'noms': [ligne[0].split(' (')[0]], 'valeur': te.nombre(ligne[2]),
+                            'percentile': te.nombre(ligne[3]), 'type': 'T'})
+        elif cle == 'd2r' and ligne[0].startswith(('Rythme', 'Capacité')) and te.nombre(ligne[2]) is not None:
+            valeurs.append({'noms': ['CCT' if ligne[0].startswith('Rythme') else 'CC'], 'valeur': te.nombre(ligne[2]),
+                            'percentile': te.nombre(ligne[3])})
+    return valeurs
+
+
+def blocs_resultats(item):
+    """Partie calculée d'un chapitre de test : tableaux, graphiques, remarques."""
+    res = resultats_item(item)
+    blocs = []
+    plusieurs = len(res['tableaux']) > 1
+    figures = list(res['figures'])
+    for titre_tableau, entetes, lignes in res['tableaux']:
+        if titre_tableau and plusieurs:
+            blocs.append(hb.paragraphe(titre_tableau, b=True))
+        blocs.append(hb.tableau(entetes, lignes))
+        # Graphique de profil juste après le tableau qu'il illustre
+        if titre_tableau in ('Comparaisons entre les indices', 'Indices') and f"{item['cle']}.indices" in figures:
+            if titre_tableau == 'Comparaisons entre les indices' or not any(t[0] == 'Comparaisons entre les indices'
+                                                                            for t in res['tableaux']):
+                blocs.append(hb.figure(f"{item['cle']}.indices"))
+                figures.remove(f"{item['cle']}.indices")
+        if titre_tableau == 'Subtests' and f"{item['cle']}.subtests" in figures:
+            blocs.append(hb.figure(f"{item['cle']}.subtests"))
+            figures.remove(f"{item['cle']}.subtests")
+    blocs.extend(hb.figure(ref) for ref in figures)
+    blocs.extend(hb.paragraphe(r, i=True) for r in res['remarques'])
+    return blocs
+
+
+def blocs_section_test(item):
+    return [hb.titre(2, item['titre'], section=item['section'], section_type='test')] + blocs_resultats(item) + [
+        hb.titre(3, TITRE_INTERPRETATION), hb.paragraphe(PLACEHOLDER_IA, i=True)]
+
+
+def _est_titre_interpretation(bloc):
+    return bloc['type'] == 'h3' and hb.texte_runs(bloc['runs']).strip().rstrip(' :').lower() == TITRE_INTERPRETATION.lower()
+
+
+def decouper_interpretation(corps):
+    """Corps d'un chapitre de test -> (partie calculée, [titre Interprétation + texte]) ."""
+    for n, bloc in enumerate(corps):
+        if _est_titre_interpretation(bloc):
+            return corps[:n], corps[n:]
+    return corps, []
+
+
+# --- sections automatiques ---------------------------------------------------------------------
 
 def _psychologue(bilan):
     return bilan.psychologue if bilan.psychologue and not bilan.psychologue.is_superadmin() else \
         bilan.organization.users.filter(role='psychologist').order_by('id').first()
 
 
-def generer_section_auto(generateur, bilan, tests):
+def en_tete_de(bilan):
+    from .models import EnTeteBilan
+    psy = _psychologue(bilan)
+    return EnTeteBilan.objects.filter(utilisateur=psy).first() if psy else None
+
+
+def _ligne_identite(libelle, valeur, gras=False):
+    return {'header': False, 'cells': [[hb.run(libelle, i=True)], [hb.run(valeur, b=gras)]]}
+
+
+def generer_section_auto(generateur, bilan, items):
     patient = bilan.patient
+    infos = bilan.infos or {}
+    modele = MODELES.get(bilan.modele, {})
     if generateur == 'identite':
-        lignes = [
-            ["Nom et prénom", patient.nom_complet],
-            ["Date de naissance", _date(patient.date_naissance)],
-            ["Âge à la date du bilan", texte_age(patient.date_naissance)],
-            ["Date du bilan", _date(timezone.localdate())],
-        ]
+        quand = date_evaluation(bilan)
+        lignes = [_ligne_identite("Nom et prénom", f"{patient.nom.upper()} {patient.prenom}", gras=True),
+                  _ligne_identite("Date de naissance", _date(patient.date_naissance)),
+                  _ligne_identite("Âge", texte_age(patient.date_naissance, quand)),
+                  _ligne_identite("Date d'évaluation", _date(quand))]
+        for cle in ('lateralite', 'langues', 'etablissement', 'classe', 'situation_familiale', 'adresse_par', 'seances'):
+            if infos.get(cle):
+                libelle = LIBELLES_INFOS[cle]
+                if cle == 'classe':
+                    libelle = "Profession" if modele.get('public') == 'adulte' else "Classe"
+                lignes.append(_ligne_identite(libelle, infos[cle]))
         psy = _psychologue(bilan)
+        en_tete = en_tete_de(bilan)
         if psy:
-            lignes.append(["Psychologue", psy.get_full_name() or psy.username])
-        rows = [{'header': False, 'cells': [[hb.run(a, b=True)], [hb.run(b)]]} for a, b in lignes]
-        return [{'type': 'table', 'rows': rows}]
-
-    if generateur == 'tests_administres':
-        if not tests:
-            return [hb.paragraphe("Aucun test psychométrique inclus dans ce bilan.", i=True)]
-        return [hb.liste([f"{NOMS_LONGS_TESTS[cle]}, le {_date(test.date_passation)}" for cle, test in tests])]
-
-    if generateur == 'resultats':
-        if not tests:
-            return [hb.paragraphe("Aucun résultat de test à présenter.", i=True)]
-        blocs = []
-        for cle, test in tests:
-            res = resultats_test(cle, test)
-            blocs.append(hb.titre(3, res['titre']))
-            for titre_tableau, entetes, lignes in res['tableaux']:
-                if titre_tableau:
-                    blocs.append(hb.paragraphe(titre_tableau, b=True))
-                blocs.append(hb.tableau(entetes, lignes))
-            for remarque in res['remarques']:
-                blocs.append(hb.paragraphe(remarque, i=True))
+            lignes.append(_ligne_identite("Psychologue", (en_tete.nom_affiche if en_tete and en_tete.nom_affiche
+                                                          else psy.get_full_name() or psy.username)))
+        blocs = [{'type': 'table', 'rows': lignes}]
+        if modele.get('public') == 'enfant':
+            from .textes_types import _MENTIONS
+            blocs.append(hb.paragraphe(dict((c, t) for c, _, t in _MENTIONS)['men_non_figes'], i=True))
         return blocs
+
+    if generateur == 'tests_utilises':
+        if not items:
+            return [hb.paragraphe("Aucun test inclus pour le moment : ajoutez-les dans « Scores et informations ».", i=True)]
+        entrees = []
+        for item in items:
+            description = (PRESENTATIONS_TESTS_PLATEFORME.get(item['cle'], '') if item['origine'] == 'plateforme'
+                           else te.presentation(item['cle'], item['saisie']))
+            runs = [hb.run(item['nom'], b=True)]
+            if description:
+                runs.append(hb.run(f" : {description}"))
+            entrees.append(runs)
+        return [hb.liste(entrees)]
+
+    if generateur == 'etapes':
+        domaines = {}
+        for item in items:
+            domaines.setdefault(item['domaine'], []).append(item['nom'])
+        etapes = ["Entretien clinique initial, visant à préciser la demande et le contexte de consultation.",
+                  "Recueil de l'anamnèse : histoire développementale, scolaire et professionnelle, difficultés "
+                  "actuellement rapportées."]
+        if domaines.get('intellectuel'):
+            etapes.append(f"Évaluation du fonctionnement intellectuel ({', '.join(domaines['intellectuel'])}).")
+        attention = domaines.get('attention', []) + domaines.get('executif', [])
+        if attention:
+            etapes.append(f"Évaluation de l'attention et des fonctions exécutives ({', '.join(attention)}).")
+        questionnaires = domaines.get('questionnaire', []) + domaines.get('emotionnel', [])
+        if questionnaires:
+            etapes.append(f"Questionnaires et entretiens standardisés ({', '.join(questionnaires)}).")
+        etapes.append("Entretien de restitution des résultats.")
+        return [hb.liste(etapes)]
+
+    if generateur == 'synthese_resultats':
+        lignes = []
+        for item in items:
+            lignes.extend(resultats_item(item)['synthese'])
+        if not lignes:
+            return [hb.paragraphe("Le tableau de synthèse se remplit à partir des scores des tests.", i=True)]
+        return [hb.tableau(["Domaine / épreuve", "Résultat principal", "Lecture clinique"], lignes)]
 
     if generateur == 'periode_suivi':
         seances = patient.consultation_set.filter(statut_consultation='termine').order_by('date_seance')
@@ -272,31 +492,98 @@ def generer_section_auto(generateur, bilan, tests):
 
     if generateur == 'signature':
         psy = _psychologue(bilan)
+        en_tete = en_tete_de(bilan)
         ville = bilan.organization.city or '...'
         blocs = [hb.paragraphe(f"Fait à {ville}, le {_date(timezone.localdate())}.")]
+        formule = en_tete.formule_signature if en_tete else "Pour faire valoir ce que de droit."
+        if formule:
+            blocs.append(hb.paragraphe(formule))
         if psy:
-            blocs.append(hb.paragraphe(psy.get_full_name() or psy.username, b=True))
-            blocs.append(hb.paragraphe("Psychologue" + (f" - N° {psy.license_number}" if psy.license_number else "")))
+            nom = (en_tete.nom_affiche if en_tete and en_tete.nom_affiche else psy.get_full_name() or psy.username)
+            titre = en_tete.titre_pro if en_tete and en_tete.titre_pro else "Psychologue"
+            blocs.append(hb.paragraphe(nom, b=True))
+            blocs.append(hb.paragraphe(titre + (f" - N° {psy.license_number}" if psy.license_number else "")))
+        if en_tete and en_tete.signature:
+            blocs.append(hb.figure('signature'))
         return blocs
 
     return []
 
 
+def _blocs_section(section, bilan, items):
+    if section['type'] == 'tests':
+        blocs = []
+        for item in items:
+            blocs.extend(blocs_section_test(item))
+        return blocs
+    blocs = [hb.titre(2, section['titre'], section=section['cle'], section_type=section['type'])]
+    if section['type'] == 'auto':
+        blocs.extend(generer_section_auto(section['generateur'], bilan, items))
+    elif section['type'] == 'ia':
+        blocs.append(hb.paragraphe(PLACEHOLDER_IA, i=True))
+    else:
+        aide = f" ({section['aide']})" if section.get('aide') else ''
+        blocs.append(hb.paragraphe(PLACEHOLDER_LIBRE + aide, i=True))
+    return blocs
+
+
 def construire_contenu(bilan, user=None):
     """Document initial d'un bilan (HTML nettoyé) à partir de son modèle et de ses sources."""
     modele = MODELES[bilan.modele]
-    tests = charger_tests(bilan, user)
+    items = tests_inclus(bilan, user)
     blocs = [hb.titre(1, bilan.titre)]
+    sous_titre = (bilan.infos or {}).get('sous_titre', modele.get('sous_titre', ''))
+    if sous_titre:
+        blocs.append(hb.paragraphe(sous_titre))
     for section in modele['sections']:
-        blocs.append(hb.titre(2, section['titre'], section=section['cle'], section_type=section['type']))
-        if section['type'] == 'auto':
-            blocs.extend(generer_section_auto(section['generateur'], bilan, tests))
-        elif section['type'] == 'ia':
-            blocs.append(hb.paragraphe(PLACEHOLDER_IA, i=True))
-        else:
-            aide = f" ({section['aide']})" if section.get('aide') else ''
-            blocs.append(hb.paragraphe(PLACEHOLDER_LIBRE + aide, i=True))
+        blocs.extend(_blocs_section(section, bilan, items))
     return hb.ecrire(blocs)
+
+
+def rafraichir_contenu(bilan, user=None):
+    """Après une modification des scores ou des informations : régénère les sections « Données »
+    et la partie calculée de chaque chapitre de test (tableaux, graphiques), ajoute les chapitres
+    des tests ajoutés et retire ceux des tests retirés. Les textes rédigés (interprétations,
+    sections IA ou libres) sont conservés."""
+    items = tests_inclus(bilan, user)
+    par_section = {item['section']: item for item in items}
+    preambule, sections = hb.decouper_sections(hb.lire(bilan.contenu))
+
+    autres, chapitres, position = [], {}, None
+    for titre_bloc, corps in sections:
+        cle, type_section = titre_bloc['section'], titre_bloc.get('section_type')
+        if type_section == 'test':
+            if position is None:
+                position = len(autres)
+            if cle in par_section:
+                calcule, interpretation = decouper_interpretation(corps)
+                if not interpretation:  # titre « Interprétation » supprimé : on garde le texte rédigé
+                    interpretation = [hb.titre(3, TITRE_INTERPRETATION)] + [
+                        b for b in calcule if b['type'] not in ('table', 'figure')]
+                titre_bloc = dict(titre_bloc, runs=[hb.run(par_section[cle]['titre'])])
+                chapitres[cle] = (titre_bloc, blocs_resultats(par_section[cle]) + interpretation)
+            continue
+        if type_section == 'auto':
+            section = section_du_modele(bilan.modele, cle)
+            if section and section.get('generateur'):
+                corps = generer_section_auto(section['generateur'], bilan, items)
+        autres.append((titre_bloc, corps))
+
+    if position is None:  # aucun chapitre de test jusque-là : après « Tests utilisés », sinon avant la fin
+        cles = [t['section'] for t, _ in autres]
+        if 'tests_utilises' in cles:
+            position = cles.index('tests_utilises') + 1
+        else:
+            finales = [n for n, c in enumerate(cles) if c in SECTIONS_FINALES | {'synthese_resultats', 'signature'}]
+            position = finales[0] if finales else len(autres)
+    ordonnes = []
+    for item in items:
+        if item['section'] in chapitres:
+            ordonnes.append(chapitres[item['section']])
+        else:
+            nouveaux = blocs_section_test(item)
+            ordonnes.append((nouveaux[0], nouveaux[1:]))
+    return hb.ecrire(hb.assembler_sections(preambule, autres[:position] + ordonnes + autres[position:]))
 
 
 # --- contexte pour l'IA (texte NON anonymisé : passer ensuite par Pseudonymiseur) -----------
@@ -304,6 +591,7 @@ def construire_contenu(bilan, user=None):
 LIMITE_CHAMP = 1500
 LIMITE_NOTE = 600
 NB_SEANCES_MAX = 12
+LIMITE_BILAN_PRECEDENT = 3000
 
 CHAMPS_ANAMNESE = [
     ('motif_consultation', "Motif de consultation"),
@@ -333,16 +621,54 @@ def _tronquer(texte, limite):
     return texte if len(texte) <= limite else texte[:limite].rstrip() + ' [...]'
 
 
-def contexte_patient(bilan, user=None):
-    """Texte des données du patient (identité, âge, anamnèse, séances, résultats) - jamais
-    le téléphone ni l'email."""
+def _texte_resultats(item):
+    res = resultats_item(item)
+    lignes = [item['titre']]
+    if item['origine'] == 'externe' and item['cle'].startswith('autre') and te.presentation(item['cle'], item['saisie']):
+        lignes.append(f"Présentation : {te.presentation(item['cle'], item['saisie'])}")
+    for titre_tableau, entetes, rows in res['tableaux']:
+        if titre_tableau:
+            lignes.append(titre_tableau)
+        lignes.append('| ' + ' | '.join(entetes) + ' |')
+        lignes.extend('| ' + ' | '.join(str(c) for c in row) + ' |' for row in rows)
+    lignes.extend(f"Remarque : {r}" for r in res['remarques'])
+    return '\n'.join(lignes)
+
+
+def contexte_patient(bilan, user=None, nb_seances_max=NB_SEANCES_MAX):
+    """Texte des données du patient (identité, âge, informations du bilan, anamnèse, séances,
+    résultats) - jamais le téléphone ni l'email."""
     from cabinet.models import Anamnese
+    from .models import Bilan
     patient = bilan.patient
     sources = bilan.sources or {}
+    infos = bilan.infos or {}
+    modele = MODELES.get(bilan.modele, {})
+    quand = date_evaluation(bilan)
     parties = [
         f"Patient : {patient.prenom} {patient.nom}, né(e) le {_date(patient.date_naissance)}, "
-        f"{texte_age(patient.date_naissance)} ({patient.get_categorie_age_display().lower()})."
+        f"{texte_age(patient.date_naissance, quand)} à la date d'évaluation ({_date(quand)})."
     ]
+    public = {'enfant': "enfant ou adolescent", 'adulte': "adulte"}.get(modele.get('public'))
+    lignes_infos = [f"- Type de bilan : {modele.get('nom', bilan.titre)}" + (f" ({public})" if public else '')]
+    for cle, libelle, _ in CHAMPS_INFOS:
+        if cle in ('date_evaluation', 'sous_titre', 'civilite') or not infos.get(cle):
+            continue
+        lignes_infos.append(f"- {libelle} : {_tronquer(infos[cle], LIMITE_CHAMP)}")
+    if infos.get('civilite'):
+        lignes_infos.append(f"- Désigner le patient par : {infos['civilite']} [NOM]")
+    parties.append("INFORMATIONS DU BILAN\n" + '\n'.join(lignes_infos))
+
+    if sources.get('bilan_precedent'):
+        precedent = Bilan.all_objects.filter(id=sources['bilan_precedent'], organization=bilan.organization,
+                                             patient=patient).first()
+        if precedent:
+            _, sections_prec = hb.decouper_sections(hb.lire(precedent.contenu))
+            conclusion = [corps for titre_bloc, corps in sections_prec
+                          if titre_bloc['section'] in ('conclusion', 'synthese')]
+            texte = hb.en_texte(conclusion[0]) if conclusion else hb.en_texte(hb.lire(precedent.contenu))
+            parties.append(f"BILAN PRÉCÉDENT ({precedent.titre}, {_date(precedent.date_creation)}) - conclusion\n"
+                           + _tronquer(texte, LIMITE_BILAN_PRECEDENT))
 
     if sources.get('anamnese'):
         anamnese = Anamnese.all_objects.filter(patient=patient).first()
@@ -355,7 +681,7 @@ def contexte_patient(bilan, user=None):
 
     if sources.get('consultations'):
         seances = list(patient.consultation_set.filter(statut_consultation='termine')
-                       .order_by('-date_seance')[:NB_SEANCES_MAX])
+                       .order_by('-date_seance')[:nb_seances_max])
         blocs_seances = []
         for seance in reversed(seances):
             notes = [f"  {libelle} : {_tronquer(getattr(seance, champ), LIMITE_NOTE)}"
@@ -363,23 +689,23 @@ def contexte_patient(bilan, user=None):
             if notes:
                 blocs_seances.append(f"- Séance du {_date(seance.date_seance)} :\n" + '\n'.join(notes))
         if blocs_seances:
-            parties.append(f"NOTES DE SÉANCE ({len(blocs_seances)} dernières séances terminées)\n"
+            parties.append(f"NOTES DE SÉANCE ET OBSERVATIONS ({len(blocs_seances)} dernières séances terminées)\n"
                            + '\n'.join(blocs_seances))
 
-    tests = charger_tests(bilan, user)
-    if tests:
-        blocs_tests = []
-        for cle, test in tests:
-            res = resultats_test(cle, test)
-            lignes = [res['titre']]
-            for titre_tableau, entetes, rows in res['tableaux']:
-                if titre_tableau:
-                    lignes.append(titre_tableau)
-                lignes.append('| ' + ' | '.join(entetes) + ' |')
-                lignes.extend('| ' + ' | '.join(str(c) for c in row) + ' |' for row in rows)
-            lignes.extend(f"Remarque : {r}" for r in res['remarques'])
-            blocs_tests.append('\n'.join(lignes))
-        parties.append("RÉSULTATS DES TESTS (calculés par la plateforme, à ne pas modifier)\n"
-                       + '\n\n'.join(blocs_tests))
+    items = tests_inclus(bilan, user)
+    if items:
+        parties.append("RÉSULTATS DES TESTS (saisis ou calculés par la plateforme, à ne pas modifier)\n"
+                       + '\n\n'.join(_texte_resultats(item) for item in items))
 
     return '\n\n'.join(parties)
+
+
+def valeurs_de_reference(bilan, user=None):
+    """Scores connus du bilan, pour la vérification de cohérence du texte."""
+    valeurs, niveaux, noms_tests = [], [], []
+    for item in tests_inclus(bilan, user):
+        res = resultats_item(item)
+        valeurs.extend(dict(v, test=item['nom']) for v in res['valeurs'])
+        niveaux.extend(dict(n, test=item['nom']) for n in res['niveaux'])
+        noms_tests.append(item['cle'])
+    return {'valeurs': valeurs, 'niveaux': niveaux, 'tests': noms_tests}

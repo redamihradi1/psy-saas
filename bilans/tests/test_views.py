@@ -93,11 +93,14 @@ class CreationEtEditionTests(BilanTestCaseBase):
         bilan = self.creer_bilan()
         self.assertEqual(bilan.organization, self.org)
         self.assertEqual(bilan.titre, "Bilan psychologique")
-        self.assertIn('Yasmine Benali', bilan.contenu)
+        self.assertIn('BENALI Yasmine', bilan.contenu)
         self.assertIn('22 / 63', bilan.contenu)
         self.assertIn('ALERTE : item 9', bilan.contenu)
         self.assertIn('48 / 80', bilan.contenu)
-        self.assertIn('data-section="analyse" data-type="ia"', bilan.contenu)
+        # Un chapitre par test (tableau + interprétation), puis les sections rédigées
+        self.assertIn(f'data-section="test_beck_{self.beck.id}" data-type="test"', bilan.contenu)
+        self.assertIn('<h3>Interprétation</h3>', bilan.contenu)
+        self.assertIn('data-section="synthese" data-type="ia"', bilan.contenu)
         self.assertIn(PLACEHOLDER_IA, bilan.contenu)
         self.assertEqual(bilan.versions.count(), 1)
 
@@ -186,17 +189,20 @@ class IATests(BilanTestCaseBase):
     def test_premier_jet_remplit_les_sections_ia_et_restaure_les_noms(self, appeler):
         appeler.return_value = _reponse_ia({'sections': {
             'motif': "[PRÉNOM] consulte pour des angoisses.",
-            'analyse': "Score de Beck modéré.",
+            f'test_beck_{self.beck.id}': "Score de Beck modéré.",
             'identite': "L'IA ne doit pas toucher aux données",
         }})
         bilan = self.creer_bilan()
         response = self.post_json('bilans:ia_premier_jet', bilan, {'contenu': bilan.contenu})
         self.assertEqual(response.status_code, 200, response.content)
+        # Premier lot : motif, contexte, interprétation du Beck ; il reste STAI, synthèse, recommandations
+        self.assertEqual(response.json()['restantes'], 4)
         bilan.refresh_from_db()
         self.assertIn('Yasmine consulte pour des angoisses.', bilan.contenu)
-        self.assertIn('Score de Beck modéré.', bilan.contenu)
+        self.assertIn('<h3>Interprétation</h3>\n<p>Score de Beck modéré.</p>', bilan.contenu)
+        self.assertIn('22 / 63', bilan.contenu)  # le tableau calculé reste en place
         self.assertNotIn("L'IA ne doit pas toucher", bilan.contenu)
-        self.assertEqual(bilan.versions.first().motif, "Avant première version IA")
+        self.assertEqual(bilan.versions.first().motif, "Avant rédaction IA")
         envoye = json.dumps(appeler.call_args[0][0], ensure_ascii=False)
         self.assertNotIn('Yasmine', envoye)
         self.assertNotIn('Salma', envoye)

@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Scores et informations - {{ bilan.titre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .saisie input[type="text"] { width: 100%; padding: .3rem .45rem; border: 1px solid #cbd5e1; border-radius: .5rem; font-size: .85rem; }
+    .saisie input[type="text"]:focus { outline: none; border-color: transparent; box-shadow: 0 0 0 2px #2A45DE; }
+    .saisie td, .saisie th { padding: .25rem .35rem; }
+    .saisie th { font-size: .72rem; font-weight: 600; color: #64748b; text-align: left; white-space: nowrap; }
+    .saisie td.libelle { font-size: .85rem; color: #334155; min-width: 11rem; }
+    details.test > summary { list-style: none; }
+    details.test > summary::-webkit-details-marker { display: none; }
+    details.test[open] .chevron { transform: rotate(90deg); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="flex items-start gap-3 mb-6">
+        <a href="{% url 'bilans:editeur' bilan.id %}" class="icone-btn mt-0.5" title="Retour au bilan"><i class="fas fa-arrow-left"></i></a>
+        <div>
+            <h1 class="text-2xl font-bold text-encre">Scores et informations</h1>
+            <p class="text-sm text-slate-500 mt-1">{{ bilan.titre }} · {{ bilan.patient.nom_complet }} · {{ modele.nom }}</p>
+        </div>
+    </div>
+
+    {% if bilan.est_finalise %}
+    <div class="carte p-4 mb-5 text-sm text-amber-800 bg-amber-50 ring-amber-200">
+        Ce bilan est finalisé : rouvrez-le depuis l'éditeur pour modifier ses données.
+    </div>
+    {% endif %}
+
+    <form method="post" class="space-y-5 pb-24">
+        {% csrf_token %}
+        <fieldset {% if bilan.est_finalise %}disabled{% endif %} class="space-y-5">
+
+        <section class="carte p-5 sm:p-6">
+            <h2 class="font-semibold text-encre mb-4">Informations de la page de garde</h2>
+            {% include 'bilans/_champs_infos.html' %}
+        </section>
+
+        <section class="carte p-5 sm:p-6">
+            <h2 class="font-semibold text-encre mb-4">Données de la plateforme</h2>
+            <div class="space-y-2">
+                {% if peut_clinique %}
+                <label class="flex items-center gap-3 text-sm text-slate-700 {% if not a_anamnese %}opacity-50{% endif %}">
+                    <input type="checkbox" name="anamnese" value="1" {% if bilan.sources.anamnese %}checked{% endif %} {% if not a_anamnese %}disabled{% endif %}
+                           class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary">
+                    Anamnèse {% if not a_anamnese %}(non renseignée){% endif %}
+                </label>
+                <label class="flex items-center gap-3 text-sm text-slate-700 {% if not nb_seances %}opacity-50{% endif %}">
+                    <input type="checkbox" name="consultations" value="1" {% if bilan.sources.consultations %}checked{% endif %} {% if not nb_seances %}disabled{% endif %}
+                           class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary">
+                    Notes de séance et observations ({{ nb_seances }})
+                </label>
+                {% endif %}
+                {% for test in tests %}
+                <label class="flex items-center gap-3 text-sm text-slate-700">
+                    <input type="checkbox" name="tests" value="{{ test.ref }}" {% if test.ref in refs_coches %}checked{% endif %}
+                           class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary">
+                    {{ test.nom }} du {{ test.date|date:"d/m/Y" }}
+                </label>
+                {% empty %}
+                <p class="text-sm text-slate-400">Aucun test passé sur la plateforme par ce patient.</p>
+                {% endfor %}
+                {% if precedents %}
+                <div class="pt-2 max-w-md">
+                    <label for="bilan_precedent" class="block text-xs font-semibold text-slate-600 mb-1">Bilan précédent à prendre en compte</label>
+                    <select name="bilan_precedent" id="bilan_precedent"
+                            class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="">Aucun</option>
+                        {% for b in precedents %}
+                        <option value="{{ b.id }}" {% if b.id == bilan.sources.bilan_precedent %}selected{% endif %}>{{ b.titre }} - {{ b.date_creation|date:"d/m/Y" }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section>
+            <div class="flex items-end justify-between gap-3 mb-3 px-1">
+                <div>
+                    <h2 class="font-semibold text-encre">Tests passés hors plateforme</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Cochez un test pour l'inclure, puis saisissez les notes déjà étalonnées. Les cases vides sont ignorées ;
+                        les descriptions qualitatives, écarts et graphiques sont calculés.
+                    </p>
+                </div>
+            </div>
+            <div class="space-y-2">
+                {% for f in formulaires %}
+                <details class="test carte overflow-hidden" {% if f.inclus %}open{% endif %} data-cle="{{ f.cle }}">
+                    <summary class="flex items-center gap-3 px-4 py-3 cursor-pointer select-none hover:bg-slate-50">
+                        <input type="checkbox" name="externes" value="{{ f.cle }}" {% if f.inclus %}checked{% endif %}
+                               class="inclure w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary">
+                        <span class="flex-1 min-w-0">
+                            <span class="font-semibold text-encre text-sm">{{ f.nom }}</span>
+                            <span class="text-xs text-slate-400 ml-1">{{ f.domaine }}</span>
+                        </span>
+                        <i class="fas fa-chevron-right chevron text-xs text-slate-400 transition-transform"></i>
+                    </summary>
+                    <div class="saisie border-t border-slate-100 px-4 py-4 space-y-4">
+                        {% if f.test.description %}<p class="text-xs text-slate-500">{{ f.test.description }}</p>{% endif %}
+
+                        {% if f.form.champs %}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {% for champ in f.form.champs %}
+                            <label class="block {% if champ.cle == 'presentation' %}sm:col-span-2{% endif %}">
+                                <span class="block text-xs font-semibold text-slate-600 mb-1">{{ champ.libelle }}</span>
+                                {% if champ.type == 'choix' %}
+                                <select name="{{ champ.name }}" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm">
+                                    {% for choix in champ.choix %}<option value="{{ choix }}" {% if choix == champ.value %}selected{% endif %}>{{ choix|default:"-" }}</option>{% endfor %}
+                                </select>
+                                {% else %}
+                                <input type="text" name="{{ champ.name }}" value="{{ champ.value }}" maxlength="300" {% if champ.type == 'nombre' %}inputmode="decimal"{% endif %}>
+                                {% endif %}
+                            </label>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        {% for grille in f.form.grilles %}
+                        <div class="overflow-x-auto">
+                            {% if f.form.grilles|length > 1 %}<div class="text-xs font-semibold text-slate-500 mb-1">{{ grille.titre }}</div>{% endif %}
+                            <table class="w-full">
+                                <thead><tr><th></th>{% for col in grille.colonnes %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+                                <tbody>
+                                    {% for ligne in grille.lignes %}
+                                    <tr>
+                                        <td class="libelle">{{ ligne.libelle }}</td>
+                                        {% for c in ligne.cellules %}
+                                        <td class="{% if c.type == 'nombre' %}w-24{% endif %}"><input type="text" name="{{ c.name }}" value="{{ c.value }}" maxlength="60" {% if c.type == 'nombre' %}inputmode="decimal"{% endif %}></td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endfor %}
+
+                        {% for grille in f.form.libres %}
+                        <div class="overflow-x-auto">
+                            <div class="text-xs font-semibold text-slate-500 mb-1">{{ grille.titre }}</div>
+                            <table class="w-full grille-libre" data-prefixe="{{ grille.prefixe }}" data-colonnes="{{ grille.colonnes|length }}">
+                                <thead><tr>{% for col in grille.colonnes %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+                                <tbody>
+                                    {% for ligne in grille.lignes %}
+                                    <tr>{% for c in ligne %}<td><input type="text" name="{{ c.name }}" value="{{ c.value }}" maxlength="120"></td>{% endfor %}</tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <button type="button" class="ajouter-ligne mt-1 text-xs text-primary-dark hover:underline"><i class="fas fa-plus mr-1"></i>Ajouter une ligne</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </details>
+                {% endfor %}
+            </div>
+        </section>
+        </fieldset>
+
+        {% if not bilan.est_finalise %}
+        <div class="fixed bottom-0 inset-x-0 md:left-[260px] z-20 bg-white/90 backdrop-blur border-t border-slate-200">
+            <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                <p class="flex-1 text-xs text-slate-500">
+                    Les tableaux, graphiques et sections « Données » du bilan sont régénérés ; vos textes rédigés sont conservés
+                    (la version précédente reste dans « Versions »).
+                </p>
+                <button type="submit" name="suite" value="rester" class="btn btn-secondaire">Enregistrer</button>
+                <button type="submit" class="btn btn-primaire"><i class="fas fa-check"></i>Enregistrer et revenir au bilan</button>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    // Cocher un test l'ouvre ; saisir une valeur dans un test non coché le coche.
+    document.querySelectorAll('details.test').forEach(function (d) {
+        const cb = d.querySelector('.inclure');
+        cb.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (cb.checked) d.open = true;
+        });
+        d.querySelector('.saisie').addEventListener('input', function () { cb.checked = true; });
+    });
+    document.querySelectorAll('.ajouter-ligne').forEach(function (b) {
+        b.addEventListener('click', function () {
+            const table = b.previousElementSibling;
+            const corps = table.querySelector('tbody');
+            const n = corps.rows.length;
+            if (n >= 40) return;
+            const tr = document.createElement('tr');
+            for (let c = 0; c < parseInt(table.dataset.colonnes, 10); c++) {
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 120;
+                input.name = table.dataset.prefixe + '__' + n + '__' + c;
+                td.appendChild(input);
+                tr.appendChild(td);
+            }
+            corps.appendChild(tr);
+            tr.querySelector('input').focus();
+        });
+    });
+})();
+</script>
+{% endblock %}

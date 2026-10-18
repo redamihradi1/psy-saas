@@ -2,7 +2,8 @@
 
 Avant envoi : le prénom/nom du patient deviennent [PRÉNOM]/[NOM], le psychologue
 [PSYCHOLOGUE], le cabinet [CABINET], les noms des autres patients du cabinet (frère, sœur,
-parent suivi au même cabinet...) [PERSONNE_1], [PERSONNE_2]..., les emails [EMAIL] et numéros
+parent suivi au même cabinet...), l'établissement scolaire et la personne qui adresse le patient
+[PERSONNE_1], [PERSONNE_2]..., les emails [EMAIL] et numéros
 de téléphone [TÉLÉPHONE]. Au retour, chaque étiquette retrouve sa valeur (le texte exact masqué
 pour les [PERSONNE_n] : un faux positif comme « grâce » pour une patiente « Grace » est donc
 restauré à l'identique) - le psychologue voit toujours les vrais noms. La date de naissance,
@@ -40,6 +41,18 @@ def _motif_lettres(nom):
         else:
             morceaux.append(re.escape(car))
     return ''.join(morceaux)
+
+
+MOTS_GENERIQUES = {
+    'docteur', 'professeur', 'madame', 'monsieur', 'pedopsychiatre', 'psychiatre', 'neurologue', 'pediatre',
+    'neuropediatre', 'orthophoniste', 'medecin', 'psychologue', 'psychomotricien', 'psychomotricienne',
+    'ergotherapeute', 'ecole', 'parents', 'mere', 'pere', 'famille', 'enseignant', 'enseignante', 'institutrice',
+    'maitresse', 'directeur', 'directrice', 'traitant', 'scolaire', 'hopital', 'clinique', 'centre',
+}
+
+
+def _sans_accents(texte):
+    return ''.join(_sans_accent(c) for c in texte)
 
 
 def _sans_accent(car):
@@ -93,9 +106,27 @@ class Pseudonymiseur:
         autres_noms = set()
         for prenom, nom in autres.values_list('prenom', 'nom'):
             autres_noms.update([prenom, nom])
+        autres_noms.update(cls.noms_des_infos(bilan.infos or {}))
         psy = bilan.psychologue if bilan.psychologue and not bilan.psychologue.is_superadmin() else \
             bilan.organization.users.filter(role='psychologist').order_by('id').first()
         return cls(bilan.patient, psy, bilan.organization, autres_noms)
+
+    @staticmethod
+    def noms_des_infos(infos):
+        """Établissement scolaire et personne qui adresse le patient (« Dr Bennani ») : l'expression
+        entière, et pour la personne chaque nom propre isolé (« Bennani » seul)."""
+        noms = set()
+        from .donnees import INFOS_A_MASQUER
+        for cle in INFOS_A_MASQUER:
+            valeur = (infos.get(cle) or '').strip()
+            if not valeur:
+                continue
+            noms.add(valeur)
+            if cle == 'adresse_par':
+                for mot in re.findall(r"[\w'’-]+", valeur):
+                    if len(mot) >= 4 and mot[0].isupper() and _sans_accents(mot.lower()) not in MOTS_GENERIQUES:
+                        noms.add(mot)
+        return noms
 
     def masquer(self, texte):
         if not texte:

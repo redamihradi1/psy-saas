@@ -27,3 +27,6 @@ projet.md
 # chargé en base via `python manage.py import_brief` (voir tests_psy/data/brief/README.md)
 tests_psy/data/brief/*.json
 !tests_psy/data/brief/*.example.json
+
+# Exemples de vrais bilans (même anonymisés) : jamais versionnés, le dépôt est public
+bilans/exemples/

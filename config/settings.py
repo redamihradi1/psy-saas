@@ -34,7 +34,9 @@ CRON_SECRET_TOKEN = os.environ.get('CRON_SECRET_TOKEN', '')
 IA_API_KEY = os.environ.get('IA_API_KEY', '')
 IA_API_URL = os.environ.get('IA_API_URL', 'https://api.groq.com/openai/v1/chat/completions')
 IA_MODELE = os.environ.get('IA_MODELE', 'openai/gpt-oss-120b')
-IA_QUOTA_JOUR_PAR_CABINET = int(os.environ.get('IA_QUOTA_JOUR_PAR_CABINET', '40'))
+IA_QUOTA_JOUR_PAR_CABINET = int(os.environ.get('IA_QUOTA_JOUR_PAR_CABINET', '80'))
+# Limite de jetons par minute du fournisseur (Groq gratuit, gpt-oss-120b : 8000) : demande + réponse max
+IA_LIMITE_JETONS_MINUTE = int(os.environ.get('IA_LIMITE_JETONS_MINUTE', '8000'))
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',

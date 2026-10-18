@@ -27,6 +27,12 @@ class Bilan(TenantModel):
     # Données choisies à la création pour remplir le bilan et alimenter l'IA :
     # {'anamnese': bool, 'consultations': bool, 'tests': ['brief:3', 'beck:7', ...]}
     sources = models.JSONField(default=dict, blank=True)
+    # Informations de la page de garde et du contexte : date d'évaluation, latéralité,
+    # établissement, classe/profession, adressé par, civilité, bilan antérieur, sous-titre...
+    infos = models.JSONField(default=dict, blank=True)
+    # Scores saisis des tests passés hors plateforme (WISC-V, TMT...) : {cle_test: saisie},
+    # format décrit dans bilans/tests_externes.py
+    scores = models.JSONField(default=dict, blank=True)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
@@ -78,7 +84,7 @@ class MessageBilan(models.Model):
 class AppelIA(TenantModel):
     """Journal des appels au fournisseur d'IA : quota quotidien par cabinet (clé API gratuite
     partagée par toute la plateforme) et suivi d'usage."""
-    TYPE_CHOICES = [('premier_jet', 'Première version'), ('chat', 'Chat')]
+    TYPE_CHOICES = [('premier_jet', 'Première version'), ('chat', 'Chat'), ('relecture', 'Relecture')]
 
     utilisateur = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True)
     bilan = models.ForeignKey(Bilan, on_delete=models.SET_NULL, null=True, blank=True)
@@ -92,3 +98,59 @@ class AppelIA(TenantModel):
         verbose_name = "Appel IA"
         verbose_name_plural = "Appels IA"
         ordering = ['-date']
+
+
+class EnTeteBilan(models.Model):
+    """Papier à en-tête d'un psychologue pour l'export de ses bilans (Word et PDF) : bloc
+    d'identité à gauche, logo au centre, texte libre à droite (ex. arabe, Word uniquement),
+    pied de page, signature."""
+    utilisateur = models.OneToOneField('accounts.User', on_delete=models.CASCADE, related_name='en_tete_bilan')
+    nom_affiche = models.CharField("Nom affiché", max_length=120, blank=True)
+    titre_pro = models.CharField("Titre", max_length=150, blank=True,
+                                 help_text="Ex. Psychologue clinicienne - Psychothérapeute")
+    specialites = models.CharField("Spécialités / public", max_length=150, blank=True,
+                                   help_text="Ex. Enfants - Adolescents - Adultes")
+    texte_droite = models.TextField("Texte à droite de l'en-tête", blank=True,
+                                    help_text="Facultatif, une ligne par ligne (ex. votre nom en arabe). "
+                                              "L'arabe s'affiche dans l'export Word uniquement.")
+    pied_de_page = models.TextField("Pied de page", blank=True,
+                                    help_text="Une ligne par ligne : diplômes, adresse, téléphone, email...")
+    mention_confidentielle = models.CharField("Mention", max_length=120, blank=True,
+                                              default="Document clinique confidentiel")
+    formule_signature = models.CharField("Formule avant la signature", max_length=200, blank=True,
+                                         default="Pour faire valoir ce que de droit.")
+    logo = models.ImageField("Logo", upload_to='bilans/entetes/', blank=True)
+    signature = models.ImageField("Signature ou cachet", upload_to='bilans/entetes/', blank=True)
+    date_modification = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "En-tête de bilan"
+        verbose_name_plural = "En-têtes de bilan"
+
+    def __str__(self):
+        return f"En-tête de {self.utilisateur}"
+
+
+class TexteType(TenantModel):
+    """Texte réutilisable de la bibliothèque du cabinet (présentation d'un test, définition,
+    recommandation...). `cle` renseignée = version personnalisée d'un texte fourni par la
+    plateforme (bilans/textes_types.py), `masque` = texte fourni retiré de la bibliothèque."""
+    CATEGORIE_CHOICES = [
+        ('presentation', "Présentation des tests"),
+        ('definition', "Définitions"),
+        ('recommandation', "Recommandations"),
+        ('mention', "Mentions et formules"),
+        ('autre', "Mes textes"),
+    ]
+
+    cle = models.CharField(max_length=60, blank=True)
+    categorie = models.CharField(max_length=20, choices=CATEGORIE_CHOICES, default='autre')
+    titre = models.CharField(max_length=150)
+    contenu = models.TextField(blank=True)
+    masque = models.BooleanField(default=False)
+    date_modification = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Texte type"
+        verbose_name_plural = "Textes types"
+        ordering = ['categorie', 'titre']

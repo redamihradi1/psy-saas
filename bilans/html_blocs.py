@@ -9,6 +9,7 @@ Bloc :
   {'type': 'h1'|'h2'|'h3'|'p', 'runs': [...], 'section': str|None, 'section_type': str|None}
   {'type': 'ul'|'ol', 'items': [[runs], ...]}
   {'type': 'table', 'rows': [{'header': bool, 'cells': [[runs], ...]}, ...]}
+  {'type': 'figure', 'ref': 'wisc5.indices'}   (graphique calculé à partir des scores, ou signature)
 Run : {'t': texte, 'b': bool, 'i': bool, 'u': bool} ou {'br': True}
 """
 import re
@@ -23,7 +24,8 @@ ITALIQUE = {'i', 'em'}
 SOULIGNE = {'u', 'ins'}
 IGNORES = {'script', 'style', 'head', 'title', 'template', 'noscript', 'iframe', 'object', 'svg'}
 RE_CLE_SECTION = re.compile(r'^[a-z0-9_]{1,40}$')
-TYPES_SECTION = {'auto', 'ia', 'libre'}
+TYPES_SECTION = {'auto', 'ia', 'libre', 'test'}
+RE_REF_FIGURE = re.compile(r'^[a-z0-9_]{1,30}(\.[a-z0-9_]{1,30})?$')
 
 
 class _Lecteur(HTMLParser):
@@ -122,6 +124,12 @@ class _Lecteur(HTMLParser):
                 self.ligne['header'] = True
         elif self.table is not None:
             return  # pas de blocs imbriqués dans un tableau : le texte va dans la cellule
+        elif tag == 'figure':
+            ref = attrs.get('data-figure') or ''
+            if RE_REF_FIGURE.match(ref):
+                self._fermer_bloc()
+                self._fermer_liste()
+                self.blocs.append({'type': 'figure', 'ref': ref})
         elif tag in ('ul', 'ol'):
             self._fermer_bloc()
             if self.liste is None:
@@ -268,6 +276,9 @@ def ecrire(blocs):
                 cellules = ''.join(f'<{balise}>{_runs_html(c)}</{balise}>' for c in row['cells'])
                 lignes.append(f'<tr>{cellules}</tr>')
             html.append(f'<table>{"".join(lignes)}</table>')
+        elif t == 'figure' and RE_REF_FIGURE.match(bloc.get('ref', '')):
+            html.append(f'<figure data-figure="{bloc["ref"]}" contenteditable="false">'
+                        f'<img src="figure/{bloc["ref"]}.png" alt="Graphique"></figure>')
     return '\n'.join(html)
 
 
@@ -329,7 +340,12 @@ def tableau(entetes, lignes):
 
 
 def liste(items):
-    return {'type': 'ul', 'items': [[run(item)] for item in items]}
+    """items : textes, ou listes de runs (ex. [run('WISC-V', b=True), run(' : ...')])."""
+    return {'type': 'ul', 'items': [item if isinstance(item, list) else [run(item)] for item in items]}
+
+
+def figure(ref):
+    return {'type': 'figure', 'ref': ref}
 
 
 RE_GRAS_MD = re.compile(r'\*\*(.+?)\*\*')
