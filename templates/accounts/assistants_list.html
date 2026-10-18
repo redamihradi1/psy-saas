@@ -24,7 +24,7 @@
     <div class="bg-white rounded-xl shadow p-4 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div class="flex items-start gap-3 min-w-0">
-                <div class="w-11 h-11 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-semibold shrink-0">
+                <div class="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold shrink-0">
                     {{ assistant.username|slice:":2"|upper }}
                 </div>
                 <div class="min-w-0">
@@ -46,7 +46,7 @@
                         <span class="text-[11px] px-2 py-0.5 rounded-full {% if assistant|attr:field %}bg-blue-50 text-blue-700{% else %}bg-gray-50 text-gray-400 line-through{% endif %}">{{ label }}</span>
                         {% endfor %}
                         {% for field, label in assistant.TEST_PERMISSIONS %}
-                        <span class="text-[11px] px-2 py-0.5 rounded-full {% if assistant|attr:field %}bg-purple-50 text-purple-700{% else %}bg-gray-50 text-gray-400 line-through{% endif %}">{{ label }}</span>
+                        <span class="text-[11px] px-2 py-0.5 rounded-full {% if assistant|attr:field %}bg-brand-50 text-brand-700{% else %}bg-gray-50 text-gray-400 line-through{% endif %}">{{ label }}</span>
                         {% endfor %}
                     </div>
                 </div>

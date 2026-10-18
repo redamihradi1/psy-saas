@@ -17,7 +17,7 @@ def build_dashboard_context(organization, can_patients, can_consultations, can_c
     voir ses widgets, même en lecture seule (ex: chiffre d'affaires sans accès
     comptabilité) - le superadmin passe toujours can_*=True.
     """
-    today = timezone.now().date()
+    today = timezone.localdate()
 
     # Début du mois et de la semaine
     debut_mois = today.replace(day=1)
@@ -161,8 +161,21 @@ def build_dashboard_context(organization, can_patients, can_consultations, can_c
             (consultations_payees_mois / consultations_mois_count * 100) if consultations_mois_count > 0 else 0
         )
 
+    # En-tête : prochain rendez-vous du jour et consultations terminées non encaissées
+    prochaine_du_jour = None
+    if can_consultations:
+        prochaine_du_jour = Consultation.objects.filter(
+            organization=organization, date_seance__date=today, statut_consultation='planifie',
+            date_seance__gte=timezone.now() - timedelta(minutes=10),
+        ).select_related('patient').order_by('date_seance').first()
+    impayes = Consultation.objects.filter(
+        organization=organization, statut_consultation='termine', statut_paiement='attente',
+    ).count() if can_comptabilite else 0
+
     return {
         'today': today,
+        'prochaine_du_jour': prochaine_du_jour,
+        'impayes': impayes,
         'can_patients': can_patients,
         'can_consultations': can_consultations,
         'can_comptabilite': can_comptabilite,

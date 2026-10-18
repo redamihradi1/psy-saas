@@ -38,7 +38,7 @@ if (new URLSearchParams(window.location.search).get('suggest_visio') === '1') {
 {% endif %}
 
 <!-- Header -->
-<div class="bg-gradient-to-r from-blue-600 to-purple-500 rounded-xl shadow-lg p-4 sm:p-8 mb-6 text-white">
+<div class="bg-blue-600 rounded-xl shadow-lg p-4 sm:p-8 mb-6 text-white">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div class="flex items-center min-w-0">
             <a href="{% url 'cabinet:consultations_list' %}" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-2 mr-3 sm:mr-4 transition shrink-0">
@@ -119,7 +119,7 @@ if (new URLSearchParams(window.location.search).get('suggest_visio') === '1') {
                                 <span class="px-2 py-1 rounded text-xs
                                     {% if consultation.lieu_consultation == 'visio' %}bg-blue-100 text-blue-800
                                     {% elif consultation.lieu_consultation == 'bouskoura' %}bg-green-100 text-green-800
-                                    {% else %}bg-purple-100 text-purple-800{% endif %}">
+                                    {% else %}bg-brand-100 text-brand-800{% endif %}">
                                     {{ consultation.get_lieu_consultation_display }}
                                 </span>
                                 {% if consultation.lien_visio %}
@@ -205,8 +205,8 @@ if (new URLSearchParams(window.location.search).get('suggest_visio') === '1') {
                 </div>
                 {% endif %}
                 {% if consultation.note_evaluation %}
-                <div class="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4">
-                    <h4 class="text-xs font-semibold text-purple-900 mb-1">ÉVALUATION</h4>
+                <div class="bg-brand-50 border-l-4 border-brand-500 rounded-lg p-4">
+                    <h4 class="text-xs font-semibold text-brand-900 mb-1">ÉVALUATION</h4>
                     <p class="text-sm text-gray-700 whitespace-pre-line">{{ consultation.note_evaluation }}</p>
                 </div>
                 {% endif %}

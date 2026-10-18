@@ -1,11 +1,20 @@
 from django.urls import path
 from . import views
+from .views import cabinet_virtuel as cv
 
 app_name = 'cabinet'
 
 urlpatterns = [
     # Dashboard
     path('dashboard/', views.dashboard_view, name='dashboard'),
+
+    # Cabinet virtuel (bêta, page à part)
+    path('virtuel/', cv.cabinet_virtuel, name='cabinet_virtuel'),
+    path('virtuel/salle-attente/', cv.cv_salle_attente, name='cv_salle_attente'),
+    path('virtuel/secretaire/agenda/', cv.cv_agenda, name='cv_agenda'),
+    path('virtuel/secretaire/consultation/', cv.cv_creer_consultation, name='cv_creer_consultation'),
+    path('virtuel/secretaire/patient/', cv.cv_valeurs_patient, name='cv_valeurs_patient'),
+    path('virtuel/encaisser/<int:consultation_id>/', cv.cv_encaisser, name='cv_encaisser'),
 
     # Recherche globale
     path('search/', views.global_search, name='global_search'),

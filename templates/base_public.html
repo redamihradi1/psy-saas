@@ -7,6 +7,9 @@
     <title>{% block title %}PsySaaS{% endblock %}</title>
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32.png' %}">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
@@ -18,9 +21,18 @@
         theme: {
           extend: {
             colors: {
-              primary: "#e879f9",
-              "primary-light": "#fdf4ff",
-              "primary-dark": "#c026d3",
+              // Palette « Bleu Majorelle & safran » (voir base.html)
+              primary: { DEFAULT: "#2A45DE", light: "#EEF3FF", dark: "#2236B8" },
+              brand: {
+                50: "#EEF3FF", 100: "#DDE6FF", 200: "#C0D0FF", 300: "#93ACFF", 400: "#6180FA",
+                500: "#3D5CF2", 600: "#2A45DE", 700: "#2236B8", 800: "#213193", 900: "#1F2D72",
+              },
+              encre: "#121A33",
+              pierre: "#F4F6FB",
+              ocre: { DEFAULT: "#F2A81D", light: "#FFF8E6", dark: "#A86A08" },
+            },
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', "ui-sans-serif", "system-ui", "sans-serif"],
             },
           },
         },
@@ -28,7 +40,7 @@
     </script>
     {% block extra_css %}{% endblock %}
   </head>
-  <body class="bg-gray-50 min-h-screen">
+  <body class="bg-pierre text-encre antialiased min-h-screen">
     <div class="max-w-3xl mx-auto px-4 py-6 sm:py-10">
       {% block content %}{% endblock %}
     </div>

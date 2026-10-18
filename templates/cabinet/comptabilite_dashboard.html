@@ -20,7 +20,7 @@
 </div>
 {% endif %}
 <!-- Header -->
-<div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl shadow-lg p-5 sm:p-8 mb-6 text-white">
+<div class="bg-brand-600 rounded-2xl shadow-lg p-5 sm:p-8 mb-6 text-white">
     <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
             {% if is_admin_view %}
@@ -120,15 +120,15 @@
 <!-- Cumul annee -->
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex flex-wrap gap-6 justify-around text-center">
     <div>
-        <div class="text-xs text-gray-500 uppercase tracking-wide">Revenus {{ annee }}</div>
+        <div class="text-xs text-gray-500">Revenus {{ annee }}</div>
         <div class="text-lg font-semibold text-emerald-600">{{ revenus_annee|floatformat:0 }} DHS</div>
     </div>
     <div>
-        <div class="text-xs text-gray-500 uppercase tracking-wide">Dépenses {{ annee }}</div>
+        <div class="text-xs text-gray-500">Dépenses {{ annee }}</div>
         <div class="text-lg font-semibold text-red-600">{{ depenses_annee|floatformat:0 }} DHS</div>
     </div>
     <div>
-        <div class="text-xs text-gray-500 uppercase tracking-wide">Résultat net {{ annee }}</div>
+        <div class="text-xs text-gray-500">Résultat net {{ annee }}</div>
         <div class="text-lg font-semibold {% if resultat_annee >= 0 %}text-blue-600{% else %}text-orange-600{% endif %}">
             {{ resultat_annee|floatformat:0 }} DHS
         </div>
@@ -202,10 +202,10 @@
         <table class="min-w-full divide-y divide-gray-100">
             <thead>
                 <tr>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Catégorie</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Date</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Catégorie</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Description</th>
+                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Montant</th>
                     {% if not is_admin_view %}<th class="px-4 py-2"></th>{% endif %}
                 </tr>
             </thead>
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: repartition.map(r => r.categorie_name),
                 datasets: [{
                     data: repartition.map(r => r.total),
-                    backgroundColor: ['#e879f9', '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa'],
+                    backgroundColor: ['#2A45DE', '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa'],
                     borderWidth: 2,
                     borderColor: '#ffffff',
                 }]

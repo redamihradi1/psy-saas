@@ -27,3 +27,9 @@ def has_test(user, test_name):
     if not getattr(user, 'is_authenticated', False):
         return False
     return user.has_test_permission(test_name)
+
+
+@register.filter
+def commence_par(chemin, prefixe):
+    """Lien actif de la navigation : la page courante est dans la section `prefixe`."""
+    return bool(prefixe) and str(chemin).startswith(str(prefixe))

@@ -1,4 +1,4 @@
-"""Génère les icônes PWA (manifest + apple-touch-icon) à partir du dégradé de la marque.
+"""Génère les icônes PWA (manifest + apple-touch-icon) dans les couleurs de la marque (bleu Majorelle).
 
 Usage : python scripts/generate_pwa_icons.py
 """
@@ -8,8 +8,8 @@ from PIL import Image, ImageDraw, ImageFont
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(BASE_DIR, 'static', 'icons')
 
-COLOR_START = (232, 121, 249)   # primary #e879f9
-COLOR_END = (192, 38, 211)      # primary-dark #c026d3
+COLOR_START = (61, 92, 242)     # brand-500 #3D5CF2 (palette « Bleu Majorelle & safran »)
+COLOR_END = (34, 54, 184)       # primary-dark #2236B8
 
 
 def make_icon(size, corner_ratio=0.22):

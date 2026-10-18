@@ -1,0 +1,1088 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cabinet virtuel - PsySaaS{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+    /* Vue immersive : plein écran, sans barre latérale (le reste de l'app garde la sienne) */
+    #sidebar, #mobile-sidebar-overlay, body > header, body > main > header { display: none !important; }
+    body > main { margin-left: 0 !important; padding: 0 !important; min-height: 0 !important; height: 100dvh; overflow: hidden; }
+    body > main > div { max-width: none !important; padding: 0 !important; height: 100%; display: flex; flex-direction: column; }
+    body > main > div > .cabinet { flex: 1; min-height: 0; }
+    body { overflow: hidden; background: #2e2541; }
+
+    .cabinet {
+        --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+        --ease-tiroir: cubic-bezier(0.32, 0.72, 0, 1);
+        padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    }
+    .jeu { font-family: 'Fredoka', ui-rounded, system-ui, sans-serif; }
+
+    /* ---------- Barre de jeu (HUD) ---------- */
+    .hud { background: linear-gradient(180deg, #3b2f52, #2e2541); border-radius: 18px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+    .hud-stat {
+        display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.08); color: #f3e8ff; font-weight: 600; font-size: 0.85rem;
+        transition: transform 120ms var(--ease-out), background-color 150ms ease;
+    }
+    .hud-stat:active, .bascule a:active, .dock-bouton:active { transform: scale(0.96); }
+    @media (hover: hover) and (pointer: fine) { .hud-stat:hover { background: rgba(255, 255, 255, 0.16); } }
+    .hud-stat .pastille { width: 22px; height: 22px; border-radius: 9999px; display: grid; place-items: center; font-size: 0.7rem; }
+    .bascule { display: inline-flex; padding: 3px; border-radius: 9999px; background: rgba(255, 255, 255, 0.1); font-size: 0.8rem; }
+    .bascule > * { padding: 5px 12px; border-radius: 9999px; transition: transform 120ms var(--ease-out), background-color 150ms ease, color 150ms ease; }
+
+    /* ---------- Scène ---------- */
+    .scene-cadre { border-radius: 22px; overflow: hidden; position: relative; transition: background 600ms ease; }
+    .scene-cadre.matin { background: radial-gradient(ellipse at 50% 0%, #fff4e6 0%, #ffe3cc 35%, #f3e8ff 100%); }
+    .scene-cadre.jour  { background: radial-gradient(ellipse at 50% 0%, #f0f9ff 0%, #d6ecff 35%, #ede9fe 100%); }
+    .scene-cadre.soir  { background: radial-gradient(ellipse at 50% 0%, #ffe1cc 0%, #ffc4a3 30%, #f5d0fe 70%, #ede9fe 100%); }
+    .scene-cadre.nuit  { background: radial-gradient(ellipse at 50% 0%, #4c3d7a 0%, #2e2560 45%, #1e1b4b 100%); }
+    .scene-defile { width: 100%; height: 100%; }
+    .scene { display: block; width: 100%; height: 100%; user-select: none; -webkit-tap-highlight-color: transparent; }
+    @media (max-width: 767px) {
+        .scene-defile { overflow: auto; -webkit-overflow-scrolling: touch; }
+        .scene { width: 780px; height: auto; min-height: 100%; }
+    }
+    .scene [data-room] { cursor: pointer; }
+    .scene .ferme, .scene .ferme * { cursor: not-allowed; }
+    .scene .sol { transition: filter 180ms ease; }
+    .scene .sol.survol { filter: brightness(1.07) saturate(1.15); }
+    .scene .enseigne { transition: transform 200ms var(--ease-out); }
+    .scene .enseigne-carte { transition: transform 200ms var(--ease-out); transform-box: fill-box; transform-origin: 50% 100%; }
+    .scene .enseigne.survol .enseigne-carte { transform: translateY(-3px) scale(1.05); }
+    .scene .livre { transition: transform 160ms var(--ease-out); }
+    @media (hover: hover) and (pointer: fine) { .scene .livre:hover { transform: translateY(-4px); } }
+    .scene .bulle { opacity: 0; transition: opacity 160ms ease, transform 180ms var(--ease-out); transform-box: fill-box; transform-origin: 50% 100%; transform: translateY(4px) scale(0.95); pointer-events: none; }
+    .scene .bulle.visible { opacity: 1; transform: translateY(0) scale(1); }
+    .icone-fa { font-family: 'Font Awesome 6 Free'; font-weight: 900; }
+
+    /* Vie : respiration, écran, alerte du coffre, halo du prochain patient */
+    .respire { animation: respire 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+    @keyframes respire { 50% { transform: translateY(-1.2px); } }
+    .ecran { animation: ecran 2.4s ease-in-out infinite; }
+    @keyframes ecran { 50% { opacity: 0.75; } }
+    .alerte { animation: alerte 1.6s var(--ease-out) infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+    @keyframes alerte { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+    .halo { animation: halo 2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes halo { 50% { opacity: 0.35; transform: scale(1.15); } }
+    @media (prefers-reduced-motion: reduce) {
+        .respire, .ecran, .alerte, .halo { animation: none; }
+        .scene .enseigne-carte, .scene .livre, .scene .bulle { transition: opacity 150ms ease; transform: none !important; }
+    }
+
+    /* Dock d'accès rapide (clavier, téléphone) */
+    .dock { background: rgba(46, 37, 65, 0.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 12px 30px -12px rgba(30, 20, 50, 0.6); }
+    .dock-bouton { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 64px; padding: 7px 8px; border-radius: 14px; color: #f3e8ff; font-size: 0.68rem; transition: transform 120ms var(--ease-out), background-color 150ms ease; }
+    .dock-bouton i { font-size: 1.05rem; }
+    @media (hover: hover) and (pointer: fine) { .dock-bouton:not(:disabled):hover { background: rgba(255, 255, 255, 0.12); } }
+    .dock-bouton:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ---------- Panneau latéral (tiroir) ---------- */
+    .voile { position: fixed; inset: 0; background: rgba(30, 24, 40, 0.38); opacity: 0; pointer-events: none; transition: opacity 200ms ease; z-index: 60; }
+    .voile.ouvert { opacity: 1; pointer-events: auto; }
+    .tiroir {
+        position: fixed; top: 0; right: 0; height: 100%; width: min(460px, 100%); z-index: 61;
+        background: #fdfcfe; display: flex; flex-direction: column;
+        box-shadow: -24px 0 48px -24px rgba(46, 40, 57, 0.45);
+        transform: translateX(100%); visibility: hidden;
+        transition: transform 200ms var(--ease-out), visibility 0s linear 200ms; /* sortie plus rapide que l'entrée */
+    }
+    .tiroir.ouvert { transform: translateX(0); visibility: visible; transition: transform 300ms var(--ease-tiroir), visibility 0s; }
+    @media (max-width: 639px) {
+        .tiroir { top: auto; bottom: 0; height: 88dvh; width: 100%; border-radius: 18px 18px 0 0; transform: translateY(100%); padding-bottom: env(safe-area-inset-bottom); }
+        .tiroir.ouvert { transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .tiroir, .tiroir.ouvert { transition: opacity 150ms ease; transform: none; opacity: 0; }
+        .tiroir.ouvert { opacity: 1; }
+    }
+    .msg { animation: apparition 200ms var(--ease-out); }
+    @keyframes apparition { from { opacity: 0; transform: translateY(6px); } }
+    @media (prefers-reduced-motion: reduce) { .msg { animation: none; } }
+    .puce { transition: transform 120ms var(--ease-out), background-color 150ms ease; }
+    .puce:active { transform: scale(0.96); }
+    .tiroir input, .tiroir select { font-size: 16px; } /* évite le zoom iOS sur les champs */
+    .livre-carte.cible { box-shadow: 0 0 0 3px #e879f9; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cabinet jeu h-full flex flex-col gap-2.5">
+    <!-- HUD -->
+    <div class="hud shrink-0 px-3 sm:px-4 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-10 h-10 rounded-2xl bg-fuchsia-400 grid place-items-center text-white text-lg shrink-0"><i class="fas fa-clinic-medical"></i></div>
+            <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-white text-base sm:text-lg font-semibold truncate">{{ user.organization.name }}</span>
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-fuchsia-300/30 text-fuchsia-100">BÊTA</span>
+                </div>
+                <div class="text-fuchsia-200/80 text-xs sm:text-sm">{{ aujourdhui|capfirst }} · <span id="horloge"></span></div>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-2" id="hud-stats"></div>
+        <div class="bascule" role="group" aria-label="Choix de la vue">
+            <a href="{% url 'cabinet:dashboard' %}" class="text-fuchsia-100/80 hover:text-white"><i class="fas fa-th-large mr-1.5"></i>Vue simple</a>
+            <span class="bg-white text-gray-900 font-semibold"><i class="fas fa-door-open mr-1.5"></i>Vue cabinet</span>
+        </div>
+    </div>
+
+    <!-- Scène -->
+    <div class="scene-cadre flex-1 min-h-0" id="scene-cadre">
+        <div class="scene-defile" id="scene-defile">
+            <svg class="scene" id="scene" role="img" aria-label="Le cabinet en vue isométrique" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div id="badge-demo" class="hidden absolute top-3 left-3 text-xs font-semibold px-3 py-1.5 rounded-full bg-amber-400 text-amber-950 shadow"></div>
+        <nav class="dock absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 p-1.5 max-w-[calc(100%-1.5rem)] overflow-x-auto" id="dock" aria-label="Pièces du cabinet"></nav>
+    </div>
+</div>
+
+<!-- Panneau latéral -->
+<div class="voile" id="voile"></div>
+<aside class="tiroir" id="tiroir" role="dialog" aria-modal="true" aria-labelledby="tiroir-titre">
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+        <div id="tiroir-icone" class="w-10 h-10 rounded-full bg-fuchsia-100 text-fuchsia-600 grid place-items-center"></div>
+        <div class="flex-1 min-w-0">
+            <h2 id="tiroir-titre" class="font-semibold text-gray-900"></h2>
+            <p id="tiroir-sous-titre" class="text-xs text-gray-500"></p>
+        </div>
+        <button type="button" id="tiroir-fermer" class="w-9 h-9 rounded-full hover:bg-gray-100 text-gray-500" aria-label="Fermer"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- Secrétariat -->
+    <div id="panneau-secretariat" class="hidden flex-1 flex flex-col min-h-0">
+        <div class="px-5 py-3 flex flex-wrap gap-2 border-b border-gray-100">
+            <button type="button" class="puce text-xs px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700" data-agenda="0" data-jours="1">Aujourd'hui</button>
+            <button type="button" class="puce text-xs px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700" data-agenda="1" data-jours="1">Demain</button>
+            <button type="button" class="puce text-xs px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700" data-agenda="0" data-jours="7">7 prochains jours</button>
+            <button type="button" class="puce text-xs px-3 py-1.5 rounded-full bg-fuchsia-100 hover:bg-fuchsia-200 text-fuchsia-800" id="btn-nouvelle">+ Nouvelle consultation</button>
+            {% if peut_agenda %}<a href="{% url 'cabinet:agenda' %}" class="puce text-xs px-3 py-1.5 rounded-full text-gray-500 hover:text-gray-800">Agenda complet ↗</a>{% endif %}
+        </div>
+        <div id="conversation" class="flex-1 overflow-y-auto px-5 py-4 space-y-3 text-sm"></div>
+    </div>
+
+    <!-- Salle d'attente -->
+    <div id="panneau-attente" class="hidden flex-1 overflow-y-auto px-5 py-4 space-y-2 text-sm"></div>
+
+    <!-- Bibliothèque -->
+    <div id="panneau-biblio" class="hidden flex-1 overflow-y-auto px-5 py-4 space-y-2 text-sm"></div>
+</aside>
+
+{{ pieces|json_script:"pieces-data" }}
+{{ patients_json|json_script:"patients-data" }}
+{{ derniers_patients|json_script:"derniers-patients" }}
+{{ types|json_script:"types-data" }}
+{{ lieux|json_script:"lieux-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/searchable-select.js' %}"></script>
+<script>
+(function () {
+    const CSRF = '{{ csrf_token }}';
+    const URLS = {
+        attente: "{% url 'cabinet:cv_salle_attente' %}",
+        agenda: "{% url 'cabinet:cv_agenda' %}",
+        creer: "{% url 'cabinet:cv_creer_consultation' %}",
+        valeursPatient: "{% url 'cabinet:cv_valeurs_patient' %}",
+        statut: function (id) { return '/cabinet/consultations/' + id + '/statut-rapide/'; },
+        paiement: function (id) { return "{% url 'cabinet:cv_encaisser' 0 %}".replace('/0/', '/' + id + '/'); },
+        comptabilite: "{% url 'cabinet:comptabilite_dashboard' %}",
+        patients: "{% url 'cabinet:patients_list' %}",
+        bilans: "{% url 'bilans:liste' %}",
+        archives: "{% url 'cabinet:backup_page' %}",
+    };
+    const lire = function (id) { const e = document.getElementById(id); return e ? JSON.parse(e.textContent) : []; };
+    const PIECES = lire('pieces-data'), PATIENTS = lire('patients-data'), RECENTS = lire('derniers-patients');
+    const TYPES = lire('types-data'), LIEUX = lire('lieux-data');
+
+    // Mode démo (?demo=10) : remplit la salle d'attente de patients fictifs, rien n'est enregistré
+    const DEMO = Math.min(30, parseInt(new URLSearchParams(location.search).get('demo') || '0', 10) || 0);
+    if (DEMO && PIECES.attente) {
+        const patients = [];
+        for (let i = 0; i < DEMO; i++) {
+            const minutes = 9 * 60 + i * 45;
+            patients.push({ nom: 'Patient démo ' + (i + 1), heure: String(Math.floor(minutes / 60)).padStart(2, '0') + ':' + String(minutes % 60).padStart(2, '0'), enfant: i % 4 === 3, graine: 1000 + i * 7 });
+        }
+        PIECES.attente = Object.assign({}, PIECES.attente, { nb_attente: DEMO, patients: patients, prochain: patients[0].heure, prochain_patient: patients[0].nom });
+        const badge = document.getElementById('badge-demo');
+        badge.textContent = 'Mode démo : ' + DEMO + ' patients fictifs';
+        badge.classList.remove('hidden');
+    }
+
+    // ---------- utilitaires ----------
+    function el(tag, classe, texte) {
+        const e = document.createElement(tag);
+        if (classe) e.className = classe;
+        if (texte !== undefined && texte !== null) e.textContent = texte;
+        return e;
+    }
+    function dateISO(decalage) {
+        const d = new Date();
+        d.setDate(d.getDate() + (decalage || 0));
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    async function appel(url, options) {
+        try {
+            const r = await fetch(url, options);
+            try { return Object.assign({ statut: r.status }, await r.json()); }
+            catch (e) { return { ok: false, statut: r.status, erreur: 'Erreur du serveur (' + r.status + ').' }; }
+        } catch (e) { return { ok: false, erreur: 'Connexion perdue. Vérifiez votre réseau.' }; }
+    }
+    function postJSON(url, data) {
+        return appel(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF }, body: JSON.stringify(data) });
+    }
+    function pluriel(n, mot) { return n + ' ' + mot + (n > 1 ? 's' : ''); }
+
+    // =====================================================================================
+    // SCÈNE ISOMÉTRIQUE
+    // =====================================================================================
+    const NS = 'http://www.w3.org/2000/svg';
+    const TW = 30, TH = 15;              // demi-tuile (largeur, hauteur) : projection 2:1
+    const W = 16, D = 12, MUR = 70;      // taille du cabinet en tuiles, hauteur des murs du fond
+    const OX = D * TW + 40, OY = MUR + 74;
+    const VB_W = (W + D) * TW + 80, VB_H = (W + D) * TH + OY + 70;
+    function iso(gx, gy, z) { return [(gx - gy) * TW + OX, (gx + gy) * TH - (z || 0) + OY]; }
+    function pts(liste) { return liste.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '); }
+    function svg(tag, attrs, parent) {
+        const e = document.createElementNS(NS, tag);
+        for (const k in attrs) e.setAttribute(k, attrs[k]);
+        if (parent) parent.appendChild(e);
+        return e;
+    }
+    function titre(e, texte) { svg('title', {}, e).textContent = texte; return e; }
+    function teinte(hex, f) {
+        const n = parseInt(hex.slice(1), 16);
+        const c = [n >> 16, (n >> 8) & 255, n & 255].map(function (v) { return Math.max(0, Math.min(255, Math.round(v * f))); });
+        return '#' + c.map(function (v) { return v.toString(16).padStart(2, '0'); }).join('');
+    }
+
+    const heure = new Date().getHours();
+    const moment = heure < 7 || heure >= 20 ? 'nuit' : heure < 11 ? 'matin' : heure < 17 ? 'jour' : 'soir';
+    document.getElementById('scene-cadre').classList.add(moment);
+    const CIEL = { matin: '#ffd9b8', jour: '#bfe3ff', soir: '#ffb38a', nuit: '#2b2560' }[moment];
+
+    const scene = document.getElementById('scene');
+    scene.setAttribute('viewBox', '0 0 ' + VB_W + ' ' + VB_H);
+    const defs = svg('defs', {}, scene);
+    const filtre = svg('filter', { id: 'ombre', x: '-20%', y: '-30%', width: '140%', height: '170%' }, defs);
+    svg('feDropShadow', { dx: 0, dy: 3, stdDeviation: 3, 'flood-color': '#2e2541', 'flood-opacity': 0.22 }, filtre);
+    const calqueSols = svg('g', {}, scene), calqueObjets = svg('g', {}, scene), calqueEnseignes = svg('g', {}, scene);
+    const objets = [];   // éléments triés par profondeur (algorithme du peintre)
+    function ajouter(profondeur, dessin) { objets.push({ p: profondeur, dessin: dessin }); }
+
+    function boite(parent, gx, gy, w, d, h, couleur, o) {
+        o = o || {};
+        const z = o.z || 0;
+        const g = svg('g', o.attrs || {}, parent);
+        svg('polygon', { points: pts([iso(gx, gy + d, z), iso(gx + w, gy + d, z), iso(gx + w, gy + d, z + h), iso(gx, gy + d, z + h)]), fill: teinte(couleur, 0.86) }, g);
+        svg('polygon', { points: pts([iso(gx + w, gy, z), iso(gx + w, gy + d, z), iso(gx + w, gy + d, z + h), iso(gx + w, gy, z + h)]), fill: teinte(couleur, 0.72) }, g);
+        svg('polygon', { points: pts([iso(gx, gy, z + h), iso(gx + w, gy, z + h), iso(gx + w, gy + d, z + h), iso(gx, gy + d, z + h)]), fill: couleur }, g);
+        return g;
+    }
+    function meuble(salle, gx, gy, w, d, h, couleur, o) {
+        o = o || {};
+        ajouter(gx + w / 2 + gy + d / 2 + (o.decalage || 0), function (parent) {
+            const g = boite(parent, gx, gy, w, d, h, couleur, { z: o.z, attrs: salle ? { 'data-room': salle } : {} });
+            if (o.titre) titre(g, o.titre);
+            if (o.apres) o.apres(g);
+        });
+    }
+    function plante(salle, gx, gy) {
+        ajouter(gx + gy + 0.5, function (parent) {
+            const g = svg('g', { 'data-room': salle }, parent);
+            boite(g, gx - 0.25, gy - 0.25, 0.5, 0.5, 12, '#c2734a');
+            const p = iso(gx, gy, 12);
+            svg('circle', { cx: p[0], cy: p[1] - 10, r: 13, fill: '#5fa86a' }, g);
+            svg('circle', { cx: p[0] - 6, cy: p[1] - 15, r: 7, fill: '#7cc286' }, g);
+            svg('circle', { cx: p[0] + 7, cy: p[1] - 6, r: 6, fill: '#4e9459' }, g);
+        });
+    }
+
+    // ---------- personnages ----------
+    const PEAUX = ['#f6d3b3', '#eab88f', '#d39b6d', '#a8704a', '#7a4b2f'];
+    const CHEVEUX = ['#2b2118', '#4a3020', '#7a4a2a', '#c48a45', '#1d1d2b', '#8d8d99', '#a33b2b'];
+    const HAUTS = ['#60a5fa', '#f472b6', '#34d399', '#fbbf24', '#a78bfa', '#fb7185', '#2dd4bf', '#f97316'];
+    function hasard(graine, n, sel) { const x = Math.sin((graine + 1) * 9301 + sel * 49297) * 233280; return Math.floor((x - Math.floor(x)) * n); }
+    // Apparence stable par patient (tirée de son id, jamais déduite du prénom)
+    function apparence(graine) {
+        return {
+            peau: PEAUX[hasard(graine, PEAUX.length, 1)],
+            cheveux: CHEVEUX[hasard(graine, CHEVEUX.length, 2)],
+            coiffure: hasard(graine, 5, 3),
+            haut: HAUTS[hasard(graine, HAUTS.length, 4)],
+            bas: ['#334155', '#1e3a8a', '#57534e', '#3f3f46'][hasard(graine, 4, 5)],
+        };
+    }
+    function personnage(parent, x, y, a, o) {
+        o = o || {};
+        const s = o.echelle || 1;
+        const g = svg('g', { transform: 'translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ') scale(' + s + ')' }, parent);
+        if (o.attrs) for (const k in o.attrs) g.setAttribute(k, o.attrs[k]);
+        const corps = svg('g', { class: 'respire', style: o.delai ? 'animation-delay:' + o.delai + 's' : '' }, g);
+        if (!o.assis) {
+            svg('ellipse', { cx: 0, cy: 0, rx: 10, ry: 4, fill: 'rgba(30,20,50,0.18)' }, g);
+            svg('rect', { x: -6, y: -14, width: 5, height: 14, rx: 2, fill: a.bas }, corps);
+            svg('rect', { x: 1, y: -14, width: 5, height: 14, rx: 2, fill: a.bas }, corps);
+        } else {
+            svg('rect', { x: -7, y: -8, width: 14, height: 7, rx: 3, fill: a.bas }, corps);
+        }
+        const yb = o.assis ? -8 : -14;
+        svg('rect', { x: -9, y: yb - 16, width: 18, height: 18, rx: 6, fill: a.haut }, corps);
+        svg('rect', { x: -12, y: yb - 14, width: 4, height: 12, rx: 2, fill: teinte(a.haut, 0.85) }, corps);
+        svg('rect', { x: 8, y: yb - 14, width: 4, height: 12, rx: 2, fill: teinte(a.haut, 0.85) }, corps);
+        const yt = yb - 24;
+        if (a.coiffure === 1) svg('path', { d: 'M-9 ' + yt + ' q0 16 -2 18 h22 q-2 -2 -2 -18 z', fill: a.cheveux }, corps);
+        svg('circle', { cx: 0, cy: yt, r: 8.5, fill: a.peau }, corps);
+        svg('circle', { cx: -3, cy: yt + 1, r: 1, fill: '#2b2118' }, corps);
+        svg('circle', { cx: 3, cy: yt + 1, r: 1, fill: '#2b2118' }, corps);
+        svg('path', { d: 'M-2.5 ' + (yt + 4) + ' q2.5 2 5 0', stroke: '#9a4a3a', 'stroke-width': 1, fill: 'none', 'stroke-linecap': 'round' }, corps);
+        const c = a.cheveux;
+        if (a.coiffure === 0) svg('path', { d: 'M-9 ' + (yt - 1) + ' a9 9 0 0 1 18 0 q-4 -4 -9 -3 q-5 -1 -9 3 z', fill: c }, corps);
+        if (a.coiffure === 1) svg('path', { d: 'M-9 ' + (yt + 1) + ' a9 9 0 0 1 18 0 q-6 -6 -18 0 z', fill: c }, corps);
+        if (a.coiffure === 2) { svg('path', { d: 'M-9 ' + (yt - 1) + ' a9 9 0 0 1 18 0 z', fill: c }, corps); svg('circle', { cx: 0, cy: yt - 10, r: 4.5, fill: c }, corps); }
+        if (a.coiffure === 3) [[-6, -6], [-1, -9], [5, -7], [8, -2], [-8, -1]].forEach(function (b) { svg('circle', { cx: b[0], cy: yt + b[1], r: 4.2, fill: c }, corps); });
+        if (a.coiffure === 4) svg('path', { d: 'M-8.5 ' + (yt - 2) + ' a9 9 0 0 1 17 0 q-8.5 -2 -17 0 z', fill: c }, corps);
+        if (o.lunettes) { svg('circle', { cx: -3.2, cy: yt + 1, r: 2.6, fill: 'none', stroke: '#3f3a4d', 'stroke-width': 1 }, corps); svg('circle', { cx: 3.2, cy: yt + 1, r: 2.6, fill: 'none', stroke: '#3f3a4d', 'stroke-width': 1 }, corps); }
+        if (o.casque) {
+            svg('path', { d: 'M-9.5 ' + yt + ' a9.5 9.5 0 0 1 19 0', stroke: '#3f3a4d', 'stroke-width': 2, fill: 'none' }, corps);
+            svg('rect', { x: -11.5, y: yt - 2, width: 4, height: 6, rx: 2, fill: '#3f3a4d' }, corps);
+            svg('path', { d: 'M-9.5 ' + (yt + 3) + ' q2 5 7 5', stroke: '#3f3a4d', 'stroke-width': 1.2, fill: 'none' }, corps);
+        }
+        if (o.titre) titre(g, o.titre);
+        return g;
+    }
+
+    // ---------- salles ----------
+    const SALLES = {
+        biblio:   { r: [0, 0, 4, 5],    sol: '#efe4d2', nom: 'Bibliothèque',    couleur: '#f59e0b', icone: '' },
+        bureau:   { r: [4, 0, 10, 5],   sol: '#e8d2b0', nom: 'Bureau',          couleur: '#0ea5e9', icone: '', parquet: true },
+        redac:    { r: [10, 0, 13, 5],  sol: '#f1ebdf', nom: 'Rédaction',       couleur: '#10b981', icone: '' },
+        archives: { r: [13, 0, 16, 5],  sol: '#e3e6ec', nom: 'Archives',        couleur: '#64748b', icone: '' },
+        couloir:  { r: [0, 5, 16, 7],   sol: '#f3eee6', nom: null },
+        compta:   { r: [0, 7, 4, 12],   sol: '#e3eee3', nom: 'Comptabilité',    couleur: '#16a34a', icone: '' },
+        attente:  { r: [4, 7, 10, 12],  sol: '#efe5f8', nom: "Salle d'attente", couleur: '#8b5cf6', icone: '' },
+        accueil:  { r: [10, 7, 16, 12], sol: '#f4ece0', nom: 'Accueil',         couleur: '#ec4899', icone: '' },
+    };
+    const ACCES = {
+        biblio: PIECES.bibliotheque, bureau: PIECES.bureau, redac: PIECES.redaction, archives: PIECES.archives,
+        compta: PIECES.comptabilite, attente: PIECES.attente, accueil: PIECES.accueil,
+    };
+    const ouverte = function (salle) { return salle === 'couloir' || (ACCES[salle] !== null && ACCES[salle] !== undefined); };
+    const ACTIONS = {
+        accueil: { panneau: 'secretariat' }, attente: { panneau: 'attente' }, biblio: { panneau: 'biblio' },
+        bureau: { url: URLS.patients }, redac: { url: URLS.bilans }, compta: { url: URLS.comptabilite }, archives: { url: URLS.archives },
+    };
+
+    // Murs du fond (fenêtres aux couleurs du ciel) et sols
+    (function () {
+        svg('polygon', { points: pts([iso(0, 0, 0), iso(W, 0, 0), iso(W, 0, MUR), iso(0, 0, MUR)]), fill: '#f7f1fb' }, calqueSols);
+        svg('polygon', { points: pts([iso(0, 0, 0), iso(0, D, 0), iso(0, D, MUR), iso(0, 0, MUR)]), fill: '#e9def3' }, calqueSols);
+        svg('polygon', { points: pts([iso(0, 0, MUR), iso(W, 0, MUR), iso(W, -0.3, MUR), iso(-0.3, -0.3, MUR), iso(-0.3, D, MUR), iso(0, D, MUR)]), fill: '#5b4b75' }, calqueSols);
+        [[5.5, 7.2], [8, 9.6], [11, 12.4], [14, 15.2]].forEach(function (f) {
+            svg('polygon', { points: pts([iso(f[0], 0, 22), iso(f[1], 0, 22), iso(f[1], 0, 54), iso(f[0], 0, 54)]), fill: CIEL, stroke: '#ffffff', 'stroke-width': 2.5 }, calqueSols);
+        });
+        [[8.5, 10.5]].forEach(function (f) {
+            svg('polygon', { points: pts([iso(0, f[0], 22), iso(0, f[1], 22), iso(0, f[1], 54), iso(0, f[0], 54)]), fill: CIEL, stroke: '#ffffff', 'stroke-width': 2.5 }, calqueSols);
+        });
+        Object.keys(SALLES).forEach(function (cle) {
+            const s = SALLES[cle], r = s.r, ferme = !ouverte(cle);
+            const sol = svg('polygon', {
+                points: pts([iso(r[0], r[1]), iso(r[2], r[1]), iso(r[2], r[3]), iso(r[0], r[3])]),
+                fill: ferme ? '#d9d6de' : s.sol, class: 'sol' + (ferme ? ' ferme' : ''), 'data-room': cle,
+            }, calqueSols);
+            if (ferme) titre(sol, 'Accès non autorisé');
+            const lignes = svg('g', { stroke: s.parquet ? '#d6bd96' : 'rgba(80,60,110,0.08)', 'stroke-width': 1, 'pointer-events': 'none' }, calqueSols);
+            for (let x = r[0] + (s.parquet ? 0.5 : 1); x < r[2]; x += s.parquet ? 0.5 : 1) svg('line', { x1: iso(x, r[1])[0], y1: iso(x, r[1])[1], x2: iso(x, r[3])[0], y2: iso(x, r[3])[1] }, lignes);
+            if (!s.parquet) for (let y = r[1] + 1; y < r[3]; y++) svg('line', { x1: iso(r[0], y)[0], y1: iso(r[0], y)[1], x2: iso(r[2], y)[0], y2: iso(r[2], y)[1] }, lignes);
+        });
+        svg('polygon', { points: pts([iso(1, 5.6), iso(15, 5.6), iso(15, 6.4), iso(1, 6.4)]), fill: '#dccbe9', 'pointer-events': 'none' }, calqueSols);
+        svg('polygon', { points: pts([iso(5.5, 1.8), iso(9, 1.8), iso(9, 4.4), iso(5.5, 4.4)]), fill: '#c9a6e0', opacity: 0.55, 'pointer-events': 'none' }, calqueSols);
+        svg('polygon', { points: pts([iso(1.4, 1.6), iso(3.6, 1.6), iso(3.6, 4.4), iso(1.4, 4.4)]), fill: '#f5c97a', opacity: 0.45, 'pointer-events': 'none' }, calqueSols);
+        svg('polygon', { points: pts([iso(13, 12.1), iso(14.2, 12.1), iso(14.2, 12.9), iso(13, 12.9)]), fill: '#a78b6d', 'pointer-events': 'none' }, calqueSols);
+    })();
+
+    // Cloisons basses (vue « maquette »), en segments d'une tuile pour le tri de profondeur
+    const H_CLOISON = 12, EP = 0.14;
+    function cloisonX(gy, de, a, portes) {
+        for (let x = de; x < a; x++) if (portes.indexOf(x) === -1) meuble(null, x, gy - EP / 2, 1, EP, H_CLOISON, '#cbb8dc', { decalage: -0.3 });
+    }
+    function cloisonY(gx, de, a, portes) {
+        for (let y = de; y < a; y++) if (portes.indexOf(y) === -1) meuble(null, gx - EP / 2, y, EP, 1, H_CLOISON, '#cbb8dc', { decalage: -0.3 });
+    }
+    cloisonX(5, 0, 16, [2, 6, 11, 14]);
+    cloisonX(7, 0, 16, [2, 7, 12]);
+    cloisonY(4, 0, 5, []); cloisonY(10, 0, 5, []); cloisonY(13, 0, 5, []);
+    cloisonY(4, 7, 12, []); cloisonY(10, 7, 12, []);
+    cloisonX(12, 0, 16, [13]);
+    cloisonY(16, 0, 12, []);
+
+    // ---------- Bibliothèque : une grande bibliothèque murale, un livre par test ----------
+    const LIVRES = PIECES.bibliotheque ? PIECES.bibliotheque.livres : [];
+    const COULEURS_LIVRES = ['#c026d3', '#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed', '#0891b2', '#db2777'];
+    meuble('biblio', 0.3, 0.05, 3.45, 0.5, 62, '#8b6a52', { titre: 'Bibliothèque des tests', apres: function (g) {
+        // Trois étagères ; les tests occupent d'abord celle du milieu (à hauteur des yeux), puis celle du haut, puis du bas
+        const niveaux = [{ z: 22, h: 17 }, { z: 42, h: 17 }, { z: 3, h: 16 }];
+        [20, 40, 60].forEach(function (z) { svg('polygon', { points: pts([iso(0.3, 0.56, z), iso(3.75, 0.56, z), iso(3.75, 0.56, z + 2), iso(0.3, 0.56, z + 2)]), fill: '#6f523d' }, g); });
+        const PAR_NIVEAU = 7, LARGEUR = 0.42;
+        niveaux.forEach(function (niveau, n) {
+            for (let i = 0; i < PAR_NIVEAU; i++) {
+                const index = n * PAR_NIVEAU + i, a = 0.42 + i * (LARGEUR + 0.05), livre = LIVRES[index];
+                const coins = [iso(a, 0.57, niveau.z), iso(a + LARGEUR, 0.57, niveau.z), iso(a + LARGEUR, 0.57, niveau.z + niveau.h), iso(a, 0.57, niveau.z + niveau.h)];
+                if (!livre) {   // livres décoratifs
+                    const h = niveau.h - 2 - (i * 3 + n) % 5;
+                    svg('polygon', { points: pts([iso(a + 0.06, 0.57, niveau.z), iso(a + 0.18, 0.57, niveau.z), iso(a + 0.18, 0.57, niveau.z + h), iso(a + 0.06, 0.57, niveau.z + h)]), fill: ['#d6c4b0', '#c9b5a0', '#e2d4c3'][i % 3] }, g);
+                    svg('polygon', { points: pts([iso(a + 0.22, 0.57, niveau.z), iso(a + 0.34, 0.57, niveau.z), iso(a + 0.34, 0.57, niveau.z + h - 2), iso(a + 0.22, 0.57, niveau.z + h - 2)]), fill: ['#b9a58f', '#d8c8b5', '#c4ae96'][i % 3] }, g);
+                    continue;
+                }
+                const b = svg('g', { class: 'livre', 'data-room': 'biblio', 'data-livre': livre.cle }, g);
+                svg('polygon', { points: pts(coins), fill: COULEURS_LIVRES[index % COULEURS_LIVRES.length], stroke: '#ffffff', 'stroke-width': 0.8 }, b);
+                const c = iso(a + LARGEUR / 2, 0.57, niveau.z + niveau.h / 2);
+                const t = svg('text', { x: c[0], y: c[1] + 2.5, 'font-size': 6.5, 'font-weight': 700, fill: '#ffffff', 'text-anchor': 'middle', 'pointer-events': 'none' }, b);
+                t.textContent = livre.nom.slice(0, 4);
+                titre(b, livre.description + ' · ' + pluriel(livre.nb, 'passation'));
+            }
+        });
+    }});
+    meuble('biblio', 0.05, 1.3, 0.5, 2.6, 40, '#8b6a52', { titre: 'Étagère', apres: function (g) {
+        [14, 28].forEach(function (z) { svg('polygon', { points: pts([iso(0.56, 1.3, z), iso(0.56, 3.9, z), iso(0.56, 3.9, z + 2), iso(0.56, 1.3, z + 2)]), fill: '#6f523d' }, g); });
+        for (let i = 0; i < 8; i++) {
+            const a = 1.4 + i * 0.3;
+            svg('polygon', { points: pts([iso(0.57, a, 16), iso(0.57, a + 0.2, 16), iso(0.57, a + 0.2, 26 - i % 3), iso(0.57, a, 26 - i % 3)]), fill: ['#e2d4c3', '#c9b5a0', '#d6c4b0'][i % 3] }, g);
+        }
+    }});
+    meuble('biblio', 2.2, 2.9, 1.1, 1.0, 10, '#b45309', { titre: 'Fauteuil de lecture', apres: function (g) { boite(g, 2.2, 2.9, 1.1, 0.25, 22, '#92400e'); } });
+    ajouter(3.3 + 1.8, function (parent) {
+        const p = iso(3.3, 1.8, 0), g = svg('g', { 'data-room': 'biblio' }, parent);
+        svg('rect', { x: p[0] - 1.5, y: p[1] - 22, width: 3, height: 22, fill: '#6f523d' }, g);
+        svg('circle', { cx: p[0], cy: p[1] - 30, r: 10, fill: '#60a5fa' }, g);
+        svg('path', { d: 'M' + (p[0] - 7) + ' ' + (p[1] - 34) + ' q5 -3 8 2 q3 4 6 1 M' + (p[0] - 6) + ' ' + (p[1] - 25) + ' q4 2 7 -1', stroke: '#4ade80', 'stroke-width': 3, fill: 'none' }, g);
+        titre(g, 'Globe');
+    });
+
+    // ---------- Bureau ----------
+    ajouter(6.4 + 0.5, function (parent) {
+        personnage(parent, iso(6.4, 0.5)[0], iso(6.4, 0.5)[1], { peau: '#eab88f', cheveux: '#2b2118', coiffure: 4, haut: '#7c3aed', bas: '#1e293b' },
+            { lunettes: true, titre: 'Vous', attrs: { 'data-room': 'bureau' } });
+    });
+    meuble('bureau', 5.2, 0.9, 2.6, 1.0, 22, '#9c7552', { titre: 'Votre bureau', apres: function (g) {
+        boite(g, 6.0, 1.05, 0.9, 0.45, 2, '#3f3a4d', { z: 22 });
+        const e = iso(6.4, 1.1, 34);
+        svg('rect', { x: e[0] - 9, y: e[1] - 8, width: 18, height: 12, rx: 1.5, fill: '#93c5fd', class: 'ecran' }, g);
+        boite(g, 5.4, 1.1, 0.4, 0.3, 4, '#fbbf24', { z: 22 });
+    }});
+    meuble('bureau', 7.4, 3.1, 2.2, 0.9, 12, '#c084fc', { titre: 'Divan', apres: function (g) {
+        boite(g, 7.4, 3.1, 2.2, 0.25, 24, '#a855f7');
+        boite(g, 9.3, 3.1, 0.3, 0.9, 18, '#a855f7');
+    }});
+    meuble('bureau', 5.0, 3.0, 0.9, 0.9, 12, '#f0abfc', { titre: 'Fauteuil', apres: function (g) { boite(g, 5.0, 3.0, 0.9, 0.22, 22, '#e879f9'); } });
+    plante('bureau', 9.5, 0.5);
+
+    // ---------- Rédaction : une pile de dossiers par bilan en cours ----------
+    meuble('redac', 10.5, 1.0, 2.0, 1.0, 22, '#b9a27e', { titre: 'Table de rédaction', apres: function (g) {
+        const n = PIECES.redaction ? Math.min(PIECES.redaction.brouillons, 6) : 0;
+        for (let i = 0; i < n; i++) boite(g, 10.7 + (i % 3) * 0.5, 1.15 + Math.floor(i / 3) * 0.45, 0.4, 0.35, 3 + (i % 2) * 2, '#ffffff', { z: 22 });
+        const s = iso(12.2, 1.6, 22);
+        svg('rect', { x: s[0] - 10, y: s[1] - 2, width: 14, height: 2.5, rx: 1.2, fill: '#c026d3', transform: 'rotate(-28 ' + s[0] + ' ' + s[1] + ')' }, g);
+    }});
+    meuble('redac', 11.2, 2.4, 0.6, 0.6, 10, '#5b4e6e');
+    ajouter(12.6 + 0.6, function (parent) {
+        const p = iso(12.6, 0.6, 0), g = svg('g', { 'data-room': 'redac' }, parent);
+        svg('rect', { x: p[0] - 1, y: p[1] - 46, width: 2, height: 46, fill: '#3f3a4d' }, g);
+        svg('path', { d: 'M' + (p[0] - 9) + ' ' + (p[1] - 44) + ' h18 l-4 -9 h-10 z', fill: '#fde68a' }, g);
+    });
+
+    // ---------- Archives ----------
+    [0.25, 1.3].forEach(function (y) {
+        meuble('archives', 14.6, y, 1.1, 0.9, 44, '#9aa3b5', { titre: 'Armoire à archives', apres: function (g) {
+            [10, 24, 38].forEach(function (z) {
+                const a = iso(14.75, y + 0.9, z), b = iso(15.55, y + 0.9, z);
+                svg('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#7c8597', 'stroke-width': 1.5 }, g);
+            });
+        }});
+    });
+    meuble('archives', 13.4, 3.4, 0.8, 0.8, 14, '#c7b299', { titre: 'Cartons' });
+
+    // ---------- Couloir ----------
+    plante('couloir', 0.6, 6.0);
+    plante('couloir', 15.4, 6.0);
+    meuble('couloir', 9.2, 5.25, 1.4, 0.45, 9, '#a78b6d', { titre: 'Banc' });
+
+    // ---------- Comptabilité : le coffre signale les impayés ----------
+    meuble('compta', 0.6, 7.6, 2.2, 1.0, 22, '#9fb39f', { titre: 'Bureau comptable', apres: function (g) {
+        [[1.0, 7.9], [1.25, 8.1], [1.5, 7.85]].forEach(function (c) {
+            const p = iso(c[0], c[1], 22);
+            svg('ellipse', { cx: p[0], cy: p[1], rx: 4.5, ry: 2.2, fill: '#fbbf24', stroke: '#d97706', 'stroke-width': 0.8 }, g);
+        });
+        boite(g, 2.0, 7.75, 0.6, 0.45, 5, '#ffffff', { z: 22 });
+    }});
+    meuble('compta', 0.4, 10.4, 1.1, 1.1, 30, '#4b5563', { titre: 'Coffre', apres: function (g) {
+        const c = iso(1.0, 11.5, 15);
+        svg('circle', { cx: c[0], cy: c[1], r: 5, fill: 'none', stroke: '#d1d5db', 'stroke-width': 1.5 }, g);
+        const impayes = PIECES.comptabilite ? PIECES.comptabilite.impayes : 0;
+        if (impayes) {
+            const b = iso(0.95, 10.95, 48), alerte = svg('g', { class: 'alerte' }, g);
+            svg('circle', { cx: b[0], cy: b[1], r: 9, fill: '#ef4444', stroke: '#ffffff', 'stroke-width': 2 }, alerte);
+            const t = svg('text', { x: b[0], y: b[1] + 4, 'font-size': 11, 'font-weight': 700, fill: '#fff', 'text-anchor': 'middle' }, alerte);
+            t.textContent = impayes > 9 ? '9+' : impayes;
+            titre(alerte, pluriel(impayes, 'consultation') + ' non encaissée' + (impayes > 1 ? 's' : ''));
+        }
+    }});
+    plante('compta', 3.4, 11.4);
+
+    // ---------- Salle d'attente : 10 places (6 contre le fond, 4 contre le mur de gauche) ----------
+    const SIEGES = [];
+    for (let i = 0; i < 6; i++) SIEGES.push({ x: 4.7 + i * 0.88, y: 7.25, fond: true });
+    for (let j = 0; j < 4; j++) SIEGES.push({ x: 4.2, y: 8.35 + j * 0.92, fond: false });
+    const placesPatients = [];
+    SIEGES.forEach(function (s, i) {
+        meuble('attente', s.x, s.y, 0.76, 0.76, 11, '#c4b5fd', { apres: function (g) {
+            if (s.fond) boite(g, s.x, s.y, 0.76, 0.18, 24, '#a78bfa');
+            else boite(g, s.x, s.y, 0.18, 0.76, 24, '#a78bfa');
+        }});
+        ajouter(s.x + 0.38 + s.y + 0.38 + 0.02, function (parent) { placesPatients[i] = svg('g', {}, parent); });
+    });
+    meuble('attente', 6.3, 9.4, 2.2, 1.1, 9, '#d6c2a8', { titre: 'Table basse', apres: function (g) {
+        boite(g, 6.6, 9.6, 0.6, 0.45, 1.5, '#f472b6', { z: 9 });
+        boite(g, 7.5, 9.75, 0.55, 0.4, 1.5, '#38bdf8', { z: 9 });
+    }});
+    meuble('attente', 9.4, 11.3, 0.5, 0.5, 34, '#e0f2fe', { titre: "Fontaine à eau", apres: function (g) {
+        const p = iso(9.65, 11.55, 34);
+        svg('ellipse', { cx: p[0], cy: p[1] - 6, rx: 6, ry: 9, fill: '#7dd3fc', opacity: 0.85 }, g);
+    }});
+    plante('attente', 9.6, 8.7);
+
+    // ---------- Accueil : la secrétaire derrière son comptoir ----------
+    ajouter(12.6 + 7.9, function (parent) {
+        const p = iso(12.6, 7.9);
+        personnage(parent, p[0], p[1], { peau: '#d39b6d', cheveux: '#3a2418', coiffure: 2, haut: '#e879f9', bas: '#334155' },
+            { casque: true, titre: 'Votre secrétaire : cliquez pour lui parler', attrs: { 'data-room': 'accueil' } });
+        const bulle = svg('g', { class: 'bulle', id: 'bulle-secretaire' }, parent);
+        svg('rect', { x: p[0] - 4, y: p[1] - 78, width: 118, height: 24, rx: 12, fill: '#ffffff', stroke: '#f0abfc', 'stroke-width': 1.5 }, bulle);
+        svg('path', { d: 'M' + (p[0] + 4) + ' ' + (p[1] - 55) + ' l-2 8 l9 -8 z', fill: '#ffffff' }, bulle);
+        const t = svg('text', { x: p[0] + 55, y: p[1] - 62, 'font-size': 10.5, 'font-weight': 600, fill: '#3b2f52', 'text-anchor': 'middle' }, bulle);
+        t.textContent = heure < 18 ? 'Bonjour ! Je vous aide ?' : 'Bonsoir ! Je vous aide ?';
+    });
+    meuble('accueil', 11.2, 8.5, 3.3, 0.7, 26, '#c9b39a', { titre: "Comptoir d'accueil", apres: function (g) {
+        boite(g, 11.2, 8.5, 3.3, 0.7, 3, '#e9dccb', { z: 26 });
+        boite(g, 12.3, 8.55, 0.8, 0.2, 14, '#3f3a4d', { z: 26 });
+        const e = iso(12.7, 8.55, 34);
+        svg('rect', { x: e[0] - 8, y: e[1] - 6, width: 16, height: 9, rx: 1, fill: '#a5f3fc', class: 'ecran' }, g);
+    }});
+    meuble('accueil', 14.5, 8.5, 0.7, 2.0, 26, '#c9b39a', { apres: function (g) { boite(g, 14.5, 8.5, 0.7, 2.0, 3, '#e9dccb', { z: 26 }); } });
+    meuble('accueil', 11.0, 10.6, 1.6, 0.6, 10, '#f9a8d4', { titre: "Banquette d'accueil", apres: function (g) { boite(g, 11.0, 10.6, 1.6, 0.18, 20, '#f472b6'); } });
+    plante('accueil', 15.5, 7.5);
+    plante('accueil', 15.4, 11.4);
+
+    // Dessin trié par profondeur, puis pièces fermées grisées
+    objets.sort(function (a, b) { return a.p - b.p; }).forEach(function (o) { o.dessin(calqueObjets); });
+    Object.keys(SALLES).forEach(function (cle) {
+        if (ouverte(cle)) return;
+        calqueObjets.querySelectorAll('[data-room="' + cle + '"]').forEach(function (e) {
+            e.setAttribute('class', ((e.getAttribute('class') || '') + ' ferme').trim());
+            e.style.filter = 'grayscale(1)'; e.style.opacity = '0.55';
+        });
+    });
+
+    // Patients assis : le premier attendu porte un halo et l'étiquette « Prochain »,
+    // au-delà de 10 places un badge « +N » sur l'enseigne de la salle
+    function dessinerPatients(patients) {
+        placesPatients.forEach(function (g) { if (g) g.textContent = ''; });
+        // « Prochain » = le patient que le serveur désigne comme prochain (pas forcément le premier assis :
+        // ceux dont l'heure est passée restent assis tant que la séance n'est pas marquée terminée)
+        const resume = PIECES.attente || {};
+        const indexProchain = (patients || []).findIndex(function (pt) { return pt.heure === resume.prochain && pt.nom === resume.prochain_patient; });
+        (patients || []).slice(0, SIEGES.length).forEach(function (pt, i) {
+            const s = SIEGES[i], parent = placesPatients[i];
+            const p = iso(s.x + 0.38, s.y + 0.38, 11);
+            if (i === indexProchain) svg('ellipse', { cx: p[0], cy: p[1] + 2, rx: 17, ry: 8, fill: '#fde047', opacity: 0.7, class: 'halo' }, parent);
+            personnage(parent, p[0], p[1], apparence(pt.graine), {
+                assis: true, echelle: pt.enfant ? 0.78 : 1, delai: (i * 0.37).toFixed(2),
+                titre: pt.nom + ' · ' + pt.heure, attrs: { 'data-room': 'attente' },
+            });
+            if (i === indexProchain) {
+                const tag = svg('g', { 'pointer-events': 'none' }, parent), largeur = 74;
+                svg('rect', { x: p[0] - largeur / 2, y: p[1] - 64, width: largeur, height: 16, rx: 8, fill: '#fde047', stroke: '#ffffff', 'stroke-width': 1.5 }, tag);
+                const t = svg('text', { x: p[0], y: p[1] - 53, 'font-size': 9, 'font-weight': 700, fill: '#713f12', 'text-anchor': 'middle' }, tag);
+                t.textContent = 'Prochain · ' + pt.heure;
+            }
+        });
+        const ens = enseignes.attente;
+        if (!ens) return;
+        const ancien = ens.carte.querySelector('.badge-file');
+        if (ancien) ancien.remove();
+        const reste = (patients || []).length - SIEGES.length;
+        if (reste > 0) {
+            const g = svg('g', { class: 'badge-file' }, ens.carte), x = ens.xg + ens.largeur - 2, y = ens.yh + 2;
+            svg('circle', { cx: x, cy: y, r: 12, fill: '#8b5cf6', stroke: '#ffffff', 'stroke-width': 2.5 }, g);
+            const t = svg('text', { x: x, y: y + 4, 'font-size': 10.5, 'font-weight': 700, fill: '#ffffff', 'text-anchor': 'middle' }, g);
+            t.textContent = '+' + reste;
+            titre(g, pluriel(reste, 'autre patient') + ' attendu' + (reste > 1 ? 's' : '') + " plus tard (10 places assises)");
+        }
+    }
+
+    // ---------- Enseignes : pastille colorée + carte, reliées au sol par une tige ----------
+    const enseignes = {};
+    function infoSalle(cle) {
+        const p = ACCES[cle];
+        if (!ouverte(cle)) return 'Accès fermé';
+        if (cle === 'attente') return p.nb_attente ? pluriel(p.nb_attente, 'patient') + ' attendu' + (p.nb_attente > 1 ? 's' : '') : "Personne aujourd'hui";
+        if (cle === 'accueil') return p.prochaine ? 'Prochain : ' + p.prochaine.replace("aujourd'hui à ", '') : 'Secrétariat';
+        if (cle === 'bureau') return pluriel(p.nb_patients, 'patient');
+        if (cle === 'biblio') return pluriel(p.livres.length, 'test');
+        if (cle === 'redac') return p.brouillons ? pluriel(p.brouillons, 'bilan') + ' en cours' : 'Bilans';
+        if (cle === 'compta') return p.impayes ? pluriel(p.impayes, 'impayé') : 'Tout est réglé';
+        if (cle === 'archives') return 'Sauvegarde';
+        return '';
+    }
+    function enseigne(cle) {
+        const s = SALLES[cle], r = s.r, ferme = !ouverte(cle), info = infoSalle(cle);
+        const cx = (r[0] + r[2]) / 2;
+        // Rangée du fond : au-dessus du mur ; rangée avant : plaque devant la façade
+        const fond = r[1] === 0;
+        const ancre = fond ? iso(cx, 0, MUR) : iso(cle === 'accueil' ? 11.6 : cx, 12.15);
+        const largeur = Math.max(s.nom.length * 6.9, info.length * 5.5) + 50, hauteur = 38;
+        const xg = ancre[0] - largeur / 2, yh = fond ? ancre[1] - 20 - hauteur : ancre[1] + 16;
+        const couleur = ferme ? '#9ca3af' : s.couleur;
+        const g = svg('g', { class: 'enseigne' + (ferme ? ' ferme' : ''), 'data-room': cle }, calqueEnseignes);
+        svg('line', { x1: ancre[0], y1: fond ? yh + hauteur : yh, x2: ancre[0], y2: ancre[1], stroke: couleur, 'stroke-width': 2, 'stroke-dasharray': fond ? '' : '2 3' }, g);
+        svg('circle', { cx: ancre[0], cy: ancre[1], r: 3.5, fill: couleur, stroke: '#ffffff', 'stroke-width': 1.5 }, g);
+        const carte = svg('g', { class: 'enseigne-carte' }, g);
+        svg('rect', { x: xg, y: yh, width: largeur, height: hauteur, rx: hauteur / 2, fill: '#ffffff', filter: 'url(#ombre)' }, carte);
+        svg('circle', { cx: xg + 19, cy: yh + hauteur / 2, r: 13, fill: couleur }, carte);
+        const ic = svg('text', { x: xg + 19, y: yh + hauteur / 2 + 4.5, 'font-size': 12, fill: '#ffffff', 'text-anchor': 'middle', class: 'icone-fa' }, carte);
+        ic.textContent = ferme ? '' : s.icone;
+        const t1 = svg('text', { x: xg + 39, y: yh + 16, 'font-size': 12, 'font-weight': 700, fill: ferme ? '#9ca3af' : '#2e2541' }, carte);
+        t1.textContent = s.nom;
+        const t2 = svg('text', { x: xg + 39, y: yh + 29, 'font-size': 9.5, 'font-weight': 600, fill: couleur }, carte);
+        t2.textContent = info;
+        enseignes[cle] = { g: g, info: t2, carte: carte, xg: xg, yh: yh, largeur: largeur };
+    }
+    ['biblio', 'bureau', 'redac', 'archives', 'compta', 'attente', 'accueil'].forEach(enseigne);
+
+    // ---------- interactions ----------
+    let survolee = null;
+    function survoler(cle) {
+        if (cle === survolee) return;
+        if (survolee) {
+            scene.querySelectorAll('.sol[data-room="' + survolee + '"]').forEach(function (e) { e.classList.remove('survol'); });
+            if (enseignes[survolee]) enseignes[survolee].g.classList.remove('survol');
+            if (survolee === 'accueil') document.getElementById('bulle-secretaire').classList.remove('visible');
+        }
+        survolee = cle && ouverte(cle) && cle !== 'couloir' ? cle : null;
+        if (survolee) {
+            scene.querySelectorAll('.sol[data-room="' + survolee + '"]').forEach(function (e) { e.classList.add('survol'); });
+            if (enseignes[survolee]) enseignes[survolee].g.classList.add('survol');
+            if (survolee === 'accueil') document.getElementById('bulle-secretaire').classList.add('visible');
+        }
+    }
+    scene.addEventListener('pointerover', function (e) {
+        if (e.pointerType !== 'mouse') return;
+        const cible = e.target.closest('[data-room]');
+        survoler(cible ? cible.getAttribute('data-room') : null);
+    });
+    scene.addEventListener('pointerleave', function () { survoler(null); });
+    function entrer(cle, source, option) {
+        if (!ouverte(cle) || !ACTIONS[cle]) return;
+        if (ACTIONS[cle].panneau) ouvrir(ACTIONS[cle].panneau, source, option);
+        else window.location.href = ACTIONS[cle].url;
+    }
+    scene.addEventListener('click', function (e) {
+        const livre = e.target.closest('[data-livre]');
+        if (livre) { entrer('biblio', null, livre.getAttribute('data-livre')); return; }
+        const cible = e.target.closest('[data-room]');
+        if (cible) entrer(cible.getAttribute('data-room'), null);
+    });
+
+    // Dock + barre de jeu
+    const ICONES = { accueil: 'fa-headset', attente: 'fa-couch', bureau: 'fa-user-md', biblio: 'fa-book', redac: 'fa-feather-alt', compta: 'fa-coins', archives: 'fa-archive' };
+    const NOMS_COURTS = { accueil: 'Accueil', attente: 'Attente', bureau: 'Bureau', biblio: 'Tests', redac: 'Bilans', compta: 'Compta', archives: 'Archives' };
+    const dock = document.getElementById('dock');
+    ['accueil', 'attente', 'bureau', 'biblio', 'redac', 'compta', 'archives'].forEach(function (cle) {
+        const ok = ouverte(cle);
+        const b = el('button', 'dock-bouton');
+        b.type = 'button';
+        b.disabled = !ok;
+        b.title = SALLES[cle].nom + (ok ? '' : ' (accès fermé)');
+        b.innerHTML = '<i class="fas ' + (ok ? ICONES[cle] : 'fa-lock') + '" style="color:' + (ok ? SALLES[cle].couleur : '#9ca3af') + '"></i>';
+        b.appendChild(el('span', '', NOMS_COURTS[cle]));
+        b.addEventListener('click', function () { entrer(cle, b); });
+        dock.appendChild(b);
+    });
+    function majHud() {
+        const stats = document.getElementById('hud-stats');
+        stats.textContent = '';
+        function stat(icone, couleur, texte, cle, aide) {
+            const b = el('button', 'hud-stat');
+            b.type = 'button';
+            b.title = aide;
+            b.innerHTML = '<span class="pastille" style="background:' + couleur + '"><i class="fas ' + icone + '"></i></span>';
+            b.appendChild(document.createTextNode(texte));
+            b.addEventListener('click', function () { entrer(cle, b); });
+            stats.appendChild(b);
+        }
+        if (PIECES.attente) stat('fa-user-friends', '#8b5cf6', String(PIECES.attente.nb_attente), 'attente', "Patients attendus aujourd'hui");
+        if (PIECES.accueil && PIECES.accueil.prochaine) stat('fa-clock', '#0ea5e9', PIECES.accueil.prochaine.replace("aujourd'hui à ", ''), 'accueil', 'Prochain rendez-vous');
+        if (PIECES.comptabilite) stat('fa-coins', PIECES.comptabilite.impayes ? '#ef4444' : '#16a34a', String(PIECES.comptabilite.impayes), 'compta', 'Consultations non encaissées');
+        if (PIECES.redaction) stat('fa-feather-alt', '#10b981', String(PIECES.redaction.brouillons), 'redac', 'Bilans en cours');
+    }
+    function horloge() {
+        const d = new Date();
+        document.getElementById('horloge').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+    horloge();
+    setInterval(horloge, 30000);
+    majHud();
+
+    // Sur téléphone, la scène défile : on centre sur l'accueil et la salle d'attente
+    const defile = document.getElementById('scene-defile');
+    requestAnimationFrame(function () { defile.scrollLeft = (defile.scrollWidth - defile.clientWidth) * 0.5; defile.scrollTop = defile.scrollHeight; });
+
+    // =====================================================================================
+    // PANNEAU LATÉRAL
+    // =====================================================================================
+    const voile = document.getElementById('voile'), tiroir = document.getElementById('tiroir');
+    let panneauOuvert = null, rafraichissement = null, declencheur = null;
+    const PANNEAUX = {
+        secretariat: { titre: 'Secrétariat', sous: 'Agenda, créneaux libres, nouvelles consultations', icone: 'fa-headset' },
+        attente: { titre: "Salle d'attente", sous: "Les consultations d'aujourd'hui", icone: 'fa-couch' },
+        biblio: { titre: 'Bibliothèque des tests', sous: 'Tous vos tests psychométriques', icone: 'fa-book' },
+    };
+    function ouvrir(nom, source, option) {
+        panneauOuvert = nom;
+        declencheur = source || null;
+        const p = PANNEAUX[nom];
+        document.getElementById('tiroir-titre').textContent = p.titre;
+        document.getElementById('tiroir-sous-titre').textContent = p.sous;
+        document.getElementById('tiroir-icone').innerHTML = '<i class="fas ' + p.icone + '"></i>';
+        ['secretariat', 'attente', 'biblio'].forEach(function (n) { document.getElementById('panneau-' + n).classList.toggle('hidden', n !== nom); });
+        voile.classList.add('ouvert');
+        tiroir.classList.add('ouvert');
+        if (nom === 'attente') {
+            chargerSalle();
+            rafraichissement = setInterval(chargerSalle, 60000);
+        } else if (nom === 'biblio') {
+            afficherBibliotheque(option);
+        } else {
+            accueillir();
+        }
+    }
+    function fermer() {
+        panneauOuvert = null;
+        clearInterval(rafraichissement);
+        voile.classList.remove('ouvert');
+        tiroir.classList.remove('ouvert');
+        if (declencheur) declencheur.focus({ preventScroll: true });
+    }
+    voile.addEventListener('click', fermer);
+    document.getElementById('tiroir-fermer').addEventListener('click', fermer);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panneauOuvert) fermer(); });
+
+    // ---------- bibliothèque : tous les tests, quel que soit leur nombre ----------
+    function afficherBibliotheque(cible) {
+        const zone = document.getElementById('panneau-biblio');
+        zone.textContent = '';
+        LIVRES.forEach(function (livre, i) {
+            const carteLivre = el('div', 'livre-carte msg flex items-stretch gap-3 rounded-xl border border-gray-100 bg-white p-3' + (livre.cle === cible ? ' cible' : ''));
+            const tranche = el('div', 'w-3 rounded-md shrink-0');
+            tranche.style.background = COULEURS_LIVRES[i % COULEURS_LIVRES.length];
+            carteLivre.appendChild(tranche);
+            const texte = el('div', 'flex-1 min-w-0');
+            texte.appendChild(el('div', 'font-semibold text-gray-900', livre.nom));
+            texte.appendChild(el('div', 'text-xs text-gray-500', livre.description));
+            texte.appendChild(el('div', 'text-xs text-gray-400 mt-1', pluriel(livre.nb, 'passation')));
+            const actions = el('div', 'flex flex-wrap gap-1.5 mt-2');
+            const ouvrirLien = el('a', 'puce text-xs px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700', 'Voir les passations');
+            ouvrirLien.href = livre.url;
+            const nouveau = el('a', 'puce text-xs px-2.5 py-1 rounded-lg bg-fuchsia-100 hover:bg-fuchsia-200 text-fuchsia-800', '+ Nouveau test');
+            nouveau.href = livre.url_nouveau;
+            actions.appendChild(ouvrirLien); actions.appendChild(nouveau);
+            texte.appendChild(actions);
+            carteLivre.appendChild(texte);
+            zone.appendChild(carteLivre);
+            if (livre.cle === cible) setTimeout(function () { carteLivre.scrollIntoView({ block: 'nearest' }); }, 320);
+        });
+    }
+
+    // ---------- salle d'attente ----------
+    function majPieceAttente(resume) {
+        if (!resume || !PIECES.attente || DEMO) return;
+        PIECES.attente = resume;
+        ACCES.attente = resume;
+        dessinerPatients(resume.patients);
+        enseignes.attente.info.textContent = infoSalle('attente');
+        majHud();
+    }
+    const BADGES = {
+        planifie: 'bg-blue-50 text-blue-700', termine: 'bg-green-50 text-green-700',
+        absent: 'bg-gray-100 text-gray-600', reporte: 'bg-amber-50 text-amber-700',
+    };
+    async function chargerSalle() {
+        const zone = document.getElementById('panneau-attente');
+        if (!zone.childElementCount) zone.appendChild(el('p', 'text-gray-400', 'Chargement...'));
+        const j = await appel(URLS.attente);
+        if (!j.ok) { zone.textContent = ''; zone.appendChild(el('p', 'text-red-600', j.erreur)); return; }
+        majPieceAttente(j.resume);
+        zone.textContent = '';
+        if (DEMO) zone.appendChild(el('p', 'text-xs rounded-lg bg-amber-50 text-amber-800 px-3 py-2', "Mode démo : les patients assis sont fictifs, la liste ci-dessous montre vos vraies consultations."));
+        if (!j.consultations.length) {
+            const vide = el('div', 'text-center py-10 text-gray-400');
+            vide.appendChild(el('i', 'fas fa-couch text-3xl mb-2 block text-gray-300'));
+            vide.appendChild(el('p', '', "Aucune consultation aujourd'hui."));
+            zone.appendChild(vide);
+            return;
+        }
+        j.consultations.forEach(function (c) { zone.appendChild(ligneSalle(c)); });
+    }
+    function ligneSalle(c) {
+        const ligne = el('div', 'msg rounded-xl border border-gray-100 p-3 ' + (c.statut === 'planifie' ? 'bg-white' : 'bg-gray-50'));
+        const haut = el('div', 'flex items-center gap-3');
+        haut.appendChild(el('div', 'text-base font-bold text-gray-900 w-12 shrink-0', c.heure));
+        const qui = el('div', 'flex-1 min-w-0');
+        const nom = el('a', 'font-semibold text-gray-900 hover:underline truncate block', c.patient);
+        nom.href = c.patient_url;
+        qui.appendChild(nom);
+        qui.appendChild(el('div', 'text-xs text-gray-500', c.type + ' · ' + c.lieu + ' · ' + c.heure + '–' + c.fin));
+        haut.appendChild(qui);
+        ligne.appendChild(haut);
+
+        const badges = el('div', 'flex flex-wrap gap-1.5 mt-2');
+        badges.style.paddingLeft = '3.75rem';
+        badges.appendChild(el('span', 'text-[11px] px-2 py-0.5 rounded-full ' + (BADGES[c.statut] || 'bg-gray-100'), c.statut_display));
+        if (c.en_retard) badges.appendChild(el('span', 'text-[11px] px-2 py-0.5 rounded-full bg-red-50 text-red-700', 'En retard'));
+        badges.appendChild(el('span', 'text-[11px] px-2 py-0.5 rounded-full ' + (c.paye ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'), c.paye ? 'Payé' : 'Non payé · ' + c.tarif + ' DHS'));
+        ligne.appendChild(badges);
+
+        const actions = el('div', 'flex flex-wrap gap-1.5 mt-2');
+        actions.style.paddingLeft = '3.75rem';
+        function bouton(libelle, icone, classe, action) {
+            const b = el('button', 'puce text-xs px-2.5 py-1 rounded-lg ' + classe);
+            b.type = 'button';
+            b.innerHTML = '<i class="fas ' + icone + ' mr-1"></i>';
+            b.appendChild(document.createTextNode(libelle));
+            b.addEventListener('click', async function () { b.disabled = true; await action(); chargerSalle(); });
+            actions.appendChild(b);
+        }
+        const formulaire = { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' };
+        if (c.statut === 'planifie') {
+            bouton('Terminée', 'fa-check', 'bg-green-600 hover:bg-green-700 text-white', function () {
+                return appel(URLS.statut(c.id), { method: 'POST', headers: formulaire, body: 'statut=termine' });
+            });
+            bouton('Absent', 'fa-user-slash', 'bg-gray-100 hover:bg-gray-200 text-gray-700', function () {
+                return appel(URLS.statut(c.id), { method: 'POST', headers: formulaire, body: 'statut=absent' });
+            });
+        }
+        if (!c.paye) {
+            bouton('Encaisser', 'fa-coins', 'bg-amber-100 hover:bg-amber-200 text-amber-800', function () { return postJSON(URLS.paiement(c.id), {}); });
+        }
+        if (c.visio && c.statut === 'planifie') {
+            const visio = el('a', 'puce text-xs px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700');
+            visio.href = c.visio; visio.target = '_blank'; visio.rel = 'noopener';
+            visio.innerHTML = '<i class="fas fa-video mr-1"></i>Visio';
+            actions.appendChild(visio);
+        }
+        const fiche = el('a', 'puce text-xs px-2.5 py-1 rounded-lg text-gray-500 hover:text-gray-800', 'Détail');
+        fiche.href = c.url;
+        actions.appendChild(fiche);
+        ligne.appendChild(actions);
+        return ligne;
+    }
+
+    // ---------- secrétariat ----------
+    const conversation = document.getElementById('conversation');
+    function defiler() { conversation.scrollTop = conversation.scrollHeight; }
+    function bulleSecretaire(texte, classe) {
+        const b = el('div', 'msg flex gap-2 items-start');
+        const avatar = el('div', 'w-7 h-7 shrink-0 rounded-full bg-fuchsia-100 text-fuchsia-600 grid place-items-center text-xs');
+        avatar.innerHTML = '<i class="fas fa-headset"></i>';
+        b.appendChild(avatar);
+        b.appendChild(el('div', 'rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%] ' + (classe || 'bg-gray-100 text-gray-800'), texte));
+        conversation.appendChild(b);
+        defiler();
+        return b;
+    }
+    function bulleMoi(texte) {
+        const b = el('div', 'msg flex justify-end');
+        b.appendChild(el('div', 'rounded-2xl rounded-tr-sm px-3 py-2 max-w-[85%] bg-fuchsia-600 text-white', texte));
+        conversation.appendChild(b);
+        defiler();
+    }
+    function carte(contenu) {
+        const c = el('div', 'msg ml-9 rounded-xl border border-gray-200 bg-white p-3');
+        c.appendChild(contenu);
+        conversation.appendChild(c);
+        defiler();
+        return c;
+    }
+    let accueilli = false;
+    function accueillir() {
+        if (accueilli) return;
+        accueilli = true;
+        bulleSecretaire('Bonjour ! Je peux vous montrer votre agenda, trouver un créneau libre ou préparer une consultation.');
+    }
+    async function montrerAgenda(debut, jours) {
+        const attente = bulleSecretaire('Je regarde...');
+        const j = await appel(URLS.agenda + '?debut=' + debut + '&jours=' + jours);
+        attente.remove();
+        if (!j.ok) { bulleSecretaire(j.erreur, 'bg-red-50 text-red-700'); return; }
+        afficherAgenda(j.jours);
+    }
+    function afficherAgenda(jours) {
+        const contenu = el('div', 'space-y-3');
+        jours.forEach(function (jour) {
+            const bloc = el('div');
+            bloc.appendChild(el('div', 'text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1', jour.titre));
+            if (!jour.consultations.length && !jour.indisponibilites.length) bloc.appendChild(el('div', 'text-gray-400 text-xs', 'Aucun rendez-vous.'));
+            jour.indisponibilites.forEach(function (i) {
+                bloc.appendChild(el('div', 'text-xs rounded-lg bg-violet-50 text-violet-700 px-2 py-1 mb-1', i.debut + '–' + i.fin + ' · ' + i.type + ' : ' + i.titre));
+            });
+            jour.consultations.forEach(function (c) {
+                const a = el('a', 'flex gap-2 items-baseline rounded-lg px-2 py-1 hover:bg-gray-50');
+                a.href = c.url;
+                a.appendChild(el('span', 'font-semibold text-gray-900 w-24 shrink-0', c.heure + '–' + c.fin));
+                a.appendChild(el('span', 'text-gray-700 truncate', c.patient));
+                a.appendChild(el('span', 'text-[11px] text-gray-400 ml-auto shrink-0', c.statut === 'planifie' ? c.lieu : c.statut_display));
+                bloc.appendChild(a);
+            });
+            if (jour.libres.length) {
+                const libres = el('div', 'flex flex-wrap items-center gap-1 mt-1');
+                libres.appendChild(el('span', 'text-[11px] text-gray-400 mr-1', 'Libre :'));
+                jour.libres.forEach(function (h) {
+                    const p = el('button', 'puce text-[11px] px-2 py-0.5 rounded-full bg-green-50 hover:bg-green-100 text-green-700', h);
+                    p.type = 'button';
+                    p.title = 'Préparer une consultation à ' + h;
+                    p.addEventListener('click', function () { carteConsultation({ date: jour.date, heure: h }); });
+                    libres.appendChild(p);
+                });
+                bloc.appendChild(libres);
+            }
+            contenu.appendChild(bloc);
+        });
+        carte(contenu);
+    }
+    document.querySelectorAll('[data-agenda]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            bulleMoi(b.textContent);
+            montrerAgenda(dateISO(parseInt(b.dataset.agenda, 10)), b.dataset.jours);
+        });
+    });
+    function champ(libelle, controle) {
+        const l = el('label', 'block');
+        l.appendChild(el('span', 'block text-[11px] font-medium text-gray-500 mb-0.5', libelle));
+        controle.className = (controle.className ? controle.className + ' ' : '') + 'w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent';
+        l.appendChild(controle);
+        return l;
+    }
+    function select(options, valeur) {
+        const s = el('select');
+        options.forEach(function (o) {
+            const opt = el('option', '', o[1]);
+            opt.value = o[0];
+            if (String(o[0]) === String(valeur)) opt.selected = true;
+            s.appendChild(opt);
+        });
+        return s;
+    }
+    function carteConsultation(prop) {
+        prop = prop || {};
+        const form = el('form', 'space-y-2');
+        form.appendChild(el('div', 'font-semibold text-gray-900 text-sm', 'Nouvelle consultation'));
+        const patient = select([['', '-- Choisir un patient --']].concat(PATIENTS.map(function (p) { return [p.id, p.nom]; })), prop.patient_id || '');
+        patient.dataset.searchable = '1';
+        patient.dataset.placeholder = 'Rechercher un patient...';
+        patient.dataset.recentIds = RECENTS.join(',');
+        form.appendChild(champ('Patient', patient));
+
+        const ligne1 = el('div', 'grid grid-cols-2 gap-2');
+        const date = el('input'); date.type = 'date'; date.value = prop.date || dateISO(0); date.required = true;
+        const heureChamp = el('input'); heureChamp.type = 'time'; heureChamp.value = prop.heure || ''; heureChamp.required = true; heureChamp.step = 300;
+        ligne1.appendChild(champ('Date', date));
+        ligne1.appendChild(champ('Heure', heureChamp));
+        form.appendChild(ligne1);
+
+        const ligne2 = el('div', 'grid grid-cols-2 gap-2');
+        const duree = select([[30, '30 min'], [45, '45 min'], [60, '1 h'], [90, '1 h 30'], [120, '2 h']], prop.duree_minutes || 60);
+        const tarif = el('input'); tarif.type = 'number'; tarif.min = '0'; tarif.step = '10'; tarif.inputMode = 'decimal'; tarif.value = prop.tarif || ''; tarif.placeholder = 'DHS';
+        ligne2.appendChild(champ('Durée', duree));
+        ligne2.appendChild(champ('Tarif (DHS)', tarif));
+        form.appendChild(ligne2);
+
+        const ligne3 = el('div', 'grid grid-cols-2 gap-2');
+        const type = select(TYPES, prop.type_consultation || 'individuelle');
+        const lieu = select(LIEUX, prop.lieu_consultation || (LIEUX[0] && LIEUX[0][0]));
+        ligne3.appendChild(champ('Type', type));
+        ligne3.appendChild(champ('Lieu', lieu));
+        form.appendChild(ligne3);
+
+        const message = el('div', 'hidden text-xs rounded-lg px-2 py-1.5');
+        form.appendChild(message);
+        const actions = el('div', 'flex gap-2 pt-1');
+        const valider = el('button', 'puce flex-1 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg py-2', 'Créer la consultation');
+        valider.type = 'submit';
+        const annuler = el('button', 'puce px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg', 'Annuler');
+        annuler.type = 'button';
+        actions.appendChild(valider); actions.appendChild(annuler);
+        form.appendChild(actions);
+
+        const c = carte(form);
+        if (window.SearchableSelect) window.SearchableSelect.enhance(patient);
+
+        const modifies = new Set();
+        [duree, tarif, type, lieu].forEach(function (ch) { ch.addEventListener('change', function () { modifies.add(ch); }); });
+        async function prefill() {
+            if (!patient.value) return;
+            const v = await appel(URLS.valeursPatient + '?patient_id=' + patient.value);
+            if (!v.ok) return;
+            if (!modifies.has(duree)) duree.value = v.duree_minutes;
+            if (!modifies.has(tarif) && !tarif.value) tarif.value = v.tarif;
+            if (!modifies.has(type)) type.value = v.type_consultation;
+            if (!modifies.has(lieu)) lieu.value = v.lieu_consultation;
+        }
+        patient.addEventListener('change', prefill);
+
+        annuler.addEventListener('click', function () { c.remove(); });
+        let forcer = false;
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            valider.disabled = true;
+            const j = await postJSON(URLS.creer, {
+                patient_id: patient.value, date: date.value, heure: heureChamp.value, duree_minutes: duree.value,
+                tarif: tarif.value, type_consultation: type.value, lieu_consultation: lieu.value, forcer: forcer,
+            });
+            valider.disabled = false;
+            if (j.ok) {
+                c.textContent = '';
+                const ok = el('div', 'flex items-start gap-2');
+                ok.appendChild(el('i', 'fas fa-check-circle text-green-600 mt-0.5'));
+                const texte = el('div');
+                texte.appendChild(el('div', 'font-semibold text-gray-900', 'Consultation créée'));
+                texte.appendChild(el('div', 'text-xs text-gray-600', j.consultation.patient + ', ' + j.date_longue + ' à ' + j.consultation.heure + ' (' + j.consultation.lieu + ')'));
+                const lien = el('a', 'text-xs text-primary-dark hover:underline', 'Voir la consultation');
+                lien.href = j.consultation.url;
+                texte.appendChild(lien);
+                ok.appendChild(texte);
+                c.appendChild(ok);
+                majPieceAttente(j.resume);
+                return;
+            }
+            message.classList.remove('hidden');
+            message.className = 'text-xs rounded-lg px-2 py-1.5 ' + (j.statut === 409 ? 'bg-amber-50 text-amber-800' : 'bg-red-50 text-red-700');
+            message.textContent = j.erreur;
+            if (j.statut === 409) { forcer = true; valider.textContent = 'Créer quand même'; }
+        });
+        [date, heureChamp, duree].forEach(function (ch) {
+            ch.addEventListener('change', function () { forcer = false; valider.textContent = 'Créer la consultation'; message.classList.add('hidden'); });
+        });
+        return c;
+    }
+    document.getElementById('btn-nouvelle').addEventListener('click', function () { carteConsultation({}); });
+
+    // Personnages de la salle d'attente au chargement (après les enseignes, pour le badge « +N »)
+    if (PIECES.attente) dessinerPatients(PIECES.attente.patients);
+})();
+</script>
+{% endblock %}

@@ -9,7 +9,7 @@
 
     <!-- PWA -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
-    <meta name="theme-color" content="#c026d3">
+    <meta name="theme-color" content="#2A45DE">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32.png' %}">
     <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,276 +17,199 @@
     <meta name="apple-mobile-web-app-title" content="PsySaaS">
     <meta name="mobile-web-app-capable" content="yes">
 
-    <!-- Tailwind CSS CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              primary: "#e879f9",
-              "primary-light": "#fdf4ff",
-              "primary-dark": "#c026d3",
+              // Palette « Bleu Majorelle & safran » : cobalt du jardin Majorelle (marque),
+              // safran (accent), encre bleu nuit (texte), fond bleuté très clair.
+              primary: { DEFAULT: "#2A45DE", light: "#EEF3FF", dark: "#2236B8" },
+              brand: {
+                50: "#EEF3FF", 100: "#DDE6FF", 200: "#C0D0FF", 300: "#93ACFF", 400: "#6180FA",
+                500: "#3D5CF2", 600: "#2A45DE", 700: "#2236B8", 800: "#213193", 900: "#1F2D72",
+              },
+              safran: { 50: "#FFF8E6", 100: "#FEEDC2", 400: "#F8C24C", 500: "#F2A81D", 600: "#D98B0B", 700: "#A86A08" },
+              ocre: { DEFAULT: "#F2A81D", light: "#FFF8E6", dark: "#A86A08" },
+              encre: "#121A33",
+              pierre: "#F4F6FB",
+            },
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', "ui-sans-serif", "system-ui", "sans-serif"],
             },
           },
         },
       };
     </script>
+    <style type="text/tailwindcss">
+      @layer components {
+        .nav-lien { @apply flex items-center gap-3 mx-3 px-3 py-2 rounded-xl text-[14px] font-medium text-slate-600 transition-colors; }
+        .nav-lien i { @apply w-5 text-center text-slate-400 transition-colors; }
+        .nav-lien:hover { @apply bg-slate-100 text-encre; }
+        .nav-lien:hover i { @apply text-slate-600; }
+        .nav-lien.actif { @apply bg-brand-50 text-brand-700; }
+        .nav-lien.actif i { @apply text-brand-600; }
+        .nav-titre { @apply px-6 pt-5 pb-1.5 text-[11px] font-semibold text-slate-400; }
+        .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.97]; }
+        .btn-primaire { @apply bg-primary text-white hover:bg-primary-dark shadow-sm shadow-brand-600/20; }
+        .btn-secondaire { @apply bg-white text-encre ring-1 ring-slate-200 hover:bg-slate-50; }
+        .carte { @apply bg-white rounded-2xl ring-1 ring-slate-200/70; }
+        .icone-btn { @apply inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-encre active:scale-95; }
+      }
+    </style>
+    <style>
+      /* Harmonise les pages existantes (cartes, tableaux) avec le nouveau style sans réécrire chaque gabarit */
+      main :is(.shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
+        box-shadow: 0 0 0 1px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.04) !important;
+      }
+      main .fixed :is(.shadow-lg, .shadow-xl, .shadow-2xl), .fixed > .shadow-xl {
+        box-shadow: 0 24px 48px -12px rgb(18 26 51 / 0.28) !important;
+      }
+      main table thead th { font-size: 12px; font-weight: 600; color: #64748b; letter-spacing: 0; }
+      main table tbody tr { transition: background-color 120ms ease; }
+      @media (hover: hover) { main table tbody tr:hover { background-color: #F7F9FF; } }
+      :focus-visible { outline: 2px solid #3D5CF2; outline-offset: 2px; }
+      .menu-nouveau summary::-webkit-details-marker { display: none; }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; } }
+    </style>
 
     {% block extra_css %}{% endblock %}
   </head>
-  <body class="bg-gray-50">
-    <!-- Mobile top bar -->
+  <body class="bg-pierre text-encre antialiased">
     {% if user.is_authenticated %}
-    <header class="md:hidden fixed top-0 left-0 right-0 h-[calc(3.5rem+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] bg-white border-b border-gray-200 z-40 flex items-center justify-between px-4">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center text-white shadow">
-          <i class="fas fa-brain text-sm"></i>
-        </div>
-        <h1 class="text-base font-semibold text-gray-800">PsySaaS</h1>
-      </div>
-      <button type="button" id="mobile-menu-toggle" class="w-10 h-10 flex items-center justify-center text-gray-600 -mr-2" aria-label="Ouvrir le menu">
-        <i class="fas fa-bars text-xl"></i>
-      </button>
-    </header>
-    <!-- Mobile sidebar overlay -->
-    <div id="mobile-sidebar-overlay" class="hidden md:hidden fixed inset-0 bg-black/50 z-40"></div>
+    <!-- Voile du menu sur téléphone -->
+    <div id="mobile-sidebar-overlay" class="hidden md:hidden fixed inset-0 bg-encre/40 backdrop-blur-sm z-40"></div>
     {% endif %}
 
-    <!-- Sidebar -->
-    <nav id="sidebar" class="fixed top-0 left-0 h-screen w-72 max-w-[85vw] md:w-64 bg-white border-r border-gray-200 z-50 flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-200">
-      <div class="p-6 pt-[calc(1.5rem+env(safe-area-inset-top))] border-b border-gray-100 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-white shadow-lg">
-            <i class="fas fa-brain text-2xl"></i>
-          </div>
-          <div>
-            <h1 class="text-xl font-semibold text-gray-800">PsySaaS</h1>
-            <p class="text-xs text-gray-500">{% if user.is_superadmin %}Administration{% else %}{{ user.organization.name }}{% endif %}</p>
-          </div>
-        </div>
-        <button type="button" id="mobile-menu-close" class="md:hidden w-9 h-9 flex items-center justify-center text-gray-400" aria-label="Fermer le menu">
-          <i class="fas fa-times text-lg"></i>
+    <!-- Barre latérale -->
+    <nav id="sidebar" class="fixed top-0 left-0 h-screen w-72 max-w-[85vw] md:w-[260px] bg-white border-r border-slate-200/70 z-50 flex flex-col -translate-x-full md:translate-x-0 transition-transform duration-200">
+      <div class="h-16 px-5 pt-[env(safe-area-inset-top)] box-content flex items-center justify-between">
+        <a href="{% if user.is_superadmin %}{% url 'accounts:clients_list' %}{% else %}{% url 'cabinet:dashboard' %}{% endif %}" class="flex items-center gap-3 min-w-0">
+          <span class="w-9 h-9 rounded-xl bg-primary text-white grid place-items-center text-lg font-bold shrink-0">Ψ</span>
+          <span class="min-w-0">
+            <span class="block text-[15px] font-bold text-encre leading-tight">PsySaaS</span>
+            <span class="block text-xs text-slate-500 truncate">{% if user.is_superadmin %}Administration{% else %}{{ user.organization.name }}{% endif %}</span>
+          </span>
+        </a>
+        <button type="button" id="mobile-menu-close" class="md:hidden icone-btn" aria-label="Fermer le menu">
+          <i class="fas fa-times"></i>
         </button>
       </div>
 
-      {% if user.is_authenticated %}
-      <div class="px-4 pt-4 relative" id="global-search-wrapper">
-        <div class="relative">
-          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-          <input type="text" id="global-search-input" autocomplete="off"
-                 placeholder="Rechercher un patient..."
-                 class="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition">
-        </div>
-        <div id="global-search-results"
-             class="hidden absolute left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50"></div>
-      </div>
-      {% endif %}
-
-      <ul class="py-4 flex-1 overflow-y-auto">
+      <div class="flex-1 overflow-y-auto pb-4">
         {% if not user.is_superadmin %}
-        <li>
-          <a href="{% url 'cabinet:dashboard' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-home w-5"></i>
-            <span class="ml-3">Dashboard</span>
-          </a>
-        </li>
-        {% if user|has_module:'patients' %}
-        <li>
-          <a href="{% url 'cabinet:patients_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-users w-5"></i>
-            <span class="ml-3">Patients</span>
-          </a>
-        </li>
-        {% endif %}
-        {% if user|has_module:'consultations' %}
-        <li>
-          <a href="{% url 'cabinet:consultations_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-calendar-check w-5"></i>
-            <span class="ml-3">Consultations</span>
-          </a>
-        </li>
+        {% url 'cabinet:dashboard' as u_dashboard %}
+        {% url 'cabinet:cabinet_virtuel' as u_virtuel %}
+        {% url 'cabinet:patients_list' as u_patients %}
+        {% url 'cabinet:consultations_list' as u_consultations %}
+        {% url 'cabinet:agenda' as u_agenda %}
+        {% url 'cabinet:comptabilite_dashboard' as u_compta %}
+        {% url 'cabinet:tags_list' as u_tags %}
+        {% url 'cabinet:backup_page' as u_backup %}
+        {% url 'bilans:liste' as u_bilans %}
+        <p class="nav-titre">Cabinet</p>
+        <a href="{{ u_dashboard }}" class="nav-lien {% if request.path|commence_par:u_dashboard %}actif{% endif %}"><i class="fas fa-house"></i>Tableau de bord</a>
+        {% if user.organization %}
+        <a href="{{ u_virtuel }}" class="nav-lien {% if request.path|commence_par:u_virtuel %}actif{% endif %}">
+          <i class="fas fa-door-open"></i>Cabinet virtuel
+          <span class="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-safran-100 text-safran-700">Bêta</span>
+        </a>
         {% endif %}
         {% if user|has_module:'agenda' %}
-        <li>
-          <a href="{% url 'cabinet:agenda' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-calendar-alt w-5"></i>
-            <span class="ml-3">Agenda</span>
-          </a>
-        </li>
+        <a href="{{ u_agenda }}" class="nav-lien {% if request.path|commence_par:u_agenda %}actif{% endif %}"><i class="far fa-calendar"></i>Agenda</a>
         {% endif %}
+        {% if user|has_module:'patients' %}
+        <a href="{{ u_patients }}" class="nav-lien {% if request.path|commence_par:u_patients %}actif{% endif %}"><i class="fas fa-user-group"></i>Patients</a>
+        {% endif %}
+        {% if user|has_module:'consultations' %}
+        <a href="{{ u_consultations }}" class="nav-lien {% if request.path|commence_par:u_consultations %}actif{% endif %}"><i class="far fa-calendar-check"></i>Consultations</a>
+        {% endif %}
+        {% if user.organization.license.has_bilans and user|has_test:'bilans' %}
+        <a href="{{ u_bilans }}" class="nav-lien {% if request.path|commence_par:u_bilans %}actif{% endif %}"><i class="fas fa-file-signature"></i>Bilans</a>
+        {% endif %}
+
+        {% if user|has_module:'comptabilite' or user|has_module:'tags' or user.can_export_backup %}
+        <p class="nav-titre">Gestion</p>
         {% if user|has_module:'comptabilite' %}
-        <li>
-          <a href="{% url 'cabinet:comptabilite_dashboard' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-calculator w-5"></i>
-            <span class="ml-3">Comptabilité</span>
-          </a>
-        </li>
+        <a href="{{ u_compta }}" class="nav-lien {% if request.path|commence_par:u_compta %}actif{% endif %}"><i class="fas fa-wallet"></i>Comptabilité</a>
         {% endif %}
         {% if user|has_module:'tags' %}
-        <li>
-          <a href="{% url 'cabinet:tags_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-tags w-5"></i>
-            <span class="ml-3">Tags</span>
-          </a>
-        </li>
+        <a href="{{ u_tags }}" class="nav-lien {% if request.path|commence_par:u_tags %}actif{% endif %}"><i class="fas fa-tag"></i>Tags</a>
         {% endif %}
-        {% if user.is_superadmin or user.can_export_backup %}
-        <li>
-          <a href="{% url 'cabinet:backup_page' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-database w-5"></i>
-            <span class="ml-3">Sauvegarde</span>
-          </a>
-        </li>
+        {% if user.can_export_backup %}
+        <a href="{{ u_backup }}" class="nav-lien {% if request.path|commence_par:u_backup %}actif{% endif %}"><i class="fas fa-database"></i>Sauvegarde</a>
+        {% endif %}
         {% endif %}
 
-        <!-- Bilans - licence du cabinet ET permission utilisateur (comme un test) -->
-        {% if user.organization.license.has_bilans and user|has_test:'bilans' %}
-        <li>
-          <a href="{% url 'bilans:liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-file-signature w-5"></i>
-            <span class="ml-3">Bilans</span>
-          </a>
-        </li>
-        {% endif %}
-
-        <!-- Menu Tests Psychométriques - Affiché uniquement si au moins 1 test disponible et autorisé pour cet utilisateur -->
         {% if user.organization.license.has_d2r and user|has_test:'d2r' or user.organization.license.has_vineland and user|has_test:'vineland' or user.organization.license.has_beck and user|has_test:'beck' or user.organization.license.has_stai and user|has_test:'stai' or user.organization.license.has_brief and user|has_test:'brief' %}
-        <li class="mt-4 px-6">
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tests</p>
-        </li>
-
-        <!-- Test D2R - Affiché uniquement si accès autorisé -->
-        {% if user.organization.license.has_d2r and user|has_test:'d2r' %}
-        <li>
-          <a href="{% url 'tests_psy:d2r_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-chart-line w-5"></i>
-            <span class="ml-3">Test D2R</span>
-          </a>
-        </li>
-        {% endif %}
-
-        <!-- Test Vineland - Affiché uniquement si accès autorisé -->
+        <p class="nav-titre">Tests psychométriques</p>
         {% if user.organization.license.has_vineland and user|has_test:'vineland' %}
-        <li>
-          <a href="{% url 'tests_psy:vineland_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-child w-5"></i>
-            <span class="ml-3">Test Vineland</span>
-          </a>
-        </li>
+        {% url 'tests_psy:vineland_liste' as u_vineland %}
+        <a href="{{ u_vineland }}" class="nav-lien {% if request.path|commence_par:u_vineland %}actif{% endif %}"><i class="fas fa-child"></i>Vineland</a>
         {% endif %}
-
-        <!-- Test Beck - Affiché uniquement si accès autorisé -->
-        {% if user.organization.license.has_beck and user|has_test:'beck' %}
-        <li>
-          <a href="{% url 'tests_psy:beck_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-brain w-5"></i>
-            <span class="ml-3">Test Beck (Dépression)</span>
-          </a>
-        </li>
-        {% endif %}
-
-        <!-- Test STAI - Affiché uniquement si accès autorisé -->
-        {% if user.organization.license.has_stai and user|has_test:'stai' %}
-        <li>
-          <a href="{% url 'tests_psy:stai_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-heartbeat w-5"></i>
-            <span class="ml-3">Test STAI (Anxiété)</span>
-          </a>
-        </li>
-        {% endif %}
-
-        <!-- Test BRIEF - Affiché uniquement si accès autorisé -->
         {% if user.organization.license.has_brief and user|has_test:'brief' %}
-        <li>
-          <a href="{% url 'tests_psy:brief_liste' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-puzzle-piece w-5"></i>
-            <span class="ml-3">Test BRIEF (Fonctions exécutives)</span>
-          </a>
-        </li>
+        {% url 'tests_psy:brief_liste' as u_brief %}
+        <a href="{{ u_brief }}" class="nav-lien {% if request.path|commence_par:u_brief %}actif{% endif %}"><i class="fas fa-puzzle-piece"></i>BRIEF</a>
+        {% endif %}
+        {% if user.organization.license.has_d2r and user|has_test:'d2r' %}
+        {% url 'tests_psy:d2r_liste' as u_d2r %}
+        <a href="{{ u_d2r }}" class="nav-lien {% if request.path|commence_par:u_d2r %}actif{% endif %}"><i class="fas fa-bullseye"></i>D2R</a>
+        {% endif %}
+        {% if user.organization.license.has_beck and user|has_test:'beck' %}
+        {% url 'tests_psy:beck_liste' as u_beck %}
+        <a href="{{ u_beck }}" class="nav-lien {% if request.path|commence_par:u_beck %}actif{% endif %}"><i class="fas fa-cloud-rain"></i>Beck</a>
+        {% endif %}
+        {% if user.organization.license.has_stai and user|has_test:'stai' %}
+        {% url 'tests_psy:stai_liste' as u_stai %}
+        <a href="{{ u_stai }}" class="nav-lien {% if request.path|commence_par:u_stai %}actif{% endif %}"><i class="fas fa-wave-square"></i>STAI</a>
+        {% endif %}
+        {% endif %}
         {% endif %}
 
-        {% endif %}
-        {% endif %}
-
-        <!-- Administration plateforme - super admin uniquement (seule chose visible pour lui) -->
         {% if user.is_superadmin %}
-        <li class="px-6">
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Administration</p>
-        </li>
-        <li>
-          <a href="{% url 'accounts:clients_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-building w-5"></i>
-            <span class="ml-3">Clients (cabinets)</span>
-          </a>
-        </li>
-        <li>
-          <a href="{% url 'accounts:assistants_list' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-user-shield w-5"></i>
-            <span class="ml-3">Assistant(e)s</span>
-          </a>
-        </li>
-        <li>
-          <a href="{% url 'accounts:admin_dashboard' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-chart-pie w-5"></i>
-            <span class="ml-3">Dashboard (par cabinet)</span>
-          </a>
-        </li>
-        <li>
-          <a href="{% url 'accounts:admin_comptabilite' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-coins w-5"></i>
-            <span class="ml-3">Comptabilité (par cabinet)</span>
-          </a>
-        </li>
-        <li>
-          <a href="{% url 'accounts:admin_agenda' %}" class="flex items-center px-6 py-3 text-gray-600 hover:bg-primary-light hover:text-primary hover:border-l-4 hover:border-primary transition">
-            <i class="fas fa-calendar-alt w-5"></i>
-            <span class="ml-3">Agenda (par cabinet)</span>
-          </a>
-        </li>
+        {% url 'accounts:clients_list' as u_clients %}
+        {% url 'accounts:assistants_list' as u_assistants %}
+        {% url 'accounts:admin_dashboard' as u_adash %}
+        {% url 'accounts:admin_comptabilite' as u_acompta %}
+        {% url 'accounts:admin_agenda' as u_aagenda %}
+        {% url 'cabinet:backup_page' as u_backup %}
+        <p class="nav-titre">Administration</p>
+        <a href="{{ u_clients }}" class="nav-lien {% if request.path|commence_par:u_clients %}actif{% endif %}"><i class="fas fa-building"></i>Cabinets</a>
+        <a href="{{ u_assistants }}" class="nav-lien {% if request.path|commence_par:u_assistants %}actif{% endif %}"><i class="fas fa-user-shield"></i>Assistant(e)s</a>
+        <p class="nav-titre">Consulter un cabinet</p>
+        <a href="{{ u_adash }}" class="nav-lien {% if request.path|commence_par:u_adash %}actif{% endif %}"><i class="fas fa-chart-pie"></i>Tableau de bord</a>
+        <a href="{{ u_acompta }}" class="nav-lien {% if request.path|commence_par:u_acompta %}actif{% endif %}"><i class="fas fa-wallet"></i>Comptabilité</a>
+        <a href="{{ u_aagenda }}" class="nav-lien {% if request.path|commence_par:u_aagenda %}actif{% endif %}"><i class="far fa-calendar"></i>Agenda</a>
+        <a href="{{ u_backup }}" class="nav-lien {% if request.path|commence_par:u_backup %}actif{% endif %}"><i class="fas fa-database"></i>Sauvegarde</a>
         {% endif %}
-      </ul>
+      </div>
 
-      <!-- User Profile Section -->
+      <!-- Compte -->
       {% if user.is_authenticated %}
-      <div class="border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)]">
-        <div class="relative group">
-          <div class="p-4 cursor-pointer hover:bg-gray-50 transition">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-semibold text-sm shadow">
-                {{ user.first_name.0|default:user.username.0|upper }}{{ user.last_name.0|default:""|upper }}
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-gray-800 truncate">{{ user.get_full_name|default:user.username }}</p>
-                <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
-              </div>
-              <i class="fas fa-chevron-up text-gray-400 text-xs group-hover:text-primary transition"></i>
+      <div class="border-t border-slate-200/70 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div class="relative group" tabindex="0">
+          <div class="flex items-center gap-3 rounded-xl p-2 cursor-pointer hover:bg-slate-100 transition">
+            <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 grid place-items-center font-bold text-sm shrink-0">
+              {{ user.first_name.0|default:user.username.0|upper }}{{ user.last_name.0|default:""|upper }}
             </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-encre truncate">{{ user.get_full_name|default:user.username }}</p>
+              <p class="text-xs text-slate-500 truncate">{{ user.email }}</p>
+            </div>
+            <i class="fas fa-ellipsis text-slate-400"></i>
           </div>
-
-          <div class="absolute bottom-full left-0 w-full bg-white border border-gray-200 rounded-t-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-            <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-primary-light hover:text-primary transition">
-              <i class="fas fa-user-circle w-5"></i>
-              <span class="text-sm">Mon compte</span>
-            </a>
-            <a href="{% url 'accounts:settings' %}" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-primary-light hover:text-primary transition">
-              <i class="fas fa-cog w-5"></i>
-              <span class="text-sm">Paramètres</span>
-            </a>
-            <div class="border-t border-gray-200"></div>
+          <div class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl ring-1 ring-slate-200 shadow-xl p-1.5 opacity-0 invisible translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 transition">
+            <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><i class="far fa-user w-4 text-slate-400"></i>Mon compte</a>
+            <a href="{% url 'accounts:settings' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><i class="fas fa-gear w-4 text-slate-400"></i>Paramètres</a>
             <form method="post" action="{% url 'accounts:logout' %}">
               {% csrf_token %}
-              <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition text-left">
-                <i class="fas fa-sign-out-alt w-5"></i>
-                <span class="text-sm">Déconnexion</span>
-              </button>
+              <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 text-left"><i class="fas fa-arrow-right-from-bracket w-4"></i>Déconnexion</button>
             </form>
           </div>
         </div>
@@ -296,13 +219,13 @@
 
     <!-- Modal Rappel WhatsApp -->
     {% if user.is_authenticated %}
-    <div id="whatsapp-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+    <div id="whatsapp-modal" class="hidden fixed inset-0 bg-encre/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-gray-800">
+                <h3 class="text-lg font-semibold text-encre">
                     <i class="fab fa-whatsapp text-emerald-500 mr-2"></i>Envoyer un rappel
                 </h3>
-                <button type="button" onclick="closeWhatsAppModal()" class="text-gray-400 hover:text-gray-600">
+                <button type="button" onclick="closeWhatsAppModal()" class="icone-btn" aria-label="Fermer">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -310,40 +233,89 @@
             <div id="whatsapp-modal-templates" class="space-y-2 mb-4"></div>
 
             <div class="mb-4">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Aperçu du message</label>
+                <label class="block text-xs font-medium text-slate-500 mb-1">Aperçu du message</label>
                 <textarea id="whatsapp-modal-preview" rows="4"
-                          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50"></textarea>
+                          class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50"></textarea>
             </div>
 
             <div class="flex justify-between items-center">
                 <a href="{% url 'cabinet:message_templates_list' %}" class="text-xs text-primary hover:text-primary-dark">
-                    <i class="fas fa-cog mr-1"></i>Gérer les modèles
+                    <i class="fas fa-gear mr-1"></i>Gérer les modèles
                 </a>
-                <button type="button" id="whatsapp-modal-send"
-                        class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 rounded-lg transition font-medium">
-                    <i class="fab fa-whatsapp mr-2"></i>Ouvrir WhatsApp
+                <button type="button" id="whatsapp-modal-send" class="btn bg-emerald-500 hover:bg-emerald-600 text-white">
+                    <i class="fab fa-whatsapp"></i>Ouvrir WhatsApp
                 </button>
             </div>
         </div>
     </div>
     {% endif %}
 
-    <!-- Main Content -->
-    <main class="md:ml-64 min-h-screen p-4 pt-[calc(5rem+env(safe-area-inset-top))] md:p-8 pb-[env(safe-area-inset-bottom)] md:pb-8">
-      {% if messages %} 
-      {% for message in messages %}
-      <div class="mb-6 p-4 rounded-lg border-l-4 {% if message.tags == 'error' %}bg-red-50 border-red-500 text-red-700{% elif message.tags == 'success' %}bg-green-50 border-green-500 text-green-700{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-500 text-yellow-700{% else %}bg-blue-50 border-blue-500 text-blue-700{% endif %}">
-        {{ message }}
+    <!-- Contenu -->
+    <main class="md:ml-[260px] min-h-screen pb-[env(safe-area-inset-bottom)]">
+      {% if user.is_authenticated %}
+      <!-- Barre du haut : menu (téléphone), recherche, créer -->
+      <header class="sticky top-0 z-30 bg-pierre/80 backdrop-blur-md border-b border-slate-200/60 pt-[env(safe-area-inset-top)]">
+        <div class="h-16 px-4 sm:px-6 lg:px-8 flex items-center gap-3">
+          <button type="button" id="mobile-menu-toggle" class="md:hidden icone-btn -ml-1" aria-label="Ouvrir le menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="relative flex-1 max-w-md" id="global-search-wrapper">
+            <i class="fas fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" id="global-search-input" autocomplete="off" placeholder="Rechercher un patient, une consultation…"
+                   class="w-full h-10 pl-10 pr-14 text-sm bg-white rounded-xl ring-1 ring-slate-200 border-0 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+            <kbd class="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 items-center gap-0.5 text-[11px] font-medium text-slate-400 bg-slate-50 ring-1 ring-slate-200 rounded-md px-1.5 py-0.5">Ctrl K</kbd>
+            <div id="global-search-results" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-xl ring-1 ring-slate-200 shadow-xl max-h-96 overflow-y-auto z-50"></div>
+          </div>
+          <div class="ml-auto flex items-center gap-2">
+            {% if user.organization and not user.is_superadmin %}
+            <a href="{% url 'cabinet:cabinet_virtuel' %}" class="icone-btn" title="Vue cabinet" aria-label="Vue cabinet"><i class="fas fa-door-open"></i></a>
+            {% if user|has_module:'consultations' or user|has_module:'patients' %}
+            <details class="menu-nouveau relative">
+              <summary class="btn btn-primaire list-none cursor-pointer"><i class="fas fa-plus"></i><span class="hidden sm:inline">Nouveau</span></summary>
+              <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl ring-1 ring-slate-200 shadow-xl p-1.5 z-50">
+                {% if user|has_module:'consultations' %}
+                <a href="{% url 'cabinet:consultation_create' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><i class="far fa-calendar-plus w-4 text-brand-600"></i>Consultation</a>
+                {% endif %}
+                {% if user|has_module:'patients' %}
+                <a href="{% url 'cabinet:patient_create' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><i class="fas fa-user-plus w-4 text-brand-600"></i>Patient</a>
+                {% endif %}
+                {% if user.organization.license.has_bilans and user|has_test:'bilans' %}
+                <a href="{% url 'bilans:nouveau' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><i class="fas fa-file-signature w-4 text-brand-600"></i>Bilan</a>
+                {% endif %}
+              </div>
+            </details>
+            {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </header>
+      {% endif %}
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {% if messages %}
+        <div class="space-y-2 mb-6">
+          {% for message in messages %}
+          <div class="flex items-start gap-3 p-4 rounded-xl ring-1 {% if message.tags == 'error' %}bg-red-50 ring-red-200 text-red-800{% elif message.tags == 'success' %}bg-emerald-50 ring-emerald-200 text-emerald-800{% elif message.tags == 'warning' %}bg-safran-50 ring-safran-100 text-safran-700{% else %}bg-brand-50 ring-brand-100 text-brand-800{% endif %}">
+            <i class="fas {% if message.tags == 'error' %}fa-circle-exclamation{% elif message.tags == 'success' %}fa-circle-check{% elif message.tags == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %} mt-0.5"></i>
+            <div class="text-sm">{{ message }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %}{% endblock %}
       </div>
-      {% endfor %} 
-      {% endif %} 
-      {% block content %}{% endblock %}
     </main>
 
     <!-- Chart.js pour les graphiques -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
-    
+    <script>
+      if (window.Chart) {
+        Chart.defaults.font.family = '"Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif';
+        Chart.defaults.color = '#64748b';
+      }
+    </script>
+
     {% if user.is_authenticated %}
     <script>
     (function() {
@@ -367,6 +339,13 @@
         sidebar.querySelectorAll('a').forEach(function(link) {
             link.addEventListener('click', closeSidebar);
         });
+
+        // Menu « Nouveau » : se ferme en cliquant ailleurs
+        document.addEventListener('click', function(e) {
+            document.querySelectorAll('details.menu-nouveau[open]').forEach(function(menu) {
+                if (!menu.contains(e.target)) menu.removeAttribute('open');
+            });
+        });
     })();
     </script>
 
@@ -376,18 +355,24 @@
         const results = document.getElementById('global-search-results');
         if (!input || !results) return;
 
+        // Ctrl+K / ⌘K : aller à la recherche
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); input.focus(); input.select(); }
+            if (e.key === 'Escape' && document.activeElement === input) { input.blur(); results.classList.add('hidden'); }
+        });
+
         let debounceTimer = null;
 
         function renderSection(title, items) {
             if (!items.length) return '';
             const rows = items.map(item => `
-                <a href="${item.url}" class="block px-4 py-2 hover:bg-primary-light transition">
-                    <div class="text-sm font-medium text-gray-800">${item.label}</div>
-                    ${item.sublabel ? `<div class="text-xs text-gray-500">${item.sublabel}</div>` : ''}
+                <a href="${item.url}" class="block mx-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition">
+                    <div class="text-sm font-medium text-encre">${item.label}</div>
+                    ${item.sublabel ? `<div class="text-xs text-slate-500">${item.sublabel}</div>` : ''}
                 </a>
             `).join('');
-            return `<div class="py-2">
-                <div class="px-4 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">${title}</div>
+            return `<div class="py-1.5">
+                <div class="px-4 py-1 text-[11px] font-semibold text-slate-400">${title}</div>
                 ${rows}
             </div>`;
         }
@@ -416,7 +401,7 @@
                         const consultations = data.consultations.map(c => ({...c, label: escapeHtml(c.label), sublabel: escapeHtml(c.sublabel)}));
 
                         if (!patients.length && !consultations.length) {
-                            results.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400">Aucun résultat</div>';
+                            results.innerHTML = '<div class="px-4 py-3 text-sm text-slate-400">Aucun résultat</div>';
                         } else {
                             results.innerHTML = renderSection('Patients', patients) + renderSection('Consultations', consultations);
                         }
@@ -463,7 +448,7 @@
             selectedTemplate = template;
             document.getElementById('whatsapp-modal-preview').value = renderMessage(template.contenu, currentContext);
             document.querySelectorAll('#whatsapp-modal-templates [data-template-card]').forEach(card => {
-                card.classList.toggle('border-primary', card.dataset.templateId === String(template.id));
+                card.classList.toggle('ring-primary', card.dataset.templateId === String(template.id));
                 card.classList.toggle('bg-primary-light', card.dataset.templateId === String(template.id));
             });
         }
@@ -472,10 +457,10 @@
             const container = document.getElementById('whatsapp-modal-templates');
             container.innerHTML = templates.map(t => `
                 <button type="button" data-template-card data-template-id="${t.id}"
-                        class="w-full text-left px-3 py-2 border border-gray-200 rounded-lg hover:border-primary transition"
+                        class="w-full text-left px-3 py-2 rounded-xl ring-1 ring-slate-200 hover:ring-primary transition"
                         onclick='selectWhatsAppTemplate(${t.id})'>
-                    <span class="text-xs font-semibold text-gray-500">${t.type_rappel_display}</span>
-                    <div class="text-sm font-medium text-gray-800">${t.nom}</div>
+                    <span class="text-xs font-semibold text-slate-500">${t.type_rappel_display}</span>
+                    <div class="text-sm font-medium text-encre">${t.nom}</div>
                 </button>
             `).join('');
         }

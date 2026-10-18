@@ -21,7 +21,7 @@
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{% url 'tests_psy:brief_pdf' test.id %}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                <a href="{% url 'tests_psy:brief_pdf' test.id %}" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
                     <i class="fas fa-file-pdf mr-1"></i>PDF
                 </a>
                 {% if edit_url %}
@@ -70,7 +70,7 @@
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-50 text-gray-600 text-xs uppercase">
+                    <tr class="bg-gray-50 text-gray-600 text-xs">
                         <th class="px-4 py-2 text-left">Échelle / Indice</th>
                         <th class="px-4 py-2 text-center">Score brut</th>
                         <th class="px-4 py-2 text-center">Score T</th>
@@ -178,7 +178,7 @@
             <div class="overflow-x-auto mt-4">
                 <table class="min-w-full text-sm">
                     <thead>
-                        <tr class="bg-gray-50 text-gray-600 text-xs uppercase">
+                        <tr class="bg-gray-50 text-gray-600 text-xs">
                             <th class="px-3 py-2 text-left">N°</th>
                             <th class="px-3 py-2 text-left">Item</th>
                             <th class="px-3 py-2 text-left">Échelle</th>
@@ -219,8 +219,8 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: data.labels,
             datasets: [
-                { label: 'Échelles', data: echelles, borderColor: '#c026d3', backgroundColor: '#c026d3', pointRadius: 5, tension: 0 },
-                { label: 'Indices', data: indices, borderColor: '#7c3aed', backgroundColor: '#7c3aed', pointRadius: 6, pointStyle: 'rectRot', tension: 0 },
+                { label: 'Échelles', data: echelles, borderColor: '#2236B8', backgroundColor: '#2236B8', pointRadius: 5, tension: 0 },
+                { label: 'Indices', data: indices, borderColor: '#F2A81D', backgroundColor: '#F2A81D', pointRadius: 6, pointStyle: 'rectRot', tension: 0 },
             ],
         },
         options: {
